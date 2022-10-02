@@ -58,11 +58,11 @@ namespace colt::args
 		struct Argument
 		{
 			/// @brief --name
-			std::string_view name;
+			StringView name;
 			/// @brief -abrv
-			std::string_view abrv;
+			StringView abrv;
 			/// @brief The -h [--name/-abrv]
-			std::string_view help;
+			StringView help;
 			/// @brief The number of expected arguments
 			size_t nb_of_args;
 			/// @brief The function to call when the Argument found was valid
@@ -124,12 +124,12 @@ namespace colt::args
 		/// @param arg_view The current argument to parse
 		/// @param args The arguments to parse
 		/// @param current_arg The number of the current argument
-		void handle_arg(std::string_view arg_view, int argc, const char** argv, size_t& current_arg) noexcept;
+		void handle_arg(StringView arg_view, int argc, const char** argv, size_t& current_arg) noexcept;
 
 		/// @brief Searches for an argument in predefined_args
 		/// @param arg_view The argument to find
 		/// @return Iterator to the argument or predefined_args.end() if not found
-		auto find_arg_in_predefined(std::string_view arg_view) noexcept -> decltype(PredefinedArguments.end());		
+		auto find_arg_in_predefined(StringView arg_view) noexcept -> decltype(PredefinedArguments.end());		
 	}
 
 	/// @brief Global Arguments used throughout the Colt-Compiler

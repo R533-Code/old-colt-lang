@@ -11,19 +11,19 @@ namespace colt::args
 	{
 		for (size_t current_arg = 1; current_arg < static_cast<size_t>(argc); ++current_arg)
 		{
-			std::string_view arg_view = argv[current_arg];			
+			StringView arg_view = argv[current_arg];			
 
 			if (arg_view[0] != '-')
 			{				
-				if (std::error_code code; !std::filesystem::exists(arg_view, code))
+				if (std::error_code code; !std::filesystem::exists(arg_view.get_data(), code))
 				{
 					io::print_error("File at path '{}' does not exist!", arg_view);
 					std::exit(1);
 				}
-				details::global_args.file_in = arg_view.data();
+				details::global_args.file_in = arg_view.get_data();
 				continue;
 			}
-			if (arg_view.size() < 2)
+			if (arg_view.get_size() < 2)
 				details::print_error_and_exit("Invalid argument '{}'!", arg_view);
 
 			details::handle_arg(arg_view, argc, argv, current_arg);
@@ -97,7 +97,7 @@ namespace colt::args
 			global_args.print_allocation_data = true;
 		}
 		
-		void handle_arg(std::string_view arg_view, int argc, const char** argv, size_t& current_arg) noexcept
+		void handle_arg(StringView arg_view, int argc, const char** argv, size_t& current_arg) noexcept
 		{
 			auto it = find_arg_in_predefined(arg_view);
 			if (it == PredefinedArguments.end())
@@ -109,23 +109,23 @@ namespace colt::args
 				it->callback(argc, argv, current_arg);
 		}
 		
-		auto find_arg_in_predefined(std::string_view arg_view) noexcept -> decltype(PredefinedArguments.end())
+		auto find_arg_in_predefined(StringView arg_view) noexcept -> decltype(PredefinedArguments.end())
 		{
-			if (arg_view[0] == '-' && arg_view.size() > 1)
+			if (arg_view[0] == '-' && arg_view.get_size() > 1)
 			{
 				if (arg_view[1] == '-') // --<name>
 				{
-					std::string_view to_find = arg_view.substr(2); //we skip '--'
+					arg_view.pop_front_n(2); //we skip '--'
 					//Find using comparisons of '--name'
 					return std::find_if(PredefinedArguments.begin(), PredefinedArguments.end(),
-						[=](const Argument& val) { return val.name == to_find; });
+						[=](const Argument& val) { return val.name == arg_view; });
 				}
 				else // -<abrv>
 				{
-					std::string_view to_find = arg_view.substr(1); //we skip '-'
+					arg_view.pop_front(); //we skip '-'
 					//Find using comparisons of '-abrv'
 					return std::find_if(PredefinedArguments.begin(), PredefinedArguments.end(),
-						[=](const Argument& val) { return val.abrv == to_find; });
+						[=](const Argument& val) { return val.abrv == arg_view; });
 				}
 			}
 			return PredefinedArguments.end();
