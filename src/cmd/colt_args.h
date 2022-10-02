@@ -12,7 +12,6 @@
 
 #include <array>
 #include <algorithm>
-#include <string_view>
 #include <filesystem>
 
 #include <colt/String.h>
