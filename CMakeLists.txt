@@ -97,7 +97,7 @@ if (DOXYGEN_FOUND)
 	# request to configure the file
 	configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT})
 
-	add_custom_target(COLT_GENERATE_DOCS
+	add_custom_target(GENERATE_DOCS
 		COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		COMMENT "Generating API documentation with Doxygen"
