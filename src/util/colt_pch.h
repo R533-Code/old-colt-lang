@@ -37,6 +37,8 @@
 //Includes
 #include <util/colt_config.h>
 
+#include <cmd/colt_args.h>
+
 #include <util/colt_macro.h>
 #include <util/colt_print.h>
 #include <util/typedefs.h>
