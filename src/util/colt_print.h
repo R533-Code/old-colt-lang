@@ -64,9 +64,9 @@ namespace colt::io
 	{
 		if constexpr (active)
 		{
-			/*if (args::GlobalArguments->colored_output)
+			if (args::GlobalArguments->colored_output)
 				fmt::print(fg(fmt::color::cornflower_blue) | fmt::emphasis::bold, "Message: ");
-			else*/
+			else
 				fmt::print("Message: ");
 
 			fmt::print(fmt, std::forward<Args>(args)...);
@@ -79,9 +79,9 @@ namespace colt::io
 	{
 		if constexpr (active)
 		{
-			/*if (args::GlobalArguments->colored_output)
+			if (args::GlobalArguments->colored_output)
 				fmt::print(fg(fmt::color::yellow) | fmt::emphasis::bold, "Warning: ");
-			else*/
+			else
 				fmt::print("Warning: ");
 			
 			fmt::print(fmt, std::forward<Args>(args)...);
@@ -94,9 +94,9 @@ namespace colt::io
 	{
 		if constexpr (active)
 		{
-			/*if (args::GlobalArguments->colored_output)
+			if (args::GlobalArguments->colored_output)
 				fmt::print(fg(fmt::color::red) | fmt::emphasis::bold, "Error: ");
-			else*/
+			else
 				fmt::print("Error: ");
 			
 			fmt::print(fmt, std::forward<Args>(args)...);
