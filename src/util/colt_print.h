@@ -8,6 +8,7 @@
 #define HG_COLT_PRINT
 
 #include <fmt/core.h>
+#include <util/console_colors.h>
 
 /// @brief Contains utilities for printing to console
 namespace colt::io
