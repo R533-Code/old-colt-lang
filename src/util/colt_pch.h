@@ -37,6 +37,8 @@
 //Includes
 #include <util/colt_config.h>
 
+#include <util/dyn_cast.h>
+
 #include <cmd/colt_args.h>
 
 #include <util/colt_macro.h>
