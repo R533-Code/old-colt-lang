@@ -32,6 +32,7 @@
 #include <colt/Vector.h>
 #include <colt/String.h>
 #include <colt/Map.h>
+#include <colt/UniquePtr.h>
 
 //Includes
 #include <util/colt_config.h>
