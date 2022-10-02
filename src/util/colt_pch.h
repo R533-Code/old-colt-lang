@@ -26,6 +26,13 @@
 #include <fmt/color.h>
 #include <fmt/ranges.h>
 
+//Colt-Structs includes
+#include <colt/Expected.h>
+#include <colt/Optional.h>
+#include <colt/Vector.h>
+#include <colt/String.h>
+#include <colt/Map.h>
+
 //Includes
 #include <util/colt_config.h>
 
