@@ -4,6 +4,8 @@ using namespace colt;
 
 int main(int argc, const char** argv)
 {
+  //Populates GlobalArguments
+  args::ParseArguments(argc, argv);
+  
   io::print_message("Hello Colt!");
-  UniquePtr ptr = make_unique<int>(10);
 }
