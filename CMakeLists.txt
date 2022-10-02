@@ -1,0 +1,107 @@
+cmake_minimum_required(VERSION 3.4)
+# C++17 is required
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+project(Colt-Lang VERSION 0.0.0.0 LANGUAGES CXX)
+
+# Save all the files to compile
+file(GLOB_RECURSE ColtHeaders "src/*.h")
+file(GLOB_RECURSE ColtUnits "src/*.cpp")
+# Name of the compiler executable
+set(COLT_EXECUTABLE_NAME colt)
+
+# Create the compiler executable
+add_executable(${COLT_EXECUTABLE_NAME}
+	${ColtHeaders} ${ColtUnits}
+)
+
+# Add precompiled header
+target_precompile_headers(${COLT_EXECUTABLE_NAME} PUBLIC 
+	"$<$<COMPILE_LANGUAGE:CXX>:${PROJECT_SOURCE_DIR}/src/util/colt_pch.h>")
+
+# Define COLT_DEBUG_BUILD for debug config
+target_compile_definitions(
+	${COLT_EXECUTABLE_NAME} PRIVATE $<$<CONFIG:DEBUG>:COLT_DEBUG>
+)
+
+# Set default build type to Release
+set(CMAKE_BUILD_TYPE "Release")
+if (MSVC)
+	# The executable is the startup project in Visual Studio
+	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${COLT_EXECUTABLE_NAME})
+	target_compile_options(${COLT_EXECUTABLE_NAME} PUBLIC "/external:anglebrackets" "/external:W0")
+endif()
+
+# include {fmt}
+message(STATUS "Linking with {fmt}") # new line
+add_subdirectory("${CMAKE_SOURCE_DIR}/libraries/fmt")
+target_link_libraries(${COLT_EXECUTABLE_NAME} PUBLIC fmt::fmt)
+
+target_include_directories(${COLT_EXECUTABLE_NAME} PUBLIC 
+	"${CMAKE_SOURCE_DIR}/src"
+	"${CMAKE_SOURCE_DIR}/libraries/colt-structs/include"
+	SYSTEM # So no warning is shown
+	"${CMAKE_SOURCE_DIR}/libraries/fmt/include"
+)
+
+# Useful macros for knowing which compiler is going to compile the code
+set(IMPL_COLT_CLANG 0)
+set(IMPL_COLT_GNU 0)
+set(IMPL_COLT_INTEL 0)
+set(IMPL_COLT_MSVC 0)
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # AppleClang or Clang
+	set(IMPL_COLT_CLANG 1)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	set(IMPL_COLT_GNU 1)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+	set(IMPL_COLT_INTEL 1)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+	set(IMPL_COLT_MSVC 1)
+endif()
+
+set(IMPL_COLT_OS_WINDOWS 0)
+set(IMPL_COLT_OS_LINUX 0)
+set(IMPL_COLT_OS_APPLE 0)
+
+if(WIN32)
+	set(IMPL_COLT_OS_WINDOWS 1)
+	set(IMPL_COLT_OS_STRING "Windows")
+elseif(APPLE)
+	set(IMPL_COLT_OS_APPLE 1)
+	set(IMPL_COLT_OS_STRING "Apple")
+elseif(UNIX AND NOT APPLE) #LINUX
+	set(IMPL_COLT_OS_LINUX 1)
+	set(IMPL_COLT_OS_STRING "Linux")
+else()
+	set(IMPL_COLT_OS_STRING "UNKNOWN")
+endif()
+
+configure_file("${CMAKE_SOURCE_DIR}/resources/cmake/cmake_colt_config.in"
+	"${CMAKE_SOURCE_DIR}/src/util/colt_config.h")
+
+# DOXYGEN
+option(BUILD_DOC "Build documentation" ON)
+
+message(STATUS "Searching for Doxygen executable...")
+# check if Doxygen is installed
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+	message(STATUS "Found Doxygen executable.")
+	# set input and output files
+	set(DOXYGEN_IN ${CMAKE_SOURCE_DIR}/resources/doxygen/Doxyfile.in)
+	set(DOXYGEN_OUT ${CMAKE_SOURCE_DIR}/docs/Doxyfile.out)
+
+	message(STATUS "Configuring Doxygen input file...")
+	# request to configure the file
+	configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT})
+
+	add_custom_target(COLT_GENERATE_DOCS
+		COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMENT "Generating API documentation with Doxygen"
+		VERBATIM)
+else (DOXYGEN_FOUND)
+	message(WARNING "Doxygen was not found! Doxygen need to be installed to generate the documentation!")
+endif (DOXYGEN_FOUND)
