@@ -64,7 +64,7 @@ namespace colt::args
         print_error_and_exit("Invalid combination for argument '{}'!", argv[current_arg]);
       io::print("List of valid commands:");
       for (const auto& argument : PredefinedArguments)
-        io::print("  --{},-{}", argument.name, argument.abrv);
+        io::print("  --{}, -{}", argument.name, argument.abrv);
       std::exit(0);
     }
 
