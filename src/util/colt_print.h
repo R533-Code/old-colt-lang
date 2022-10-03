@@ -18,7 +18,7 @@ namespace colt::io
 	/// @tparam ...Args Pack of types to format
 	/// @param fmt The format string, using {fmt} syntax
 	/// @param ...args The arguments to format
-	constexpr void print(fmt::format_string<Args...> fmt, Args&&... args);
+	constexpr void Print(fmt::format_string<Args...> fmt, Args&&... args);
 
 	template<bool active = true, typename... Args>
 	/// @brief Prints to the standard output
@@ -42,7 +42,7 @@ namespace colt::io
 	constexpr void PrintError(fmt::format_string<Args...> fmt, Args&&... args);
 
 	/// @brief Used to escape a character being printed.
-	/// Example: print("{}", EscapeChar{'\n'}) -> '\n'
+	/// Example: Print("{}", EscapeChar{'\n'}) -> '\n'
 	struct EscapeChar
 	{
 		/// @brief The char to escape
@@ -50,7 +50,7 @@ namespace colt::io
 	};
 
 	template<bool active, typename... Args>
-	constexpr void print(fmt::format_string<Args...> fmt, Args && ...args)
+	constexpr void Print(fmt::format_string<Args...> fmt, Args && ...args)
 	{
 		if constexpr (active)
 		{
