@@ -27,7 +27,7 @@ namespace colt::lang
 		case TKN_MINUS_MINUS:
 			return is_post ? OP_POST_INCREMENT : OP_PRE_INCREMENT;
 		default:
-			unreachable("Invalid Unary Operator!");
+			colt_unreachable("Invalid Unary Operator!");
 		}
     }
 	
