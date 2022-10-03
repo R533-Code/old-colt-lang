@@ -216,7 +216,7 @@ namespace colt::lang
 	inline void Lexer::gen_error(StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept
 	{
 		auto info = get_line_info();
-		generate_error(info.line_nb, info.line_strv, lexeme, fmt, std::forward<Args>(args)...);
+		GenerateError(info.line_nb, info.line_strv, lexeme, fmt, std::forward<Args>(args)...);
 	}
 }
 

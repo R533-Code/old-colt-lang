@@ -11,16 +11,16 @@
 namespace colt::lang
 {
 	template<typename... Args>
-	void generate_message(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
+	void GenerateMessage(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
 
 	template<typename... Args>
-	void generate_warning(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
+	void GenerateWarning(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
 
 	template<typename... Args>
-	void generate_error(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
+	void GenerateError(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
 	
 	template<typename ...Args>
-	void generate_message(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&& ...args) noexcept
+	void GenerateMessage(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&& ...args) noexcept
 	{
 		if (!args::GlobalArguments->print_messages)
 			return;
@@ -31,18 +31,18 @@ namespace colt::lang
 		
 		size_t line_nb_size = fmt::formatted_size("{}", line_nb);
 		if (args::GlobalArguments->colored_output)
-			io::print("{} | {}" CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET "{}", line_nb, begin_line, lexeme, end_line);
+			io::Print("{} | {}" CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET "{}", line_nb, begin_line, lexeme, end_line);
 		else
-			io::print("{} | {}{}{}", line_nb, begin_line, lexeme, end_line);
+			io::Print("{} | {}{}{}", line_nb, begin_line, lexeme, end_line);
 		
 		if (lexeme.is_empty() || lexeme.get_size() == 1)
-			io::print(" | {: <{}}^", "", begin_line.get_size());
+			io::Print(" | {: <{}}^", "", begin_line.get_size());
 		else
-			io::print("{: <{}} | {: <{}}{:~<{}}", "", line_nb_size, "", begin_line.get_size(), "", lexeme.get_size());
+			io::Print("{: <{}} | {: <{}}{:~<{}}", "", line_nb_size, "", begin_line.get_size(), "", lexeme.get_size());
 	}
 
 	template<typename ...Args>
-	void generate_warning(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&& ...args) noexcept
+	void GenerateWarning(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&& ...args) noexcept
 	{
 		if (!args::GlobalArguments->print_warnings)
 			return;
@@ -53,17 +53,17 @@ namespace colt::lang
 		
 		size_t line_nb_size = fmt::formatted_size("{}", line_nb);
 		if (args::GlobalArguments->colored_output)
-			io::print("{} | {}" CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET "{}", line_nb, begin_line, lexeme, end_line);
+			io::Print("{} | {}" CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET "{}", line_nb, begin_line, lexeme, end_line);
 		else
-			io::print("{} | {}{}{}", line_nb, begin_line, lexeme, end_line);
+			io::Print("{} | {}{}{}", line_nb, begin_line, lexeme, end_line);
 		
 		if (lexeme.is_empty() || lexeme.get_size() == 1)
-			io::print("{: <{}} | {: <{}}^", "", line_nb_size, "", begin_line.get_size());
+			io::Print("{: <{}} | {: <{}}^", "", line_nb_size, "", begin_line.get_size());
 		else
-			io::print("{: <{}} | {: <{}}{:~<{}}", "", line_nb_size, "", begin_line.get_size(), "", lexeme.get_size());
+			io::Print("{: <{}} | {: <{}}{:~<{}}", "", line_nb_size, "", begin_line.get_size(), "", lexeme.get_size());
 	}
 	template<typename ...Args>
-	void generate_error(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept
+	void GenerateError(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept
 	{
 		if (!args::GlobalArguments->print_errors)
 			return;
@@ -74,14 +74,14 @@ namespace colt::lang
 
 		size_t line_nb_size = fmt::formatted_size("{}", line_nb);
 		if (args::GlobalArguments->colored_output)
-			io::print("{} | {}" CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET "{}", line_nb, begin_line, lexeme, end_line);
+			io::Print("{} | {}" CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET "{}", line_nb, begin_line, lexeme, end_line);
 		else
-			io::print("{} | {}{}{}", line_nb, begin_line, lexeme, end_line);
+			io::Print("{} | {}{}{}", line_nb, begin_line, lexeme, end_line);
 		
 		if (lexeme.is_empty() || lexeme.get_size() == 1)
-			io::print("{: <{}} | {: <{}}^", "", line_nb_size, "", begin_line.get_size());
+			io::Print("{: <{}} | {: <{}}^", "", line_nb_size, "", begin_line.get_size());
 		else
-			io::print("{: <{}} | {: <{}}{:~<{}}", "", line_nb_size, "", begin_line.get_size(), "", lexeme.get_size());
+			io::Print("{: <{}} | {: <{}}{:~<{}}", "", line_nb_size, "", begin_line.get_size(), "", lexeme.get_size());
 	}
 }
 
