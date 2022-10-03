@@ -2,7 +2,7 @@
 * Contains definition of functions declared in 'colt_scanner.h'.
 */
 
-#include "colt_scanner.h"
+#include "colt_lexer.h"
 
 namespace colt::lang
 {
