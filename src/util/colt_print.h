@@ -25,21 +25,21 @@ namespace colt::io
 	/// @tparam ...Args Pack of types to format
 	/// @param fmt The format string, using {fmt} syntax
 	/// @param ...args The arguments to format
-	constexpr void print_message(fmt::format_string<Args...> fmt, Args&&... args);
+	constexpr void PrintMessage(fmt::format_string<Args...> fmt, Args&&... args);
 
 	template<bool active = true, typename... Args>
 	/// @brief Prints to the standard output
 	/// @tparam ...Args Pack of types to format
 	/// @param fmt The format string, using {fmt} syntax
 	/// @param ...args The arguments to format
-	constexpr void print_warning(fmt::format_string<Args...> fmt, Args&&... args);
+	constexpr void PrintWarning(fmt::format_string<Args...> fmt, Args&&... args);
 
 	template<bool active = true, typename... Args>
 	/// @brief Prints to the standard output
 	/// @tparam ...Args Pack of types to format
 	/// @param fmt The format string, using {fmt} syntax
 	/// @param ...args The arguments to format
-	constexpr void print_error(fmt::format_string<Args...> fmt, Args&&... args);
+	constexpr void PrintError(fmt::format_string<Args...> fmt, Args&&... args);
 
 	/// @brief Used to escape a character being printed.
 	/// Example: print("{}", EscapeChar{'\n'}) -> '\n'
@@ -60,7 +60,7 @@ namespace colt::io
 	}
 
 	template<bool active, typename... Args>
-	constexpr void print_message(fmt::format_string<Args...> fmt, Args && ...args)
+	constexpr void PrintMessage(fmt::format_string<Args...> fmt, Args && ...args)
 	{
 		if constexpr (active)
 		{
@@ -75,7 +75,7 @@ namespace colt::io
 	}
 
 	template<bool active, typename... Args>
-	constexpr void print_warning(fmt::format_string<Args...> fmt, Args && ...args)
+	constexpr void PrintWarning(fmt::format_string<Args...> fmt, Args && ...args)
 	{
 		if constexpr (active)
 		{
@@ -90,7 +90,7 @@ namespace colt::io
 	}
 
 	template<bool active, typename... Args>
-	constexpr void print_error(fmt::format_string<Args...> fmt, Args && ...args)
+	constexpr void PrintError(fmt::format_string<Args...> fmt, Args && ...args)
 	{
 		if constexpr (active)
 		{
