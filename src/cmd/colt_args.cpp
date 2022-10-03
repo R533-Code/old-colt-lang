@@ -38,10 +38,10 @@ namespace colt::args
         print_error_and_exit("Invalid combination for argument '{}'!", argv[current_arg]);
       
       if (global_args.colored_output)
-        io::print(CONSOLE_COLOR_REVERSE "COLT" CONSOLE_COLOR_RESET CONSOLE_FOREGROUND_BRIGHT_MAGENTA " v{}" CONSOLE_COLOR_RESET " on {} ({})",
+        io::Print(CONSOLE_COLOR_REVERSE "COLT" CONSOLE_COLOR_RESET CONSOLE_FOREGROUND_BRIGHT_MAGENTA " v{}" CONSOLE_COLOR_RESET " on {} ({})",
           COLT_VERSION_STRING, COLT_OS_STRING, COLT_CONFIG_STRING);
       else
-        io::print("COLT v{} on {} ({})", COLT_VERSION_STRING, COLT_OS_STRING, COLT_CONFIG_STRING);
+        io::Print("COLT v{} on {} ({})", COLT_VERSION_STRING, COLT_OS_STRING, COLT_CONFIG_STRING);
       std::exit(0);
     }
 
@@ -54,7 +54,7 @@ namespace colt::args
       auto it = find_arg_in_predefined(argv[current_arg]);
       if (it == PredefinedArguments.end())
         print_error_and_exit("Unknown argument!");
-      io::print("{}", it->help);
+      io::Print("{}", it->help);
       std::exit(0);
     }
 
@@ -62,9 +62,9 @@ namespace colt::args
     {
       if (current_arg != 1)
         print_error_and_exit("Invalid combination for argument '{}'!", argv[current_arg]);
-      io::print("List of valid commands:");
+      io::Print("List of valid commands:");
       for (const auto& argument : PredefinedArguments)
-        io::print("  --{}, -{}", argument.name, argument.abrv);
+        io::Print("  --{}, -{}", argument.name, argument.abrv);
       std::exit(0);
     }
 
