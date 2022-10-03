@@ -5,8 +5,8 @@
 #ifndef HG_COLT_MACRO
 #define HG_COLT_MACRO
 
-#include <cstdlib>
-#include <cstdio>
+#include <util/colt_config.h>
+#include <util/colt_print.h>
 
 #if defined(__has_builtin)
 	#if __has_builtin(__builtin_debugtrap)
@@ -24,16 +24,27 @@
 	#endif
 #endif
 
+#if defined(COLT_MSVC)
+	#define COLT_FUNC __FUNCTION__
+#else
+	#define COLT_FUNC __func__
+#endif
+
 #ifdef COLT_DEBUG
 	/// @brief On Debug configuration, asserts that 'cond' is true
-	#define assert_true(cond, err) do { if (!(cond)) { colt_intrinsic_dbreak(); } } while (0)
+	#define assert_true(cond, err) do { \
+			if (!(cond)) \
+			{ \
+				colt::io::print_error("Assertion failure: '" #cond "' evaluated to false in function '"  COLT_FUNC "' on line {}:\nExplanation: " err "\nFile: " __FILE__, __LINE__); \
+				colt_intrinsic_dbreak(); \
+			} } while (0)
 	/// @brief Marks the current branch as unreachable, which aborts if hit on any configuration
-	#define unreachable(err) do { colt_intrinsic_dbreak(); std::abort(); } while (0)
+	#define colt_unreachable(err) do { colt::io::print_error("Unreachable branch hit in function '"  COLT_FUNC "' on line {}.\nFile: " __FILE__, __LINE__); colt_intrinsic_dbreak(); std::abort(); } while (0)
 #else
 	/// @brief On Debug configuration, asserts that 'cond' is true
 	#define assert_true(cond, err)
 	/// @brief Marks the current branch as unreachable, which aborts if hit on any configuration
-	#define unreachable(err) std::abort()
+	#define colt_unreachable(err) std::abort()
 #endif
 
 #endif //!HG_COLT_MACRO
