@@ -24,7 +24,7 @@ namespace colt::lang
 	{
 		if (!args::GlobalArguments->print_messages)
 			return;
-		io::print_message(fmt, std::forward<Args>(args)...);
+		io::PrintMessage(fmt, std::forward<Args>(args)...);
 		
 		StringView begin_line = { line_strv.get_data(), lexeme.get_data() };
 		StringView end_line = { lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };
@@ -46,7 +46,7 @@ namespace colt::lang
 	{
 		if (!args::GlobalArguments->print_warnings)
 			return;
-		io::print_warning(fmt, std::forward<Args>(args)...);
+		io::PrintWarning(fmt, std::forward<Args>(args)...);
 
 		StringView begin_line = { line_strv.get_data(), lexeme.get_data() };
 		StringView end_line = { lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };
@@ -67,7 +67,7 @@ namespace colt::lang
 	{
 		if (!args::GlobalArguments->print_errors)
 			return;
-		io::print_error(fmt, std::forward<Args>(args)...);
+		io::PrintError(fmt, std::forward<Args>(args)...);
 
 		StringView begin_line = { line_strv.get_data(), lexeme.get_data() };
 		StringView end_line = { lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };

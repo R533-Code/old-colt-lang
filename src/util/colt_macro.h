@@ -35,11 +35,11 @@
 	#define assert_true(cond, err) do { \
 			if (!(cond)) \
 			{ \
-				colt::io::print_error("Assertion failure: '" #cond "' evaluated to false in function '"  COLT_FUNC "' on line {}:\nExplanation: " err "\nFile: " __FILE__, __LINE__); \
+				colt::io::PrintError("Assertion failure: '" #cond "' evaluated to false in function '"  COLT_FUNC "' on line {}:\nExplanation: " err "\nFile: " __FILE__, __LINE__); \
 				colt_intrinsic_dbreak(); \
 			} } while (0)
 	/// @brief Marks the current branch as unreachable, which aborts if hit on any configuration
-	#define colt_unreachable(err) do { colt::io::print_error("Unreachable branch hit in function '"  COLT_FUNC "' on line {}.\nFile: " __FILE__, __LINE__); colt_intrinsic_dbreak(); std::abort(); } while (0)
+	#define colt_unreachable(err) do { colt::io::PrintError("Unreachable branch hit in function '"  COLT_FUNC "' on line {}.\nFile: " __FILE__, __LINE__); colt_intrinsic_dbreak(); std::abort(); } while (0)
 #else
 	/// @brief On Debug configuration, asserts that 'cond' is true
 	#define assert_true(cond, err)

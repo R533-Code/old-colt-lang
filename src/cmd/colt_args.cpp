@@ -17,7 +17,7 @@ namespace colt::args
       {				
         if (std::error_code code; !std::filesystem::exists(arg_view.get_data(), code))
         {
-          io::print_error("File at path '{}' does not exist!", arg_view);
+          io::PrintError("File at path '{}' does not exist!", arg_view);
           std::exit(1);
         }
         details::global_args.file_in = arg_view.get_data();
