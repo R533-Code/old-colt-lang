@@ -47,7 +47,7 @@ namespace colt::lang
 		};
 
 		/// @brief Helper for dyn_cast and is_a
-		static constexpr ExprID classof_v = EXPR_BASE;
+		static constexpr ExprID classof_v = EXPR_BASE;		
 
 	private:
 
@@ -55,9 +55,10 @@ namespace colt::lang
 		ExprID ID;
 
 	public:
-		/// @brief No default constructor
 		Expr() = delete;
-		
+		Expr(const Expr&) = delete;
+		Expr(Expr&&) = delete;
+
 		/// @brief Constructor
 		/// @param type The type of the expression	
 		Expr(ExprID ID) noexcept
@@ -68,7 +69,9 @@ namespace colt::lang
 
 		/// @brief Returns the actual type of the Expr
 		/// @return The ExprID of the current expression
-		ExprID classof() const noexcept { return ID; }
+		constexpr ExprID classof() const noexcept { return ID; }
+
+		friend bool operator==(const Expr& lhs, const Expr& rhs) noexcept;
 	};
 
 	/// @brief Represents a literal expression
