@@ -33,6 +33,7 @@
 #include <colt/String.h>
 #include <colt/Map.h>
 #include <colt/UniquePtr.h>
+#include <colt/Set.h>
 
 //Includes
 #include <util/colt_config.h>
