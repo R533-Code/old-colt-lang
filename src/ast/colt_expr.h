@@ -77,6 +77,13 @@ namespace colt::lang
 		friend bool operator==(const Expr& lhs, const Expr& rhs) noexcept;
 	};
 
+	/// @brief Compares 2 non-null UniquePtr of Expr.
+	/// Precondition: lhs && rhs
+	/// @param lhs The left hand side
+	/// @param rhs The right hand side
+	/// @return True if equal
+	bool operator==(const UniquePtr<Expr>& lhs, const UniquePtr<Expr>& rhs) noexcept;	
+
 	/// @brief Represents a literal expression
 	class LiteralExpr
 		final : public Expr
@@ -516,6 +523,11 @@ namespace colt::lang
 		/// @return The expression to converse
 		PTR<const Expr> get_else_statement() const noexcept { return else_stmt; }
 	};
+}
+
+namespace colt
+{
+	size_t hash(const lang::Expr& expr) noexcept;
 }
 
 #endif //!HG_COLT_EXPR
