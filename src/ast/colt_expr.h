@@ -10,6 +10,9 @@
 
 namespace colt::lang
 {
+	//Forward declaration
+	class COLTContext;
+
 	/// @brief Abstract base class of all expressions
 	class Expr
 	{
@@ -101,6 +104,8 @@ namespace colt::lang
 		/// @brief Returns the value of the literal expression
 		/// @return QWORD representing the value
 		QWORD get_value() const noexcept { return value; }
+
+		static PTR<Expr> CreateExpr(QWORD value, COLTContext& ctx) noexcept;
 	};
 
 	/// @brief Represents a unary operation applied on an expression

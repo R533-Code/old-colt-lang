@@ -1,4 +1,5 @@
 #include "colt_expr.h"
+#include "context/colt_context.h"
 
 namespace colt::lang
 {
@@ -87,6 +88,11 @@ namespace colt::lang
 		default: //Expr::EXPR_BASE is an error
 			colt_unreachable("Invalid classof()");
     }
+  }
+  
+	PTR<Expr> LiteralExpr::CreateExpr(QWORD value, COLTContext& ctx) noexcept
+  {
+		return ctx.add_expr(make_unique<LiteralExpr>(value));
   }
 }
 
