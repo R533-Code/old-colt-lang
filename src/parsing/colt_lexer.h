@@ -23,7 +23,7 @@ namespace colt::lang
 		QWORD parsed_value = {};
 
 		/// @brief Temporary buffer for parsing
-		String<> temp_str = {};
+		String temp_str = {};
 
 		/// @brief The offset to the current character from the string
 		size_t offset = 0;
