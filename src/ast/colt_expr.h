@@ -6,6 +6,7 @@
 #define HG_COLT_EXPR
 
 #include <util/colt_pch.h>
+#include <type/colt_type.h>
 #include <ast/colt_operators.h>
 
 namespace colt::lang
