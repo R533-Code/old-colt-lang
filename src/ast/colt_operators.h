@@ -11,7 +11,7 @@
 namespace colt::lang
 {
 	/// @brief Possible unary operator
-	enum UnaryOperator
+	enum class UnaryOperator
 	{
 		/// @brief ++(Expr)
 		OP_PRE_INCREMENT,
@@ -42,7 +42,7 @@ namespace colt::lang
 	UnaryOperator TokenToUnaryOperator(Token tkn, bool is_post) noexcept;
 
 	/// @brief Possible binary operators
-	enum BinaryOperator
+	enum class BinaryOperator
 	{
 		/*********** ARITHMETIC ***********/
 
