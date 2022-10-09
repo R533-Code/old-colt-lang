@@ -3,9 +3,8 @@
 
 namespace colt::lang
 {
-  bool colt::lang::operator==(const Expr& lhs, const Expr& rhs) noexcept
+  bool operator==(const Expr& lhs, const Expr& rhs) noexcept
   {
-    //TODO: add type check for types
     if (lhs.classof() != rhs.classof())
       return false;
 
@@ -81,7 +80,9 @@ namespace colt::lang
     }
     case Expr::EXPR_SCOPE:
     {
-      //TODO: add operators
+      auto lhs_p = static_cast<const ScopeExpr*>(&lhs);
+      auto rhs_p = static_cast<const ScopeExpr*>(&rhs);
+      return lhs_p->get_body_array() == rhs_p->get_body_array();
     }
 
     case Expr::EXPR_FN_CALL:
@@ -92,7 +93,10 @@ namespace colt::lang
 
   bool operator==(const UniquePtr<Expr>& lhs, const UniquePtr<Expr>& rhs) noexcept
   {
-    assert(lhs && rhs && "Invalid pointer to comparison!");
+    if (lhs.get_ptr() == rhs.get_ptr())
+      return true;
+    if (!lhs || !rhs)
+      return false;
     return *lhs == *rhs;
   }
   
@@ -237,8 +241,7 @@ namespace colt
     }
     case Expr::EXPR_SCOPE:
     {
-      //TODO: add operators
-      return 0;
+      return GetHash(static_cast<const ScopeExpr*>(&expr)->get_body_array());
     }
 
     case Expr::EXPR_FN_CALL:

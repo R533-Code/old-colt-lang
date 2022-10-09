@@ -78,8 +78,7 @@ namespace colt::lang
     friend bool operator==(const Expr& lhs, const Expr& rhs) noexcept;
   };
 
-  /// @brief Compares 2 non-null UniquePtr of Expr.
-  /// Precondition: lhs && rhs
+  /// @brief Compares 2 UniquePtr of Expr.
   /// @param lhs The left hand side
   /// @param rhs The right hand side
   /// @return True if equal
