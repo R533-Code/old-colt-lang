@@ -107,17 +107,17 @@ namespace colt::lang
   
   PTR<Expr> UnaryExpr::CreateExpr(Token tkn, PTR<Expr> child, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<UnaryExpr>(TokenToUnaryOperator(tkn, false), child));
+    return ctx.add_expr(make_unique<UnaryExpr>(tkn, child, false));
   }
 
   PTR<Expr> UnaryExpr::CreateExpr(Token tkn, bool is_post, PTR<Expr> child, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<UnaryExpr>(TokenToUnaryOperator(tkn, is_post), child));
+    return ctx.add_expr(make_unique<UnaryExpr>(tkn, child, is_post));
   }
   
   PTR<Expr> BinaryExpr::CreateExpr(PTR<Expr> lhs, Token op, PTR<Expr> rhs, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<BinaryExpr>(lhs, TokenToBinaryOperator(op), rhs));
+    return ctx.add_expr(make_unique<BinaryExpr>(lhs, op, rhs));
   }
   
   PTR<Expr> ConvertExpr::CreateExpr(PTR<Expr> to_convert, COLTContext& ctx) noexcept
