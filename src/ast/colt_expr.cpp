@@ -100,79 +100,85 @@ namespace colt::lang
     return *lhs == *rhs;
   }
   
-  PTR<Expr> LiteralExpr::CreateExpr(QWORD value, COLTContext& ctx) noexcept
+  PTR<Expr> LiteralExpr::CreateExpr(QWORD value, PTR<const Type> type, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<LiteralExpr>(value));
+    return ctx.add_expr(make_unique<LiteralExpr>(value, type));
   }
   
-  PTR<Expr> UnaryExpr::CreateExpr(Token tkn, PTR<Expr> child, COLTContext& ctx) noexcept
+  PTR<Expr> UnaryExpr::CreateExpr(PTR<const Type> type, Token tkn, PTR<Expr> child, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<UnaryExpr>(tkn, child, false));
+    return ctx.add_expr(make_unique<UnaryExpr>(type, tkn, child, false));
   }
 
-  PTR<Expr> UnaryExpr::CreateExpr(Token tkn, bool is_post, PTR<Expr> child, COLTContext& ctx) noexcept
+  PTR<Expr> UnaryExpr::CreateExpr(PTR<const Type> type, Token tkn, bool is_post, PTR<Expr> child, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<UnaryExpr>(tkn, child, is_post));
+    return ctx.add_expr(make_unique<UnaryExpr>(type, tkn, child, is_post));
   }
   
-  PTR<Expr> BinaryExpr::CreateExpr(PTR<Expr> lhs, Token op, PTR<Expr> rhs, COLTContext& ctx) noexcept
+  PTR<Expr> BinaryExpr::CreateExpr(PTR<const Type> type, PTR<Expr> lhs, Token op, PTR<Expr> rhs, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<BinaryExpr>(lhs, op, rhs));
+    return ctx.add_expr(make_unique<BinaryExpr>(type, lhs, op, rhs));
   }
   
-  PTR<Expr> ConvertExpr::CreateExpr(PTR<Expr> to_convert, COLTContext& ctx) noexcept
+  PTR<Expr> ConvertExpr::CreateExpr(PTR<const Type> type, PTR<Expr> to_convert, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<ConvertExpr>(to_convert));
+    return ctx.add_expr(make_unique<ConvertExpr>(type, to_convert));
   }
   
-  PTR<Expr> VarDeclExpr::CreateExpr(StringView name, PTR<Expr> init_value, bool is_global, COLTContext& ctx) noexcept
+  PTR<Expr> VarDeclExpr::CreateExpr(PTR<const Type> type, StringView name, PTR<Expr> init_value, bool is_global, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<VarDeclExpr>(name, init_value, is_global));
+    return ctx.add_expr(make_unique<VarDeclExpr>(type, name, init_value, is_global));
   }
   
-  PTR<Expr> VarReadExpr::CreateExpr(StringView name, u64 ID, COLTContext& ctx) noexcept
+  PTR<Expr> VarReadExpr::CreateExpr(PTR<const Type> type, StringView name, u64 ID, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<VarReadExpr>(name, ID));
+    return ctx.add_expr(make_unique<VarReadExpr>(type, name, ID));
   }
   
-  PTR<Expr> VarReadExpr::CreateExpr(StringView name, COLTContext& ctx) noexcept
+  PTR<Expr> VarReadExpr::CreateExpr(PTR<const Type> type, StringView name, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<VarReadExpr>(name));
+    return ctx.add_expr(make_unique<VarReadExpr>(type, name));
   }
   
-  PTR<Expr> VarWriteExpr::CreateExpr(StringView name, PTR<Expr> value, u64 ID, COLTContext& ctx) noexcept
+  PTR<Expr> VarWriteExpr::CreateExpr(PTR<const Type> type, StringView name, PTR<Expr> value, u64 ID, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<VarWriteExpr>(name, value, ID));
+    return ctx.add_expr(make_unique<VarWriteExpr>(type, name, value, ID));
   }
   
-  PTR<Expr> VarWriteExpr::CreateExpr(StringView name, PTR<Expr> value, COLTContext& ctx) noexcept
+  PTR<Expr> VarWriteExpr::CreateExpr(PTR<const Type> type, StringView name, PTR<Expr> value, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<VarWriteExpr>(name, value));
+    return ctx.add_expr(make_unique<VarWriteExpr>(type, name, value));
   }
   
   PTR<Expr> FnReturnExpr::CreateExpr(PTR<Expr> to_ret, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<FnReturnExpr>(to_ret));
+    return ctx.add_expr(make_unique<FnReturnExpr>(
+      ctx.add_type(make_unique<VoidType>()), to_ret
+      ));
   }
   
-  PTR<Expr> FnDefExpr::CreateExpr(StringView name, SmallVector<StringView, 4>&& arguments_name, COLTContext& ctx) noexcept
+  PTR<Expr> FnDefExpr::CreateExpr(PTR<const Type> type, StringView name, SmallVector<StringView, 4>&& arguments_name, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<FnDefExpr>(name, std::move(arguments_name)));
+    return ctx.add_expr(make_unique<FnDefExpr>(type, name, std::move(arguments_name)));
   }
   
-  PTR<Expr> FnDefExpr::CreateExpr(StringView name, SmallVector<StringView, 4>&& arguments_name, PTR<Expr> body, COLTContext& ctx) noexcept
+  PTR<Expr> FnDefExpr::CreateExpr(PTR<const Type> type, StringView name, SmallVector<StringView, 4>&& arguments_name, PTR<Expr> body, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<FnDefExpr>(name, std::move(arguments_name), body));
+    return ctx.add_expr(make_unique<FnDefExpr>(type, name, std::move(arguments_name), body));
   }
   
   PTR<Expr> ScopeExpr::CreateExpr(Vector<PTR<Expr>>&& body, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<ScopeExpr>(std::move(body)));
+    return ctx.add_expr(make_unique<ScopeExpr>(
+      ctx.add_type(make_unique<VoidType>()), std::move(body)
+      ));
   }
   
   PTR<Expr> ConditionExpr::CreateExpr(PTR<Expr> if_cond, PTR<Expr> if_stmt, PTR<Expr> else_stmt, COLTContext& ctx) noexcept
   {    
-    return ctx.add_expr(make_unique<ConditionExpr>(if_cond, if_stmt, else_stmt));
+    return ctx.add_expr(make_unique<ConditionExpr>(
+      ctx.add_type(make_unique<VoidType>()), if_cond, if_stmt, else_stmt
+      ));
   }
 }
 
