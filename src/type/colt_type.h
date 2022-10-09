@@ -42,7 +42,7 @@ namespace colt::lang
     /// @brief The ID of the expression
     TypeID ID;
     /// @brief True if the type is mutable
-    bool is_mutable;
+    bool is_mut;
 
   public:
     Type() = delete;
@@ -52,7 +52,7 @@ namespace colt::lang
     /// @brief Constructor
     /// @param type The type of the expression	
     constexpr Type(TypeID ID, bool is_mut) noexcept
-      : ID(ID), is_mutable(is_mut) {}
+      : ID(ID), is_mut(is_mut) {}
 
     /// @brief Destructor
     virtual ~Type() noexcept = default;
@@ -64,7 +64,7 @@ namespace colt::lang
     /// @brief Check if the type is mutable.
     /// For VoidType or FnType, returns false.
     /// @return True if the type is mutable
-    constexpr bool is_mutable() const noexcept { return is_mutable; }
+    constexpr bool is_mutable() const noexcept { return is_mut; }
     /// @brief Check if the type is void
     /// @return True if is void
     constexpr bool is_void() const noexcept { return ID == TYPE_VOID; }
@@ -162,16 +162,15 @@ namespace colt::lang
     BuiltInID builtin_ID;
     /// @brief View of array of possible binary operators
     ContiguousView<BinaryOperator> valid_op;
-
-    constexpr BuiltInType(BuiltInID builtinID, bool is_mut, ContiguousView<BinaryOperator> valid_op) noexcept
-      : Type(TYPE_BUILTIN, is_mut), builtin_ID(builtinID), valid_op(valid_op) {}
   
   public:
     /// @brief No default constructor
     BuiltInType() = delete;
-
     /// @brief Destructor
     ~BuiltInType() noexcept override = default;
+
+    constexpr BuiltInType(BuiltInID builtinID, bool is_mut, ContiguousView<BinaryOperator> valid_op) noexcept
+      : Type(TYPE_BUILTIN, is_mut), builtin_ID(builtinID), valid_op(valid_op) {}
 
     constexpr BuiltInID get_builtin_id() const noexcept { return builtin_ID; }
     constexpr bool is_integral() const noexcept { return builtin_ID < F32; }
@@ -212,18 +211,16 @@ namespace colt::lang
     /// @brief The type pointed to
     PTR<Type> ptr_to;
 
+  public:
+    /// @brief No default constructor
+    PtrType() = delete;
+    /// @brief Destructor
+    ~PtrType() noexcept override = default;
     /// @brief Creates a pointer type
     /// @param is_mut True if the pointer is mutable
     /// @param ptr_to The type pointed by the pointer
     constexpr PtrType(bool is_mut, PTR<Type> ptr_to) noexcept
       : Type(TYPE_PTR, is_mut), ptr_to(ptr_to) {}
-
-  public:
-    /// @brief No default constructor
-    PtrType() = delete;
-
-    /// @brief Destructor
-    ~PtrType() noexcept override = default;
 
     /// @brief Returns the type pointed to by the pointer
     /// @return The type pointed to by the pointer
@@ -256,19 +253,16 @@ namespace colt::lang
     /// @brief The function return type
     PTR<Type> return_type;
 
+  public:
+    /// @brief No default constructor
+    FnType() = delete;
+    /// @brief Destructor
+    ~FnType() noexcept override = default;
     /// @brief Creates a function type
     /// @param return_type Return type of the function
     /// @param args_type Parameters' type
     constexpr FnType(PTR<Type> return_type, SmallVector<PTR<Type>>&& args_type) noexcept
       : Type(TYPE_FN, false), args_type(std::move(args_type)), return_type(return_type) {}
-
-  public:
-
-    /// @brief No default constructor
-    FnType() = delete;
-
-    /// @brief Destructor
-    ~FnType() noexcept override = default;
 
     /// @brief Returns the return type of the function
     /// @return Return type of the function
