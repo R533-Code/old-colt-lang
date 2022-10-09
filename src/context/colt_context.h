@@ -10,7 +10,7 @@ namespace colt::lang
 {
   class COLTContext
   {
-    //StableSet<UniquePtr<Type>> type_set;
+    StableSet<UniquePtr<Type>> type_set;
     StableSet<UniquePtr<Expr>> expr_set;
 
   public:
@@ -18,6 +18,11 @@ namespace colt::lang
     PTR<Expr> add_expr(UniquePtr<Expr>&& expr) noexcept
     {
       return expr_set.insert(std::move(expr)).first->get_ptr();
+    }
+
+    PTR<Type> add_type(UniquePtr<Type>&& type) noexcept
+    {
+      return type_set.insert(std::move(type)).first->get_ptr();
     }
   };
 }
