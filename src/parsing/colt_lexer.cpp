@@ -122,7 +122,8 @@ namespace colt::lang
 		const char* line_end = to_scan.get_data() + (lexeme_begin - static_cast<size_t>(offset == to_scan.get_size()));
 		while (*line_end != '\n' && *line_end != '\0')
 			++line_end;
-		line_end -= static_cast<size_t>(*line_end == '\n');
+		//a StringView's end is non-inclusive, so there is no need to change line_end
+		//depending on if it is a '\n' or not.
 
 		return { line_begin, line_end };
 	}
