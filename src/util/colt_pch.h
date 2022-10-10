@@ -27,6 +27,7 @@
 #include <fmt/ranges.h>
 
 //Colt-Structs includes
+#define COLT_USE_FMT
 #include <colt/Expected.h>
 #include <colt/Optional.h>
 #include <colt/Vector.h>
