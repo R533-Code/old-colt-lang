@@ -9,7 +9,7 @@ int main(int argc, const char** argv)
   //Populates GlobalArguments
   args::ParseArguments(argc, argv);
 
-  char buffer[2500];
+  char buffer[2048];
   while (!feof(stdin))
   {
     fgets(buffer, 2500, stdin);
