@@ -10,11 +10,13 @@ int main(int argc, const char** argv)
   args::ParseArguments(argc, argv);
 
   char buffer[2048];
-  while (!feof(stdin))
+  for (;;)
   {
     fgets(buffer, 2048, stdin);
-    lang::Lexer lexer = { StringView{ buffer, WithNUL } };
+    if (feof(stdin))
+      break;
 
+    lang::Lexer lexer = { StringView{ buffer, WithNUL } };
     lang::Token tkn = lexer.get_next_token();
     while (tkn != lang::TKN_EOF)
       tkn = lexer.get_next_token();
