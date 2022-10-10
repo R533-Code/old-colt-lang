@@ -12,7 +12,7 @@ int main(int argc, const char** argv)
   char buffer[2048];
   while (!feof(stdin))
   {
-    fgets(buffer, 2500, stdin);
+    fgets(buffer, 2048, stdin);
     lang::Lexer lexer = { StringView{ buffer, WithNUL } };
 
     lang::Token tkn = lexer.get_next_token();
