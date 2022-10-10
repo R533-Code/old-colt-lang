@@ -56,7 +56,10 @@ namespace colt::lang
 		/// @brief Default construct the Lexer
 		Lexer() noexcept = default;
 		Lexer(StringView strv) noexcept
-			: to_scan(strv) {}
+			: to_scan(strv)
+		{
+			assert_true(strv.get_back() == '\n', "The StringView should be NUL-terminated!");
+		}
 		~Lexer() noexcept = default;
 		Lexer(Lexer&&) noexcept = default;
 		Lexer& operator=(Lexer&&) noexcept = default;
