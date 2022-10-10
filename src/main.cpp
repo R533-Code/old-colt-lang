@@ -13,7 +13,7 @@ int main(int argc, const char** argv)
   while (!feof(stdin))
   {
     fgets(buffer, 2500, stdin);
-    lang::Lexer lexer = { buffer };
+    lang::Lexer lexer = { StringView{ buffer, WithNUL } };
 
     lang::Token tkn = lexer.get_next_token();
     while (tkn != lang::TKN_EOF)
