@@ -622,7 +622,6 @@ namespace colt::lang
     PTR<Expr> if_stmt;
     /// @brief Else statement, can be null
     PTR<Expr> else_stmt;
-
   
   public:
     //No default copy constructor 
@@ -636,7 +635,10 @@ namespace colt::lang
     /// @param if_stmt The statement to evaluate if the if condition is true
     /// @param else_stmt The else statement, which can be null
     ConditionExpr(PTR<const Type> type, PTR<Expr> if_cond, PTR<Expr> if_stmt, PTR<Expr> else_stmt) noexcept
-      : Expr(EXPR_CONDITION, type), if_cond(if_cond), if_stmt(if_stmt), else_stmt(else_stmt) {}
+      : Expr(EXPR_CONDITION, type), if_cond(if_cond), if_stmt(if_stmt), else_stmt(else_stmt)
+    {
+      assert(if_cond->get_type()->is_builtin());
+    }
 
     /// @brief Get the expression to convert
     /// @return The expression to converse
