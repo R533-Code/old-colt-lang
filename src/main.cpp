@@ -19,6 +19,7 @@ int main(int argc, const char** argv)
     fgets(buffer, 2048, stdin);
     if (feof(stdin))
       break;
+
     lang::COLTContext ctx;
     if (auto AST = lang::CreateAST({ buffer, WithNUL }, ctx))
     {
