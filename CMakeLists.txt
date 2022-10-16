@@ -105,3 +105,53 @@ if (DOXYGEN_FOUND)
 else (DOXYGEN_FOUND)
 	message(WARNING "Doxygen was not found! Doxygen need to be installed to generate the documentation!")
 endif (DOXYGEN_FOUND)
+
+message(STATUS "Searching for tests...")
+# Load tests
+file(GLOB_RECURSE ColtTestsPath "resources/tests/*.ct")
+list(LENGTH ColtTestsPath testCount)
+message(STATUS "Found " ${testCount} " tests.")
+
+# Testing for CTest
+enable_testing()
+
+# TESTING:
+# Each file in resources/tests/ that ends with .ct
+# is a file to try to run.
+# The first line of these files is a comment '//.*'
+# which gives the regex to test the output of interpreting
+# the file against.
+foreach(testPath ${ColtTestsPath})
+	# Read all the lines of the file
+	file(STRINGS ${testPath} testLines)
+	# Store the first line
+	list(GET testLines 0 firstLine)
+	# Pop the 2 first characters which are //
+	string(REPLACE "//" "" RegexTest ${firstLine})
+	# Strip new lines from end of line
+	string(REGEX REPLACE "\n$" "" RegexTest "${RegexTest}")
+
+	# Get test name
+	get_filename_component(testName ${testPath} NAME_WE)
+	
+	# Get folder before test name
+	get_filename_component(testFolder_temp "${testPath}/.." ABSOLUTE)
+	
+	# Get position of last '/'
+	string(FIND "${testFolder_temp}" "/" testFolderNameBegin REVERSE)
+	# Increment past '/'
+	MATH(EXPR testFolderNameBegin "${testFolderNameBegin}+1")
+	# Obtain the last directory name by striping the part before the last '/'
+	string(SUBSTRING "${testFolder_temp}" "${testFolderNameBegin}" "-1" testFolderName)
+	# Replace any spaces in the directory name by an '_'
+	string(REPLACE " " "_" testFolderName "${testFolderName}")
+	
+	string(TOUPPER ${testName} testName)
+	string(TOUPPER ${testFolderName} testFolderName)
+	# Example of name: resources/tests/syntax/binary.ct -> SYNTAX_BINARY
+	set(testName "${testFolderName}_${testName}")
+
+	# Create test
+	add_test(NAME "${testName}" COMMAND ${COLT_EXECUTABLE_NAME} -C ${testPath})
+	set_property(TEST ${testName} PROPERTY PASS_REGULAR_EXPRESSION ${RegexTest})
+endforeach()
