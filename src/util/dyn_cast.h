@@ -62,7 +62,20 @@ namespace colt
     static constexpr bool is_dyn_castable_v = is_dyn_castable<T>::value;
   }
 
+  template<typename Target, typename Input>
+  [[nodiscard]]
+  /// @brief Short-hand for static_cast<Target>(Input)
+  /// @tparam Target The resulting type
+  /// @tparam Input The type to convert from
+  /// @param input The value to convert
+  /// @return static_cast<Target>(input)
+  static constexpr Target as(Input&& input)
+  {
+    return static_cast<Target>(std::forward<Input>(input));
+  }
+
   template<typename To, typename From>
+  [[nodiscard]]
   /// @brief Try to cast 'ptr' from 'From*' to 'To*'.
   /// This is useful for safe down cast (casting from base to derived).
   /// Both 'To' and 'From' should be pointers.
@@ -98,6 +111,7 @@ namespace colt
   }
 
   template<typename To, typename From>
+  [[nodiscard]]
   /// @brief Try to cast 'ptr' from 'From*' to 'To*'.
   /// This is useful for safe down cast (casting from base to derived).
   /// Both 'To' and 'From' should be pointers.
@@ -133,6 +147,7 @@ namespace colt
   }
 
   template<typename To, typename From>
+  [[nodiscard]]
   /// @brief Check if a pointer's real type is 'To'.
   /// Useful for getting the type of pointer in inheritances.
   /// Both 'To' and 'From' should be pointers.
@@ -166,6 +181,7 @@ namespace colt
   }
 
   template<typename To, typename From>
+  [[nodiscard]]
   /// @brief Check if a pointer's real type is 'To'.
   /// Useful for getting the type of pointer in inheritances.
   /// Both 'To' and 'From' should be pointers.
