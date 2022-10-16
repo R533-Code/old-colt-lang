@@ -37,6 +37,8 @@ namespace colt::lang
 			end_line = StringView{ lexeme.get_data(), lexeme.get_data() };
 			begin_line = line_strv;
 		}
+		else
+			end_line = StringView{ lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };
 		
 		size_t line_nb_size = fmt::formatted_size("{}", line_nb);
 		if (args::GlobalArguments->colored_output)
@@ -68,6 +70,8 @@ namespace colt::lang
 			end_line = StringView{ lexeme.get_data(), lexeme.get_data() };
 			begin_line = line_strv;
 		}
+		else
+			end_line = StringView{ lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };
 		
 		size_t line_nb_size = fmt::formatted_size("{}", line_nb);
 		if (args::GlobalArguments->colored_output)
@@ -88,7 +92,7 @@ namespace colt::lang
 		io::PrintError(fmt, std::forward<Args>(args)...);
 
 		StringView begin_line = { line_strv.get_data(), lexeme.get_data() };
-		StringView end_line = { lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };
+		StringView end_line;
 		
 		//If lexeme.get_size() == 0, then the lexeme will be outside of the line_strv:
 		//This is because the only case where the lexeme is empty is due to reaching
@@ -98,6 +102,8 @@ namespace colt::lang
 			end_line = StringView{ lexeme.get_data(), lexeme.get_data() };
 			begin_line = line_strv;
 		}
+		else
+			end_line = StringView{ lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };
 
 		size_t line_nb_size = fmt::formatted_size("{}", line_nb);
 		if (args::GlobalArguments->colored_output)
