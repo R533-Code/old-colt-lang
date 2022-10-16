@@ -72,7 +72,7 @@ namespace colt
   /// @tparam From The type to cast from
   /// @param ptr The pointer to try to cast
   /// @return The casted pointer on success, else nullptr
-  static constexpr To dyn_cast(From ptr) noexcept
+  static constexpr std::enable_if_t<std::is_pointer_v<To>, To> dyn_cast(From ptr) noexcept
   {
     static_assert(std::is_pointer_v<From> && std::is_pointer_v<To>,
       "Both types should be pointers!");
@@ -98,6 +98,41 @@ namespace colt
   }
 
   template<typename To, typename From>
+  /// @brief Try to cast 'ptr' from 'From*' to 'To*'.
+  /// This is useful for safe down cast (casting from base to derived).
+  /// Both 'To' and 'From' should be pointers.
+  /// Both types should provide a 'static constexpr <TYPE> classof_v' constant,
+  /// and a 'classof()' method which returns the same type as 'classof_v'.
+  /// @tparam To The type to cast to
+  /// @tparam From The type to cast from
+  /// @param ptr The pointer to try to cast
+  /// @return The casted pointer on success, else nullptr
+  static constexpr std::enable_if_t<!std::is_pointer_v<To>, std::add_pointer_t<To>> dyn_cast(From ptr) noexcept
+  {
+    static_assert(std::is_pointer_v<From>,
+      "'From' should be a pointer!");
+    static_assert(!std::is_same_v<From, To>,
+      "Remove this useless cast!");
+
+    //Types of the pointers
+    using To_t = To;
+    using From_t = typename std::pointer_traits<From>::element_type;
+
+    static_assert(traits::is_dyn_castable_v<To_t> && traits::is_dyn_castable_v<From_t>,
+      "Both types should have a 'static constexpr ... classof_v = ...' and a 'classof()' method!");
+    static_assert(std::is_same_v<decltype(To_t::classof_v), decltype(From_t::classof_v)>,
+      "Type of 'classof_v' of To and From should match!");
+    static_assert(To_t::classof_v != From_t::classof_v,
+      "Value of To::classof_v and From::classof_v cannot be equal!");
+    static_assert(std::is_same_v<decltype(std::declval<To_t>().classof()), decltype(std::declval<From_t>().classof())>,
+      "Return type of 'classof()' of To and From should match!");
+
+    if (ptr->classof() == To_t::classof_v)
+      return static_cast<std::add_pointer_t<To>>(ptr);
+    return nullptr;
+  }
+
+  template<typename To, typename From>
   /// @brief Check if a pointer's real type is 'To'.
   /// Useful for getting the type of pointer in inheritances.
   /// Both 'To' and 'From' should be pointers.
@@ -107,7 +142,7 @@ namespace colt
   /// @tparam From The type to check from
   /// @param ptr The pointer whose real type to compare with 'To'
   /// @return True if 'ptr' is a 'To' and can be safely casted to a 'To'
-  static constexpr bool is_a(From ptr) noexcept
+  static constexpr std::enable_if_t<std::is_pointer_v<To>, bool> is_a(From ptr) noexcept
   {
     static_assert(std::is_pointer_v<From> && std::is_pointer_v<To>,
       "Both types should be pointers!");
@@ -127,6 +162,39 @@ namespace colt
     static_assert(std::is_same_v<decltype(std::declval<To_t>().classof()), decltype(std::declval<From_t>().classof())>,
       "Return type of 'classof()' of To and From should match!");
     
+    return ptr->classof() == To_t::classof_v;
+  }
+
+  template<typename To, typename From>
+  /// @brief Check if a pointer's real type is 'To'.
+  /// Useful for getting the type of pointer in inheritances.
+  /// Both 'To' and 'From' should be pointers.
+  /// Both 'To' and 'From' should provide a 'static constexpr <TYPE> classof_v' constant,
+  /// and a 'classof()' method which returns the same type as 'classof_v'.
+  /// @tparam To The real type to check for
+  /// @tparam From The type to check from
+  /// @param ptr The pointer whose real type to compare with 'To'
+  /// @return True if 'ptr' is a 'To' and can be safely casted to a 'To'
+  static constexpr std::enable_if_t<!std::is_pointer_v<To>, bool> is_a(From ptr) noexcept
+  {
+    static_assert(std::is_pointer_v<From>,
+      "'From' should be a pointer!");
+    static_assert(!std::is_same_v<From, std::add_pointer_t<To>>,
+      "Remove this useless cast!");
+
+    //Types of the pointers
+    using To_t = typename To;
+    using From_t = typename std::pointer_traits<From>::element_type;
+
+    static_assert(traits::is_dyn_castable_v<To_t> && traits::is_dyn_castable_v<From_t>,
+      "Both types should have a 'static constexpr ... classof_v = ...' and a 'classof()' method!");
+    static_assert(std::is_same_v<decltype(To_t::classof_v), decltype(From_t::classof_v)>,
+      "Type of 'classof_v' of To and From should match!");
+    static_assert(To_t::classof_v != From_t::classof_v,
+      "Value of To::classof_v and From::classof_v cannot be equal!");
+    static_assert(std::is_same_v<decltype(std::declval<To_t>().classof()), decltype(std::declval<From_t>().classof())>,
+      "Return type of 'classof()' of To and From should match!");
+
     return ptr->classof() == To_t::classof_v;
   }
 }
