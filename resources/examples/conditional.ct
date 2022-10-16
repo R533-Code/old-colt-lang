@@ -1,0 +1,12 @@
+import std;
+
+main() {
+  var a = 10i8;
+  if a == 10i8 {
+    std::print("{} is '{}'", 'a', a);
+  } elif a < 10i8 {
+    std::print("{} is not equal to 10!", 'a');
+  } else {
+    std::print("Hello!");
+  }
+}
