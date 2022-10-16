@@ -81,29 +81,42 @@ namespace colt::lang::details
     {
     break; case TKN_BOOL_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateBool(true, ctx), ctx);
+
     break; case TKN_U8_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU8(true, ctx), ctx);
+      consume_current_tkn();
     break; case TKN_U16_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU16(true, ctx), ctx);
+      consume_current_tkn();
     break; case TKN_U32_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU32(true, ctx), ctx);
+      consume_current_tkn();
     break; case TKN_U64_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU64(true, ctx), ctx);
+      consume_current_tkn();
     break; case TKN_I8_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI8(true, ctx), ctx);
+      consume_current_tkn();
     break; case TKN_I16_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI16(true, ctx), ctx);
+      consume_current_tkn();
     break; case TKN_I32_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI32(true, ctx), ctx);
+      consume_current_tkn();
     break; case TKN_I64_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI64(true, ctx), ctx);
+      consume_current_tkn();
     break; case TKN_FLOAT_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF32(true, ctx), ctx);
+      consume_current_tkn();
     break; case TKN_DOUBLE_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF64(true, ctx), ctx);
+      consume_current_tkn();
     break; case TKN_STRING_L:      
       to_ret = ErrorExpr::CreateExpr(ctx);
+      consume_current_tkn();
     break; case TKN_CHAR_L:
+      consume_current_tkn();
       to_ret = ErrorExpr::CreateExpr(ctx);
 
       break;
@@ -121,6 +134,7 @@ namespace colt::lang::details
       to_ret = parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0));
     
     break; case TKN_IDENTIFIER:
+      //consume_current_tkn();
       to_ret = ErrorExpr::CreateExpr(ctx);
 
     break; case TKN_ERROR: //Lexer will have generated an error
@@ -132,8 +146,6 @@ namespace colt::lang::details
       gen_error_expr("Expected an expression!");
       return ErrorExpr::CreateExpr(ctx);
     }
-    //consume the literal
-    consume_current_tkn();
 
     //Post-unary operators
     if (current_tkn == TKN_PLUS_PLUS || current_tkn == TKN_MINUS_MINUS)
