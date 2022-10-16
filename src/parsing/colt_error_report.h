@@ -28,6 +28,15 @@ namespace colt::lang
 		
 		StringView begin_line = { line_strv.get_data(), lexeme.get_data() };
 		StringView end_line = { lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };
+
+		//If lexeme.get_size() == 0, then the lexeme will be outside of the line_strv:
+		//This is because the only case where the lexeme is empty is due to reaching
+		//the last lexeme.
+		if (lexeme.get_size() == 0)
+		{
+			end_line = StringView{ lexeme.get_data(), lexeme.get_data() };
+			begin_line = line_strv;
+		}
 		
 		size_t line_nb_size = fmt::formatted_size("{}", line_nb);
 		if (args::GlobalArguments->colored_output)
@@ -50,6 +59,15 @@ namespace colt::lang
 
 		StringView begin_line = { line_strv.get_data(), lexeme.get_data() };
 		StringView end_line = { lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };
+
+		//If lexeme.get_size() == 0, then the lexeme will be outside of the line_strv:
+		//This is because the only case where the lexeme is empty is due to reaching
+		//the last lexeme.
+		if (lexeme.get_size() == 0)
+		{
+			end_line = StringView{ lexeme.get_data(), lexeme.get_data() };
+			begin_line = line_strv;
+		}
 		
 		size_t line_nb_size = fmt::formatted_size("{}", line_nb);
 		if (args::GlobalArguments->colored_output)
@@ -71,6 +89,15 @@ namespace colt::lang
 
 		StringView begin_line = { line_strv.get_data(), lexeme.get_data() };
 		StringView end_line = { lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };
+		
+		//If lexeme.get_size() == 0, then the lexeme will be outside of the line_strv:
+		//This is because the only case where the lexeme is empty is due to reaching
+		//the last lexeme.
+		if (lexeme.get_size() == 0)
+		{
+			end_line = StringView{ lexeme.get_data(), lexeme.get_data() };
+			begin_line = line_strv;
+		}
 
 		size_t line_nb_size = fmt::formatted_size("{}", line_nb);
 		if (args::GlobalArguments->colored_output)
