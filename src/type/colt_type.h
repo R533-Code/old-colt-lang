@@ -20,6 +20,8 @@ namespace colt::lang
     {
       /// @brief Type
       TYPE_BASE,
+      /// @brief ErrorType
+      TYPE_ERROR,
       /// @brief VoidType
       TYPE_VOID,
       /// @brief BuiltInType
@@ -80,6 +82,9 @@ namespace colt::lang
     /// @brief Check if the type is built-in
     /// @return True if built-in
     constexpr bool is_builtin() const noexcept { return ID == TYPE_BUILTIN; }
+    /// @brief Check if the type is error
+    /// @return True if error
+    constexpr bool is_error() const noexcept { return ID == TYPE_ERROR; }
 
     /// @brief Compares two Type.
     /// This function dispatches to the right operator== depending on the true
@@ -95,6 +100,26 @@ namespace colt::lang
   /// @param rhs The right hand side
   /// @return True if equal
   bool operator==(const UniquePtr<Type>& lhs, const UniquePtr<Type>& rhs) noexcept;
+
+  class ErrorType
+    final : public Type
+  {
+  public:
+    /// @brief Helper for dyn_cast and is_a
+    static constexpr TypeID classof_v = TYPE_ERROR;
+
+    /// @brief No default constructor
+    constexpr ErrorType() noexcept
+      : Type(TYPE_ERROR, false) {}
+
+    /// @brief Destructor
+    ~ErrorType() noexcept override = default;
+
+    /// @brief Creates a ErrorType
+    /// @param ctx The COLTContext to store the resulting type
+    /// @return Pointer to the created expression
+    static PTR<Type> CreateType(COLTContext& ctx) noexcept;
+  };
 
   class VoidType
     final : public Type
@@ -133,7 +158,7 @@ namespace colt::lang
     };
   
   private:
-    static constexpr BinaryOperator IntegralSupported[] = {
+    static constexpr BinaryOperator IntegralSupported[16] = {
       BinaryOperator::OP_SUM, BinaryOperator::OP_SUB,
       BinaryOperator::OP_MUL, BinaryOperator::OP_DIV,
       BinaryOperator::OP_MOD,
@@ -145,7 +170,7 @@ namespace colt::lang
       BinaryOperator::OP_BIT_LSHIFT, BinaryOperator::OP_BIT_RSHIFT
     };
 
-    static constexpr BinaryOperator FloatingSupported[] = {
+    static constexpr BinaryOperator FloatingSupported[10] = {
       BinaryOperator::OP_SUM, BinaryOperator::OP_SUB,
       BinaryOperator::OP_MUL, BinaryOperator::OP_DIV,
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
@@ -153,7 +178,7 @@ namespace colt::lang
       BinaryOperator::OP_LESS, BinaryOperator::OP_LESS_EQUAL      
     };
 
-    static constexpr BinaryOperator BoolSupported[] = {     
+    static constexpr BinaryOperator BoolSupported[4] = {     
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,      
       BinaryOperator::OP_BOOL_AND, BinaryOperator::OP_BOOL_OR,
     };
@@ -178,6 +203,8 @@ namespace colt::lang
     constexpr bool is_floating() const noexcept { return builtin_ID == F32 || builtin_ID == F64; }
     constexpr bool is_signed_int() const noexcept { return builtin_ID - 5 < I8; }
     constexpr bool is_unsigned_int() const noexcept { return builtin_ID < I8; }
+
+    constexpr bool supports(BinaryOperator op) const noexcept;
 
     static PTR<Type> CreateU8(bool is_mut, COLTContext& ctx) noexcept;
     static PTR<Type> CreateU16(bool is_mut, COLTContext& ctx) noexcept;

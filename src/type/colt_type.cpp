@@ -57,6 +57,16 @@ namespace colt::lang
     return ctx.add_type(make_unique<VoidType>());
   }
   
+  constexpr bool BuiltInType::supports(BinaryOperator op) const noexcept
+  {
+    for (size_t i = 0; i < valid_op.get_size(); i++)
+    {
+      if (valid_op[i] == op)
+        return true;
+    }
+    return false;
+  }
+
   PTR<Type> BuiltInType::CreateU8(bool is_mut, COLTContext& ctx) noexcept
   {
     return ctx.add_type(make_unique<BuiltInType>(BuiltInID::U8, is_mut,
@@ -155,6 +165,11 @@ namespace colt::lang
   PTR<Type> FnType::CreateFn(PTR<Type> return_type, SmallVector<PTR<Type>>&& args_type, COLTContext& ctx) noexcept
   {
     return ctx.add_type(make_unique<FnType>(return_type, std::move(args_type)));
+  }
+  
+  PTR<Type> ErrorType::CreateType(COLTContext& ctx) noexcept
+  {
+    return ctx.add_type(make_unique<ErrorType>());
   }
 }
 
