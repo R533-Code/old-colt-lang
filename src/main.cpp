@@ -1,8 +1,8 @@
 #include <util/colt_pch.h>
-#include <parsing/colt_lexer.h>
 #include <ast/colt_ast.h>
 
 using namespace colt;
+using namespace colt::lang;
 
 int main(int argc, const char** argv)
 {
@@ -20,16 +20,26 @@ int main(int argc, const char** argv)
     if (feof(stdin))
       break;
 
-    lang::COLTContext ctx;
-    if (auto AST = lang::CreateAST({ buffer, WithNUL }, ctx))
+    //Record beginning of compilation
+    auto begin_time = std::chrono::steady_clock::now();
+
+    //Compile
+    COLTContext ctx;
+    auto AST = CreateAST({ buffer, WithNUL }, ctx);
+    
+    //Record end of compilation
+    io::PrintMessage("Finished compilation in {:.6}.",
+      std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - begin_time));
+
+    if (AST)
     {
       io::PrintMessage("Parsed successfully!", buffer);
-      if (is_a<lang::BinaryExpr*>(AST.get_value().expressions.get_back()))
+      if (is_a<BinaryExpr>(AST.get_value().expressions.get_back()))
         io::PrintMessage("Parsed a binary expression!");
     }
     else
     {
       io::PrintError("Parsed unsuccessfully!", buffer);
     }
-  }  
+  }
 }
