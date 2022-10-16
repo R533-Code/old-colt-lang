@@ -180,6 +180,13 @@ namespace colt::lang
       ctx.add_type(make_unique<VoidType>()), if_cond, if_stmt, else_stmt
       ));
   }
+  
+  PTR<Expr> ErrorExpr::CreateExpr(COLTContext& ctx) noexcept
+  {
+    return ctx.add_expr(make_unique<ErrorExpr>(
+      ctx.add_type(make_unique<ErrorType>())
+      ));
+  }
 }
 
 namespace colt

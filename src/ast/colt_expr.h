@@ -24,6 +24,8 @@ namespace colt::lang
     {
       /// @brief Expr
       EXPR_BASE,
+      /// @brief ErrorExpr
+      EXPR_ERROR,
       /// @brief LiteralExpr
       EXPR_LITERAL,
       /// @brief UnaryExpr
@@ -89,6 +91,27 @@ namespace colt::lang
   /// @param rhs The right hand side
   /// @return True if equal
   bool operator==(const UniquePtr<Expr>& lhs, const UniquePtr<Expr>& rhs) noexcept;	
+
+  /// @brief Represents a literal expression
+  class ErrorExpr
+    final : public Expr
+  {
+  public:
+    /// @brief Helper for dyn_cast and is_a
+    static constexpr ExprID classof_v = EXPR_ERROR;
+
+  private:
+    /// @brief No default constructor
+    ErrorExpr(PTR<const Type> type)
+      : Expr(EXPR_ERROR, type) {}
+    /// @brief Destructor
+    ~ErrorExpr() noexcept override = default;
+
+    /// @brief Creates an ErrorExpr
+    /// @param ctx The COLTContext to store the resulting expression
+    /// @return Pointer to the created expression
+    static PTR<Expr> CreateExpr(COLTContext& ctx) noexcept;
+  };
 
   /// @brief Represents a literal expression
   class LiteralExpr
