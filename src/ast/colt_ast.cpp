@@ -150,7 +150,7 @@ namespace colt::lang::details
     //Post-unary operators
     if (current_tkn == TKN_PLUS_PLUS || current_tkn == TKN_MINUS_MINUS)
     {
-      to_ret = UnaryExpr::CreateExpr(to_ret->get_type(), current_tkn, to_ret, ctx);
+      to_ret = UnaryExpr::CreateExpr(to_ret->get_type(), current_tkn, true, to_ret, ctx);
       consume_current_tkn(); //consume the post unary operator
     }
     return to_ret;
