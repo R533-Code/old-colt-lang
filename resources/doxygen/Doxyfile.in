@@ -1,5 +1,5 @@
 OUTPUT_DIRECTORY       = @CMAKE_SOURCE_DIR@/docs/
-INPUT                  = @CMAKE_SOURCE_DIR@/README.md @CMAKE_SOURCE_DIR@/colt-code/src/
+INPUT                  = @CMAKE_SOURCE_DIR@/README.md @CMAKE_SOURCE_DIR@/src/
 EXCLUDE_PATTERNS	   = */colt_config.h
 RECURSIVE			   = YES
 
