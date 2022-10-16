@@ -102,9 +102,10 @@ namespace colt::lang::details
     break; case TKN_DOUBLE_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF64(true, ctx), ctx);
     break; case TKN_STRING_L:      
-      return nullptr;
+      to_ret = ErrorExpr::CreateExpr(ctx);
     break; case TKN_CHAR_L:
-      return nullptr;
+      to_ret = ErrorExpr::CreateExpr(ctx);
+
       break;
     case TKN_AND:          // &(var)
     case TKN_PLUS_PLUS:    // ++(var)
@@ -114,22 +115,32 @@ namespace colt::lang::details
     case TKN_BANG:         // !(any)
     case TKN_MINUS:        // -(any)
     case TKN_PLUS:         // +(any)
-      return parse_unary();
-    case TKN_LEFT_PAREN:
-      //return parse_parenthesis(&AST::parse_binary, static_cast<u8>(0));
-      return nullptr;
-    case TKN_IDENTIFIER:
-      //return handle_variable_read(lexer.get_parsed_identifier());
-      return nullptr;
-    case TKN_ERROR: //Lexer will have generated an error
+      to_ret = parse_unary();
+    
+    break; case TKN_LEFT_PAREN:
+      to_ret = parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0));
+    
+    break; case TKN_IDENTIFIER:
+      to_ret = ErrorExpr::CreateExpr(ctx);
+
+    break; case TKN_ERROR: //Lexer will have generated an error
       consume_current_tkn(); //consume TKN_ERROR
       ++error_count;
-      return nullptr;    // propagate the error
-    default:
+      to_ret = ErrorExpr::CreateExpr(ctx);
+      
+    break; default:
       gen_error_expr("Expected an expression!");
-      return nullptr;
+      return ErrorExpr::CreateExpr(ctx);
     }
-    consume_current_tkn(); //consume the literal
+    //consume the literal
+    consume_current_tkn();
+
+    //Post-unary operators
+    if (current_tkn == TKN_PLUS_PLUS || current_tkn == TKN_MINUS_MINUS)
+    {
+      to_ret = UnaryExpr::CreateExpr(to_ret->get_type(), current_tkn, to_ret, ctx);
+      consume_current_tkn(); //consume the post unary operator
+    }
     return to_ret;
   }
 
@@ -138,7 +149,7 @@ namespace colt::lang::details
     if (precedence == 255) //token was not an operator: error
     {
       gen_error_lexeme("Expected a binary operator!");
-      return nullptr;//ErrorExpr::CreateExpr(ctx);
+      return ErrorExpr::CreateExpr(ctx);
     }
     //Save current expression state
     SavedExprInfo line_state = { *this };
@@ -161,7 +172,7 @@ namespace colt::lang::details
       if (op_precedence == 255) //token was not an operator: error
       {
         gen_error_lexeme("Expected a ';'!");
-        return nullptr;// ErrorExpr::CreateExpr(ctx);
+        return ErrorExpr::CreateExpr(ctx);
       }
 
       //Consume the operator

@@ -131,6 +131,12 @@ namespace colt::lang
 
       /************* EXPRESSION PARSING ************/
 
+      template<typename... Args>
+      /// @brief Parses any Expr enclosed in parenthesis.
+      /// Usage Example: parse_parenthesis(&AST::parse_unary)
+      /// @param method_ptr The method pointer to parse inside the parenthesis
+      PTR<Expr> parse_parenthesis(PTR<Expr>(ASTMaker::*method_ptr)(Args...), Args&&... args) noexcept;
+
       /// @brief Parses a LiteralExpr, VarReadExpr, FnCallExpr, or a UnaryExpr.
       PTR<Expr> parse_primary() noexcept;
 
@@ -143,6 +149,15 @@ namespace colt::lang
       PTR<Expr> parse_unary() noexcept;
 
       /************* ERROR HANDLING HELPERS ************/
+
+      template<typename... Args>
+      /// @brief Validates that the current token is 'expected' and consumes it, else generates 'error'
+      /// @tparam ...Args The parameter pack to format
+      /// @param expected The expected token
+      /// @param fmt The error format to print if the current token does not match 'expected'
+      /// @param ...args The argument pack to format
+      /// @return True if the token was invalid
+      bool check_and_consume(Token expected, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
 
       /// @brief Consumes tokens until a 'TKN_EOF' or 'TKN_SEMICOLON' is hit
       void panic_consume() noexcept;
@@ -161,9 +176,34 @@ namespace colt::lang
       /// @param ...args The argument pack to format
       void gen_error_expr(fmt::format_string<Args...> fmt, Args&& ...args) noexcept;
     };
+    
+    template<typename ...Args>
+    PTR<Expr> ASTMaker::parse_parenthesis(PTR<Expr>(ASTMaker::*method_ptr)(Args...), Args&&... args) noexcept
+    {
+      check_and_consume(TKN_LEFT_PAREN, "Expected a '('!");
+      auto to_ret = (*this.*method_ptr)(std::forward<Args>(args)...); //Call method
+      check_and_consume(TKN_RIGHT_PAREN, "Expected a ')'!");
+
+      return to_ret;
+    }
 
     template<typename ...Args>
-    void ASTMaker::gen_error_lexeme(fmt::format_string<Args...> fmt, Args && ...args) noexcept
+    bool ASTMaker::check_and_consume(Token expected, fmt::format_string<Args...> fmt, Args && ...args) noexcept
+    {
+      if (current_tkn == expected)
+      {
+        consume_current_tkn();
+        return false;
+      }
+      else
+      {
+        gen_error_lexeme(fmt, std::forward<Args>(args)...);
+        return true;
+      }
+    }
+
+    template<typename ...Args>
+    void ASTMaker::gen_error_lexeme(fmt::format_string<Args...> fmt, Args&&... args) noexcept
     {
       auto line_info = lexer.get_line_info();
       GenerateError(line_info.line_nb, line_info.line_strv, lexer.get_current_lexeme(), fmt, std::forward<Args>(args)...);
