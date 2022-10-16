@@ -84,8 +84,13 @@ namespace colt::lang
       auto rhs_p = static_cast<const ScopeExpr*>(&rhs);
       return lhs_p->get_body_array() == rhs_p->get_body_array();
     }
+    case Expr::EXPR_ERROR:
+    {
+      return true;
+    }
 
     case Expr::EXPR_FN_CALL:
+
     default: //Expr::EXPR_BASE is an error
       colt_unreachable("Invalid classof()");
     }
@@ -255,6 +260,10 @@ namespace colt
     case Expr::EXPR_SCOPE:
     {
       return GetHash(static_cast<const ScopeExpr*>(&expr)->get_body_array());
+    }
+    case Expr::EXPR_ERROR:
+    {
+      return 18446744073709548283;
     }
 
     case Expr::EXPR_FN_CALL:

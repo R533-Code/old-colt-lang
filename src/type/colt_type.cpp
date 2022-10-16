@@ -22,6 +22,8 @@ namespace colt::lang
       return static_cast<const PtrType&>(lhs) == static_cast<const PtrType&>(rhs);
     case Type::TYPE_FN:
       return static_cast<const FnType&>(lhs) == static_cast<const FnType&>(rhs);
+    case Type::TYPE_ERROR:
+      return true;
     default:
       colt_unreachable("Invalid classof for type!");
     }
@@ -190,6 +192,9 @@ namespace colt
     case Type::TYPE_FN:
       return HashCombine(GetHash(static_cast<const FnType&>(type).get_return_type()),
         GetHash(static_cast<const FnType&>(type).get_params_type()));
+    case Type::TYPE_ERROR:
+      return 18446744073709548283;
+    
     default:
       colt_unreachable("Invalid classof for type!");
     }
