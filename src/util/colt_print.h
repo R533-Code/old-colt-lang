@@ -64,7 +64,7 @@ namespace colt::io
 	{
 		if constexpr (active)
 		{
-			if (args::GlobalArguments->colored_output)
+			if (args::GlobalArguments.colored_output)
 				fmt::print(fg(fmt::color::cornflower_blue) | fmt::emphasis::bold, "Message: ");
 			else
 				fmt::print("Message: ");
@@ -79,7 +79,7 @@ namespace colt::io
 	{
 		if constexpr (active)
 		{
-			if (args::GlobalArguments->colored_output)
+			if (args::GlobalArguments.colored_output)
 				fmt::print(fg(fmt::color::yellow) | fmt::emphasis::bold, "Warning: ");
 			else
 				fmt::print("Warning: ");
@@ -94,7 +94,7 @@ namespace colt::io
 	{
 		if constexpr (active)
 		{
-			if (args::GlobalArguments->colored_output)
+			if (args::GlobalArguments.colored_output)
 				fmt::print(fg(fmt::color::red) | fmt::emphasis::bold, "Error: ");
 			else
 				fmt::print("Error: ");

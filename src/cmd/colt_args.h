@@ -143,7 +143,7 @@ namespace colt::args
 		template<typename... Args>
 		void print_error_and_exit(fmt::format_string<Args...> fmt, Args && ...args) noexcept
 		{
-			if (args::GlobalArguments->colored_output)
+			if (args::GlobalArguments.colored_output)
 				fmt::print(fg(fmt::color::red) | fmt::emphasis::bold, "Error: ");
 			else
 				fmt::print("Error: ");

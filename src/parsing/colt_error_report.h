@@ -22,7 +22,7 @@ namespace colt::lang
 	template<typename ...Args>
 	void GenerateMessage(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&& ...args) noexcept
 	{
-		if (!args::GlobalArguments->print_messages)
+		if (!args::GlobalArguments.print_messages)
 			return;
 		io::PrintMessage(fmt, std::forward<Args>(args)...);
 		
@@ -41,7 +41,7 @@ namespace colt::lang
 			end_line = StringView{ lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };
 		
 		size_t line_nb_size = fmt::formatted_size("{}", line_nb);
-		if (args::GlobalArguments->colored_output)
+		if (args::GlobalArguments.colored_output)
 			io::Print("{} | {}" CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET "{}", line_nb, begin_line, lexeme, end_line);
 		else
 			io::Print("{} | {}{}{}", line_nb, begin_line, lexeme, end_line);
@@ -55,7 +55,7 @@ namespace colt::lang
 	template<typename ...Args>
 	void GenerateWarning(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&& ...args) noexcept
 	{
-		if (!args::GlobalArguments->print_warnings)
+		if (!args::GlobalArguments.print_warnings)
 			return;
 		io::PrintWarning(fmt, std::forward<Args>(args)...);
 
@@ -74,7 +74,7 @@ namespace colt::lang
 			end_line = StringView{ lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };
 		
 		size_t line_nb_size = fmt::formatted_size("{}", line_nb);
-		if (args::GlobalArguments->colored_output)
+		if (args::GlobalArguments.colored_output)
 			io::Print("{} | {}" CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET "{}", line_nb, begin_line, lexeme, end_line);
 		else
 			io::Print("{} | {}{}{}", line_nb, begin_line, lexeme, end_line);
@@ -87,7 +87,7 @@ namespace colt::lang
 	template<typename ...Args>
 	void GenerateError(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept
 	{
-		if (!args::GlobalArguments->print_errors)
+		if (!args::GlobalArguments.print_errors)
 			return;
 		io::PrintError(fmt, std::forward<Args>(args)...);
 
@@ -106,7 +106,7 @@ namespace colt::lang
 			end_line = StringView{ lexeme.get_data() + lexeme.get_size(), line_strv.get_data() + line_strv.get_size() };
 
 		size_t line_nb_size = fmt::formatted_size("{}", line_nb);
-		if (args::GlobalArguments->colored_output)
+		if (args::GlobalArguments.colored_output)
 			io::Print("{} | {}" CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET "{}", line_nb, begin_line, lexeme, end_line);
 		else
 			io::Print("{} | {}{}{}", line_nb, begin_line, lexeme, end_line);
