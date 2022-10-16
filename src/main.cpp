@@ -6,6 +6,9 @@ using namespace colt::lang;
 
 void compile(StringView str) noexcept
 {
+  if (str.is_empty())
+    return;
+
   //Record beginning of compilation
   auto begin_time = std::chrono::steady_clock::now();
 
@@ -47,7 +50,10 @@ int main(int argc, const char** argv)
     if (str.is_error())
       io::PrintError("Error reading file at path '{}'.", args::GlobalArguments.file_in);
     else
+    {
+      str.get_value().c_str();
       compile(str.get_value());
+    }
   }
   else
   {
