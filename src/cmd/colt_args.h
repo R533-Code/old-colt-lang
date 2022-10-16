@@ -132,7 +132,7 @@ namespace colt::args
 	}
 
 	/// @brief Global Arguments used throughout the Colt-Compiler
-	inline const Arguments* const GlobalArguments = &details::global_args;
+	inline const Arguments& GlobalArguments = details::global_args;
 
 	namespace details
 	{
