@@ -100,7 +100,6 @@ namespace colt::lang
     /// @brief Helper for dyn_cast and is_a
     static constexpr ExprID classof_v = EXPR_ERROR;
 
-  private:
     /// @brief No default constructor
     ErrorExpr(PTR<const Type> type)
       : Expr(EXPR_ERROR, type) {}
