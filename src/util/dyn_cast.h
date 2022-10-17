@@ -199,7 +199,7 @@ namespace colt
       "Remove this useless cast!");
 
     //Types of the pointers
-    using To_t = typename To;
+    using To_t = To;
     using From_t = typename std::pointer_traits<From>::element_type;
 
     static_assert(traits::is_dyn_castable_v<To_t> && traits::is_dyn_castable_v<From_t>,
