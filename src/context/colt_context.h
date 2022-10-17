@@ -10,6 +10,8 @@ namespace colt
 {
   size_t hash(const lang::Expr& expr) noexcept;
   size_t hash(const lang::Type& expr) noexcept;
+  size_t hash(const UniquePtr<lang::Expr>& expr) noexcept;
+  size_t hash(const UniquePtr<lang::Type>& expr) noexcept;
 }
 
 namespace colt::lang
