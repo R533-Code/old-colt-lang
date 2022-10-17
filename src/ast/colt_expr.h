@@ -199,7 +199,7 @@ namespace colt::lang
     /// @param child The expression on which the operator is applied
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the expression
-    static PTR<Expr> UnaryExpr::CreateExpr(PTR<const Type> type, Token tkn, bool is_post, PTR<Expr> child, COLTContext& ctx) noexcept;
+    static PTR<Expr> CreateExpr(PTR<const Type> type, Token tkn, bool is_post, PTR<Expr> child, COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a binary operation applied on two expressions
