@@ -1,5 +1,5 @@
-/** @file colt_scanner.cpp
-* Contains definition of functions declared in 'colt_scanner.h'.
+/** @file colt_lexer.cpp
+* Contains definition of functions declared in 'colt_lexer.h'.
 */
 
 #include "colt_lexer.h"

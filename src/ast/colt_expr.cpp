@@ -1,3 +1,7 @@
+/** @file colt_expr.cpp
+* Contains definition of functions declared in 'colt_expr.h'.
+*/
+
 #include "colt_expr.h"
 #include "context/colt_context.h"
 

@@ -1,3 +1,8 @@
+/** @file colt_ast.h
+* Contains the abstract syntax tree helpers.
+* Use CreateAST to create an abstract syntax tree of a program.
+*/
+
 #ifndef HG_COLT_AST
 #define HG_COLT_AST
 

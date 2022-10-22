@@ -1,3 +1,7 @@
+/** @file colt_ast.cpp
+* Contains definition of functions declared in 'colt_ast.h'.
+*/
+
 #include "colt_ast.h"
 
 namespace colt::lang

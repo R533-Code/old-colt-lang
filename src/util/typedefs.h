@@ -32,13 +32,21 @@ namespace colt
 	using u64 = uint64_t;
 	/// @brief Pointer to characters
 	using lstring = const char*;
+	/// @brief 32-bit floating point
+	using f32 = float;
+	/// @brief 64-bit floating point
+	using f64 = double;
 
 	/// @brief Undiscriminated union over a byte
 	union BYTE
 	{
+		/// @brief i8
 		i8 i8_v;
+		/// @brief u8
 		u8 u8_v;
+		/// @brief bool
 		bool bool_v;
+		/// @brief char
 		char char_v;
 
 	};
@@ -46,54 +54,87 @@ namespace colt
 	/// @brief Undiscriminated union over a word (2-bytes)
 	union WORD
 	{
+		/// @brief i8
 		i8 i8_v;
+		/// @brief u8
 		u8 u8_v;
+		/// @brief bool
 		bool bool_v;
+		/// @brief char
 		char char_v;
+		/// @brief BYTE
 		BYTE BYTE_v;
 
+		/// @brief i16
 		i16 i16_v;
+		/// @brief u16
 		u16 u16_v;
 	};
 
 	/// @brief Undiscriminated union over a double word (4-bytes)
 	union DWORD
 	{
+		/// @brief i8
 		i8 i8_v;
+		/// @brief u8
 		u8 u8_v;
+		/// @brief bool
 		bool bool_v;
+		/// @brief char
 		char char_v;
+		/// @brief BYTE
 		BYTE BYTE_v;
 
+		/// @brief i16
 		i16 i16_v;
+		/// @brief u16
 		u16 u16_v;
+		/// @brief WORD
 		WORD WORD_v;
 
+		/// @brief i32
 		i32 i32_v;
+		/// @brief u32
 		u32 u32_v;
+		/// @brief float
 		float float_v;
 	};
 
 	/// @brief Undiscriminated union over a quadruple word (8-bytes)
 	union QWORD
 	{
+		/// @brief i8
 		i8 i8_v;
+		/// @brief u8
 		u8 u8_v;
+		/// @brief bool
 		bool bool_v;
+		/// @brief char
 		char char_v;
+		/// @brief BYTE
 		BYTE BYTE_v;
 
+		/// @brief i16
 		i16 i16_v;
+		/// @brief u16
 		u16 u16_v;
+		/// @brief WORD
 		WORD WORD_v;
 
+		/// @brief i32
 		i32 i32_v;
+		/// @brief u32
 		u32 u32_v;
+		/// @brief float
 		float float_v;
+		/// @brief DWORD
 		DWORD DWORD_v;
 
+		/// @brief i64
 		i64 i64_v;
+		/// @brief u64
 		u64 u64_v;
+		/// @brief double
 		double double_v;
 	};
 }

@@ -1,3 +1,8 @@
+/** @file colt_type.h
+* Contains classes representing types in the front-end of the compiler.
+* All classes present in this file support `dyn_cast` and `is_a`.
+*/
+
 #ifndef HG_COLT_TYPE
 #define HG_COLT_TYPE
 
@@ -101,6 +106,8 @@ namespace colt::lang
   /// @return True if equal
   bool operator==(const UniquePtr<Type>& lhs, const UniquePtr<Type>& rhs) noexcept;
 
+  /// @brief Represents an error.
+  /// The use of an ErrorType class is to replace use of nullptr.
   class ErrorType
     final : public Type
   {
@@ -121,6 +128,7 @@ namespace colt::lang
     static PTR<Type> CreateType(COLTContext& ctx) noexcept;
   };
 
+  /// @brief Void type
   class VoidType
     final : public Type
   {
@@ -141,6 +149,7 @@ namespace colt::lang
     static PTR<Type> CreateType(COLTContext& ctx) noexcept;
   };
 
+  /// @brief Built in types
   class BuiltInType
     final : public Type
   {
@@ -148,16 +157,40 @@ namespace colt::lang
     /// @brief Helper for dyn_cast and is_a
     static constexpr TypeID classof_v = TYPE_BUILTIN;
 
+    /// @brief ID of the built-in type
     enum BuiltInID
       : u8
     {
-      U8, U16, U32, U64, U128,
-      I8, I16, I32, I64, I128,
-      F32, F64,
+      /// @brief Unsigned 8-bit integer
+      U8,
+      /// @brief Unsigned 16-bit integer
+      U16,
+      /// @brief Unsigned 32-bit integer
+      U32,
+      /// @brief Unsigned 64-bit integer
+      U64,
+      /// @brief Unsigned 128-bit integer
+      U128,
+      /// @brief Signed 8-bit integer
+      I8,
+      /// @brief Signed 16-bit integer
+      I16,
+      /// @brief Signed 32-bit integer
+      I32,
+      /// @brief Signed 64-bit integer
+      I64,
+      /// @brief Signed 128-bit integer
+      I128,
+      /// @brief 32-bit floating point
+      F32,
+      /// @brief 64-bit floating point
+      F64,
+      /// @brief Boolean
       BOOL
     };
   
   private:
+    /// @brief BinaryOperator supported by integral built-in types
     static constexpr BinaryOperator IntegralSupported[16] = {
       BinaryOperator::OP_SUM, BinaryOperator::OP_SUB,
       BinaryOperator::OP_MUL, BinaryOperator::OP_DIV,
@@ -170,6 +203,7 @@ namespace colt::lang
       BinaryOperator::OP_BIT_LSHIFT, BinaryOperator::OP_BIT_RSHIFT
     };
 
+    /// @brief BinaryOperator supported by floating point built-in types
     static constexpr BinaryOperator FloatingSupported[10] = {
       BinaryOperator::OP_SUM, BinaryOperator::OP_SUB,
       BinaryOperator::OP_MUL, BinaryOperator::OP_DIV,
@@ -178,6 +212,7 @@ namespace colt::lang
       BinaryOperator::OP_LESS, BinaryOperator::OP_LESS_EQUAL      
     };
 
+    /// @brief BinaryOperator supported by boolean
     static constexpr BinaryOperator BoolSupported[4] = {     
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,      
       BinaryOperator::OP_BOOL_AND, BinaryOperator::OP_BOOL_OR,
@@ -194,30 +229,101 @@ namespace colt::lang
     /// @brief Destructor
     ~BuiltInType() noexcept override = default;
 
+    /// @brief Creates a built-in type
+    /// @param builtinID The type ID
+    /// @param is_mut True if mutable
+    /// @param valid_op Array of possible binary operator
     constexpr BuiltInType(BuiltInID builtinID, bool is_mut, ContiguousView<BinaryOperator> valid_op) noexcept
       : Type(TYPE_BUILTIN, is_mut), builtin_ID(builtinID), valid_op(valid_op) {}
 
+    /// @brief Returns the built-in ID
+    /// @return BuiltInID of the current type
     constexpr BuiltInID get_builtin_id() const noexcept { return builtin_ID; }
+    /// @brief Check if the current type is any of the signed/unsigned built-in integers
+    /// @return True if built-in integer
     constexpr bool is_integral() const noexcept { return builtin_ID < F32; }
+    /// @brief Check if the current type is bool
+    /// @return True if built-in boolean
     constexpr bool is_bool() const noexcept { return builtin_ID == BOOL; }
+    /// @brief Check if the current type is an f32 or f64
+    /// @return True if f32 or f64
     constexpr bool is_floating() const noexcept { return builtin_ID == F32 || builtin_ID == F64; }
+    /// @brief Check if the current type is any of the signed built-in integers
+    /// @return True if built-in signed integer
     constexpr bool is_signed_int() const noexcept { return builtin_ID - 5 < I8; }
+    /// @brief Check if the current type is any of the unsigned built-in integers
+    /// @return True if built-in unsigned integer
     constexpr bool is_unsigned_int() const noexcept { return builtin_ID < I8; }
 
+    /// @brief Check if the current type supports 'op' BinaryOperator
+    /// @param op The operator to check for
+    /// @return True if the current type supports 'op'
     constexpr bool supports(BinaryOperator op) const noexcept;
 
+    /// @brief Creates a U8 type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateU8(bool is_mut, COLTContext& ctx) noexcept;
+    /// @brief Creates a U16 type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateU16(bool is_mut, COLTContext& ctx) noexcept;
+    /// @brief Creates a U32 type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateU32(bool is_mut, COLTContext& ctx) noexcept;
+    /// @brief Creates a U64 type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateU64(bool is_mut, COLTContext& ctx) noexcept;
+    /// @brief Creates a U128 type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateU128(bool is_mut, COLTContext& ctx) noexcept;
+    /// @brief Creates a I8 type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateI8(bool is_mut, COLTContext& ctx) noexcept;
+    /// @brief Creates a I16 type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateI16(bool is_mut, COLTContext& ctx) noexcept;
+    /// @brief Creates a I32 type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateI32(bool is_mut, COLTContext& ctx) noexcept;
+    /// @brief Creates a I64 type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateI64(bool is_mut, COLTContext& ctx) noexcept;
+    /// @brief Creates a I128 type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateI128(bool is_mut, COLTContext& ctx) noexcept;
+    /// @brief Creates a F32 type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateF32(bool is_mut, COLTContext& ctx) noexcept;
+    /// @brief Creates a F64 type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateF64(bool is_mut, COLTContext& ctx) noexcept;
+    /// @brief Creates a boolean type
+    /// @param is_mut True if mutable
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
     static PTR<Type> CreateBool(bool is_mut, COLTContext& ctx) noexcept;
 
     /// @brief Compares 2 BuiltInType, without checking their mutability
@@ -227,6 +333,7 @@ namespace colt::lang
     friend bool operator==(const BuiltInType& lhs, const BuiltInType& rhs) noexcept;
   };
 
+  /// @brief Represents a pointer to a type
   class PtrType
     final : public Type
   {
@@ -267,6 +374,7 @@ namespace colt::lang
     friend bool operator==(const PtrType& lhs, const PtrType& rhs) noexcept;
   };
 
+  /// @brief Represents a function type
   class FnType
     final : public Type
   {
@@ -316,7 +424,10 @@ namespace colt::lang
 
 namespace colt
 {
-  size_t hash(const lang::Type& expr) noexcept;
+  /// @brief Hashes a Type
+  /// @param type The type to hash
+  /// @return Hashing result
+  size_t hash(const lang::Type& type) noexcept;
 }
 
 #endif //!HG_COLT_TYPE

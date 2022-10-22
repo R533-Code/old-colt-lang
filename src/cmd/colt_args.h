@@ -1,6 +1,6 @@
 /** @file colt_args.h
 * Contains Command Line argument parsing helpers.
-* To parse the arguments, call ParseArguments({ argv, static_cast<size_t>(argc) }).
+* To parse the arguments, call `ParseArguments(argc, argv)`.
 * This will populate the global argument holder.
 * The colt::args namespace holds the GlobalArguments pointer which points to the parsed
 * arguments. In case ParseArguments was not called, it contained the defaulted values of

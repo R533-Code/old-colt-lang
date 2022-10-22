@@ -1,5 +1,7 @@
 /** @file colt_expr.h
 * Contains the representation of all expression of the Colt language.
+* The individual nodes of the abstract syntax tree are made of the expressions
+* in this file.
 */
 
 #ifndef HG_COLT_EXPR

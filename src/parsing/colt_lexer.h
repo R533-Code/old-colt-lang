@@ -1,4 +1,4 @@
-/** @file colt_scanner.h
+/** @file colt_lexer.h
 * Contains the class responsible of breaking a string into the lexemes of Colt.
 */
 

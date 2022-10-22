@@ -1,5 +1,5 @@
 /** @file colt_char.h
-* Contains helpers function pretty printing messages, warnings and errors.
+* Contains helpers function for pretty printing messages, warnings and errors.
 */
 
 #ifndef HG_COLT_ERROR_REPORT
