@@ -57,7 +57,8 @@ namespace colt::lang
     Type(Type&&) = delete;
 
     /// @brief Constructor
-    /// @param type The type of the expression	
+    /// @param ID The type ID
+    /// @param is_mut True if the type is mutable
     constexpr Type(TypeID ID, bool is_mut) noexcept
       : ID(ID), is_mut(is_mut) {}
 

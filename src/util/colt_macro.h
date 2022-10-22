@@ -10,23 +10,29 @@
 
 #if defined(__has_builtin)
 	#if __has_builtin(__builtin_debugtrap)
+		/// @brief Intrinsic trap
 		#define colt_intrinsic_dbreak() __builtin_debugtrap()
 	#elif __has_builtin(__debugbreak)
+		/// @brief Intrinsic trap
 		#define colt_intrinsic_dbreak() __debugbreak()
 	#endif
 #endif
 
 #ifndef colt_intrinsic_dbreak
 	#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+		/// @brief Intrinsic trap
 		#define colt_intrinsic_dbreak() __debugbreak()
 	#else
+		/// @brief Intrinsic trap
 		#define colt_intrinsic_dbreak() do { (void)std::fgetc(stdin); std::exit(1); } while (0)
 	#endif
 #endif
 
 #if !defined(COLT_MSVC)
+	/// @brief Current function name
 	#define COLT_FUNC __FUNCTION__
 #else
+	/// @brief Current function name
 	#define COLT_FUNC __func__
 #endif
 

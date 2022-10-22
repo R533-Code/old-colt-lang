@@ -1,4 +1,4 @@
-/** @file colt_char.h
+/** @file colt_error_report.h
 * Contains helpers function for pretty printing messages, warnings and errors.
 */
 
@@ -11,12 +11,33 @@
 namespace colt::lang
 {
 	template<typename... Args>
+	/// @brief Generates a message
+	/// @tparam ...Args Parameter pack
+	/// @param line_nb The line number
+	/// @param line_strv The line string view
+	/// @param lexeme The lexeme to highlight
+	/// @param fmt The error string format
+	/// @param ...args The arguments to format
 	void GenerateMessage(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
 
 	template<typename... Args>
+	/// @brief Generates a warning
+	/// @tparam ...Args Parameter pack
+	/// @param line_nb The line number
+	/// @param line_strv The line string view
+	/// @param lexeme The lexeme to highlight
+	/// @param fmt The error string format
+	/// @param ...args The arguments to format
 	void GenerateWarning(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
 
 	template<typename... Args>
+	/// @brief Generates an error
+	/// @tparam ...Args Parameter pack
+	/// @param line_nb The line number
+	/// @param line_strv The line string view
+	/// @param lexeme The lexeme to highlight
+	/// @param fmt The error string format
+	/// @param ...args The arguments to format
 	void GenerateError(size_t line_nb, StringView line_strv, StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
 	
 	template<typename ...Args>

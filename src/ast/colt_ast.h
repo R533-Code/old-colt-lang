@@ -26,6 +26,7 @@ namespace colt::lang
     /// @return True if the Token is an assignment Token
     bool isAssignmentToken(Token tkn) noexcept;
 
+    /// @brief Class responsible of producing an AST
     class ASTMaker
     {
       /// @brief POD for line and expression informations
@@ -239,10 +240,17 @@ namespace colt::lang
     /// @brief The context storing type and expression informations
     COLTContext& ctx;
 
+    /// @brief Creates an AST
+    /// @param exprs The vector of expressions
+    /// @param ctx The context storing the expressions
     AST(Vector<PTR<Expr>>&& exprs, COLTContext& ctx) noexcept
       : expressions(std::move(exprs)), ctx(ctx) {}
    };
 
+  /// @brief Creates an Abstract Syntax Tree by parsing a StringView
+  /// @param from The StringView to parse
+  /// @param ctx The COLTContext where to store the expressions
+  /// @return None if error where detected else the AST
   Optional<AST> CreateAST(StringView from, COLTContext& ctx) noexcept;
 }
 

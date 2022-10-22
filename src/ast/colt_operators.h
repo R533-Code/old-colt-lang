@@ -124,11 +124,13 @@ namespace colt::lang
 template<>
 /// @brief {fmt} specialization of BinaryOperator
 struct fmt::formatter<colt::lang::BinaryOperator>
-{
-	template<typename ParseContext>
-	constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
-
+{	
 	template<typename FormatContext>
+	/// @brief fmt overload
+	/// @tparam FormatContext The context to write 
+	/// @param op The BinaryOperator to write
+	/// @param ctx The context
+	/// @return context
 	auto format(const colt::lang::BinaryOperator& op, FormatContext& ctx)
 	{
 		using namespace colt::lang;
@@ -174,10 +176,12 @@ template<>
 /// @brief {fmt} specialization of UnaryOperator
 struct fmt::formatter<colt::lang::UnaryOperator>
 {
-	template<typename ParseContext>
-	constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
-
 	template<typename FormatContext>
+	/// @brief fmt overload
+	/// @tparam FormatContext The context to write 
+	/// @param op The UnaryOperator to write
+	/// @param ctx The context
+	/// @return context
 	auto format(const colt::lang::UnaryOperator& op, FormatContext& ctx)
 	{
 		using namespace colt::lang;

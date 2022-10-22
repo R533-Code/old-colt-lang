@@ -42,7 +42,6 @@ namespace colt::args
 	/// This functions exits if the arguments are not valid.
 	/// @param argc The argument count
 	/// @param argv The argument values
-	/// @return The result of the arguments
 	void ParseArguments(int argc, const char** argv) noexcept;
 
 	namespace details
@@ -69,39 +68,48 @@ namespace colt::args
 		};
 
 		/// @brief Handles version argument
-		/// @param args All the command line arguments
+		/// @param argc The argument count
+		/// @param argv The argument values
 		/// @param current_arg The current argument number being parsed
 		void version_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 		/// @brief Handles help argument
-		/// @param args All the command line arguments
+		/// @param argc The argument count
+		/// @param argv The argument values
 		/// @param current_arg The current argument number being parsed
 		void help_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 		/// @brief Handles enum argument
-		/// @param args All the command line arguments
+		/// @param argc The argument count
+		/// @param argv The argument values
 		/// @param current_arg The current argument number being parsed
 		void enum_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 		/// @brief Handles no-color argument
-		/// @param args All the command line arguments
+		/// @param argc The argument count
+		/// @param argv The argument values
 		/// @param current_arg The current argument number being parsed
 		void no_color_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 		/// @brief Handles no-error argument
-		/// @param args All the command line arguments
+		/// @param argc The argument count
+		/// @param argv The argument values
 		/// @param current_arg The current argument number being parsed
 		void no_error_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 		/// @brief Handles no-warn argument
-		/// @param args All the command line arguments
+		/// @param argc The argument count
+		/// @param argv The argument values
 		/// @param current_arg The current argument number being parsed
 		void no_warning_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 		/// @brief Handles no-message argument
-		/// @param args All the command line arguments
+		/// @param argc The argument count
+		/// @param argv The argument values
 		/// @param current_arg The current argument number being parsed
 		void no_message_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 		/// @brief Handles out argument
-		/// @param args All the command line arguments
+		/// @param argc The argument count
+		/// @param argv The argument values
 		/// @param current_arg The current argument number being parsed
 		void out_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 		/// @brief Handles alloc-data argument
-		/// @param args All the command line arguments
+		/// @param argc The argument count
+		/// @param argv The argument values
 		/// @param current_arg The current argument number being parsed
 		void alloc_data_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 
@@ -121,7 +129,8 @@ namespace colt::args
 
 		/// @brief Handles an argument, searching for it and doing error handling
 		/// @param arg_view The current argument to parse
-		/// @param args The arguments to parse
+		/// @param argc The argument count
+		/// @param argv The argument values
 		/// @param current_arg The number of the current argument
 		void handle_arg(StringView arg_view, int argc, const char** argv, size_t& current_arg) noexcept;
 

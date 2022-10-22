@@ -228,7 +228,7 @@ namespace colt::lang
 
 		/// @brief any identifier
 		TKN_IDENTIFIER,
-		/// @brief .
+		/// @brief \.
 		TKN_DOT		
 	};
 }

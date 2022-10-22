@@ -109,10 +109,12 @@ template<>
 /// @brief {fmt} specialization of EscapeChar
 struct fmt::formatter<colt::io::EscapeChar>
 {
-	template<typename ParseContext>
-	constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
-
 	template<typename FormatContext>
+	/// @brief fmt overload
+	/// @tparam FormatContext The context to write 
+	/// @param chr The char to write
+	/// @param ctx The context
+	/// @return context
 	auto format(const colt::io::EscapeChar& chr, FormatContext& ctx)
 	{
 		const char* ret;

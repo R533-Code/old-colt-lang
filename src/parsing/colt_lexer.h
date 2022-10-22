@@ -64,10 +64,15 @@ namespace colt::lang
 				to_scan = "";
 			assert_true(strv.get_back() == '\0', "The StringView should be NUL-terminated!");
 		}
+		/// @brief Default destructor
 		~Lexer() noexcept = default;
+		/// @brief Default move constructor
 		Lexer(Lexer&&) noexcept = default;
+		/// @brief Default move assignment operator
 		Lexer& operator=(Lexer&&) noexcept = default;
+		/// @brief Default copy constructor
 		Lexer(const Lexer&) noexcept = default;
+		/// @brief Default copy assignment operator
 		Lexer& operator=(const Lexer&) noexcept = default;
 
 		/**************** GETTERS ****************/

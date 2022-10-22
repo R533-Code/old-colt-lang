@@ -20,16 +20,23 @@ namespace colt::lang
   /// @brief Class responsible of holding Type and Expr used in the AST
   class COLTContext
   {
+    /// @brief StableSet of types
     StableSet<UniquePtr<Type>> type_set;
+    /// @brief StableSet of expressions
     StableSet<UniquePtr<Expr>> expr_set;
 
   public:
-    
+    /// @brief Save an expression and returns a pointer to it
+    /// @param expr The expression to add
+    /// @return Pointer to the unique expression
     PTR<Expr> add_expr(UniquePtr<Expr>&& expr) noexcept
     {
       return expr_set.insert(std::move(expr)).first->get_ptr();
     }
 
+    /// @brief Save an type and returns a pointer to it
+    /// @param type The type to add
+    /// @return Pointer to the unique type
     PTR<Type> add_type(UniquePtr<Type>&& type) noexcept
     {
       return type_set.insert(std::move(type)).first->get_ptr();

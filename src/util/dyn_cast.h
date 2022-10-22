@@ -45,6 +45,7 @@ namespace colt
     /// @tparam  SFINAE helper
     struct is_dyn_castable
     {
+      /// @brief True if dyn_cast can be used on T
       static constexpr bool value = false;
     };
 
@@ -53,6 +54,7 @@ namespace colt
     /// @tparam T The type to check for
     struct is_dyn_castable<T, std::void_t<decltype(T::classof_v), decltype(std::declval<T>().classof())>>
     {
+      /// @brief True if dyn_cast can be used on T
       static constexpr bool value = std::is_same_v<typename std::decay_t<decltype(T::classof_v)>, typename std::decay_t<decltype(std::declval<T>().classof())>>;
     };
 

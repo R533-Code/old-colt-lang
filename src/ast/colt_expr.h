@@ -70,6 +70,7 @@ namespace colt::lang
     Expr(Expr&&) = delete;
 
     /// @brief Constructor
+    /// @param ID The expression ID
     /// @param type The type of the expression	
     Expr(ExprID ID, PTR<const Type> type) noexcept
       : ID(ID), type(type) {}
@@ -85,6 +86,10 @@ namespace colt::lang
     /// @return The type of the expression
     constexpr PTR<const Type> get_type() const noexcept { return type; }
 
+    /// @brief Compares two expressions
+    /// @param lhs The left expression
+    /// @param rhs The right expression
+    /// @return True if equal
     friend bool operator==(const Expr& lhs, const Expr& rhs) noexcept;
   };
 
@@ -135,6 +140,7 @@ namespace colt::lang
 
     /// @brief Constructor
     /// @param value The value of the literal expression
+    /// @param type The type of the resulting expression
     LiteralExpr(QWORD value, PTR<const Type> type) noexcept
       : Expr(EXPR_LITERAL, type), value(value)
     {
@@ -147,6 +153,7 @@ namespace colt::lang
 
     /// @brief Creates a LiteralExpr
     /// @param value The value of the LiteralExpr
+    /// @param type The type of the resulting expression
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(QWORD value, PTR<const Type> type, COLTContext& ctx) noexcept;
@@ -167,13 +174,14 @@ namespace colt::lang
     PTR<Expr> child;
   
   public:
-    //No default copy constructor 
+    //No default copy constructor
     UnaryExpr(const UnaryExpr&) = delete;
     //No default constructor
     UnaryExpr() = delete;
     /// @brief Destructor
     ~UnaryExpr() noexcept override = default;
     /// @brief Constructor
+    /// @param type The type of the resulting expression
     /// @param tkn_op The unary operator of the expression
     /// @param child The expression on which the operator is applied
     /// @param is_post For TKN_PLUS_PLUS/TKN_MINUS_MINUS specifies if the operator is pre/post
@@ -190,13 +198,15 @@ namespace colt::lang
     UnaryOperator get_operation() const noexcept { return operation; }
 
     /// @brief Creates a UnaryExpr
-    /// @param tkn_op The unary operator of the expression
+    /// @param type The type of the resulting expression
+    /// @param tkn The unary operator of the expression
     /// @param child The expression on which the operator is applied
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the expression
     static PTR<Expr> CreateExpr(PTR<const Type> type, Token tkn, PTR<Expr> child, COLTContext& ctx) noexcept;
     /// @brief Creates a UnaryExpr
-    /// @param tkn_op The unary operator of the expression
+    /// @param type The type of the resulting expression
+    /// @param tkn The unary operator of the expression
     /// @param is_post For TKN_PLUS_PLUS/TKN_MINUS_MINUS specifies if the operator is pre/post
     /// @param child The expression on which the operator is applied
     /// @param ctx The COLTContext to store the resulting expression
@@ -228,6 +238,7 @@ namespace colt::lang
     /// @brief Destructor
     ~BinaryExpr() noexcept override = default;		
     /// @brief Creates a binary expression of 'lhs' 'operation' 'rhs'
+    /// @param type The type of the expression
     /// @param lhs The left hand side of the expression
     /// @param operation The binary operator token
     /// @param rhs The right hand side of the expression
@@ -247,8 +258,9 @@ namespace colt::lang
     BinaryOperator get_operation() const noexcept { return operation; }
 
     /// @brief Creates a BinaryExpr
+    /// @param type The type of the resulting expression
     /// @param lhs The left hand side of the expression
-    /// @param operation The binary operator token
+    /// @param op The binary operator token
     /// @param rhs The right hand side of the expression
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
@@ -276,8 +288,8 @@ namespace colt::lang
     /// @brief Destructor
     ~ConvertExpr() noexcept override = default;
     /// @brief Constructor
+    /// @param type The new type of the expression
     /// @param to_convert The expression to convert
-    /// @param convert_to The type to convert to
     ConvertExpr(PTR<const Type> type, PTR<Expr> to_convert) noexcept
       : Expr(EXPR_CONVERT, type), to_convert(to_convert) {}
 
@@ -286,6 +298,7 @@ namespace colt::lang
     PTR<const Expr> get_child() const noexcept { return to_convert; }
 
     /// @brief Creates a ConvertExpr
+    /// @param type The type of the resulting expression
     /// @param to_convert The expression to convert
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
@@ -316,6 +329,7 @@ namespace colt::lang
     /// @brief Destructor
     ~VarDeclExpr() noexcept override = default;
     /// @brief Constructs a variable declaration expression
+    /// @param type The type of the resulting expression
     /// @param name The name of the variable
     /// @param init_value The initial value of the variable, can be null
     /// @param is_global True if the variable is global
@@ -339,6 +353,7 @@ namespace colt::lang
     bool is_initialized() const noexcept { return init_value != nullptr; }
 
     /// @brief Creates a VarDeclExpr
+    /// @param type The type of the resulting expression
     /// @param name The name of the variable
     /// @param init_value The value of the variable, which can be null
     /// @param is_global True if the variable is global
@@ -369,10 +384,12 @@ namespace colt::lang
     /// @brief Destructor
     ~VarReadExpr() noexcept override = default;
     /// @brief Constructs a read from a global variable of name 'name'
+    /// @param type The type of the resulting expression
     /// @param name The name of the variable
     explicit VarReadExpr(PTR<const Type> type, StringView name) noexcept
       : Expr(EXPR_VAR_READ, type), local_ID(std::numeric_limits<u64>::max()), name(name) {}
     /// @brief Constructs a read from a local variable of name 'name'
+    /// @param type The type of the resulting expression
     /// @param name The name of the variable
     /// @param local_ID The local ID of the variable
     VarReadExpr(PTR<const Type> type, StringView name, u64 local_ID) noexcept
@@ -396,12 +413,14 @@ namespace colt::lang
     u64 unsafe_get_local_id() const noexcept { return local_ID; }
 
     /// @brief Creates a VarReadExpr
+    /// @param type The type of the resulting expression
     /// @param name The name of the variable
     /// @param ID The local ID of the variable
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(PTR<const Type> type, StringView name, u64 ID, COLTContext& ctx) noexcept;
     /// @brief Creates a VarReadExpr of a global variables
+    /// @param type The type of the resulting expression
     /// @param name The name of the variable
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
@@ -432,11 +451,13 @@ namespace colt::lang
     /// @brief Destructor
     ~VarWriteExpr() noexcept override = default;
     /// @brief Constructs a write to a global variable
+    /// @param type The type of the resulting expression
     /// @param name The name of the variable to write to
     /// @param value The value to write to the variable
     VarWriteExpr(PTR<const Type> type, StringView name, PTR<Expr> value) noexcept
       : Expr(EXPR_VAR_WRITE, type), local_ID(std::numeric_limits<u64>::max()), value(value), name(name) {}
     /// @brief Constructs a write to a local variable
+    /// @param type The type of the resulting expression
     /// @param name The name of the variable to write to
     /// @param value The value to write to the variable
     /// @param local_ID The local ID of the variable
@@ -465,6 +486,7 @@ namespace colt::lang
     u64 unsafe_get_local_id() const noexcept { return local_ID; }
 
     /// @brief Creates a VarWriteExpr
+    /// @param type The type of the resulting expression
     /// @param name The name of the variable
     /// @param value The value to write to the variable
     /// @param ID The local ID of the variable
@@ -472,6 +494,7 @@ namespace colt::lang
     /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(PTR<const Type> type, StringView name, PTR<Expr> value, u64 ID, COLTContext& ctx) noexcept;
     /// @brief Creates a VarWriteExpr to a global variable
+    /// @param type The type of the resulting expression
     /// @param name The name of the variable
     /// @param value The value to write to the variable
     /// @param ctx The COLTContext to store the resulting expression
@@ -479,6 +502,7 @@ namespace colt::lang
     static PTR<Expr> CreateExpr(PTR<const Type> type, StringView name, PTR<Expr> value, COLTContext& ctx) noexcept;
   };
 
+  /// @brief Return expression
   class FnReturnExpr
     final : public Expr
   {
@@ -498,6 +522,7 @@ namespace colt::lang
     /// @brief Destructor
     ~FnReturnExpr() noexcept override = default;
     /// @brief Constructs a function return
+    /// @param type The type of the resulting expression
     /// @param to_ret The value to return, can be null
     FnReturnExpr(PTR<const Type> type, PTR<Expr> to_ret) noexcept
       : Expr(EXPR_FN_RETURN, type), to_ret(to_ret) {}
@@ -540,6 +565,7 @@ namespace colt::lang
     /// @brief Destructor
     ~FnDefExpr() noexcept override = default;
     /// @brief Creates function definition
+    /// @param type The function type
     /// @param name The name of the function
     /// @param arguments_name The arguments name
     /// @param body The body of the function
@@ -572,18 +598,22 @@ namespace colt::lang
     /// @brief Returns the parameter names
     /// @return View over the parameter names
     ContiguousView<StringView> get_params_name() const noexcept { return arguments_name.to_view(); }
-
+    /// @brief Returns the parameter types
+    /// @return View over the parameter types
     ContiguousView<PTR<Type>> get_params_type() const noexcept { return static_cast<const FnType*>(get_type())->get_params_type(); }
-
+    /// @brief Returns the return type of the function
+    /// @return The return type of the function
     PTR<const Type> get_return_type() const noexcept { return static_cast<const FnType*>(get_type())->get_return_type(); }
 
     /// @brief Creates a FnDefExpr
+    /// @param type The type of the resulting expression
     /// @param name The name of the function
     /// @param arguments_name The arguments name
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(PTR<const Type> type, StringView name, SmallVector<StringView, 4>&& arguments_name, COLTContext& ctx) noexcept;
     /// @brief Creates a FnDefExpr
+    /// @param type The type of the resulting expression
     /// @param name The name of the function
     /// @param arguments_name The arguments name
     /// @param body The body of the function
@@ -612,6 +642,7 @@ namespace colt::lang
     /// @brief Destructor
     ~ScopeExpr() noexcept override = default;		
     /// @brief Constructs a ScopeExpr from an array of Expr*
+    /// @param type The type of the resulting expression
     /// @param body_expr The Vector of expressions contained in the scope
     ScopeExpr(PTR<const Type> type, Vector<PTR<Expr>>&& body_expr = {}) noexcept
       : Expr(EXPR_SCOPE, type), body_expr(std::move(body_expr)) {}
@@ -655,6 +686,7 @@ namespace colt::lang
     /// @brief Destructor
     ~ConditionExpr() noexcept override = default;
     /// @brief Constructs a condition expression
+    /// @param type The type of the resulting expression
     /// @param if_cond The if condition
     /// @param if_stmt The statement to evaluate if the if condition is true
     /// @param else_stmt The else statement, which can be null
@@ -688,6 +720,8 @@ namespace colt::lang
 
 namespace colt
 {
+  /// @brief Hashes an expression
+  /// @param expr The expression to hash
   size_t hash(const lang::Expr& expr) noexcept;
 }
 
