@@ -42,7 +42,7 @@ namespace colt::io
 	constexpr void PrintError(fmt::format_string<Args...> fmt, Args&&... args);
 
 	/// @brief Used to escape a character being printed.
-	/// Example: Print("{}", EscapeChar{'\n'}) -> '\n'
+	/// Example: Print("{}", EscapeChar{'\\n'}) -> '\\n'
 	struct EscapeChar
 	{
 		/// @brief The char to escape
