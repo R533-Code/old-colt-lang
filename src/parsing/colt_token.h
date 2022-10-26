@@ -90,6 +90,10 @@ namespace colt::lang
 
 		/// @brief :
 		TKN_COLON,
+		/// @brief }
+		TKN_RIGHT_CURLY,
+		/// @brief {
+		TKN_LEFT_CURLY,
 		/// @brief ->
 		TKN_MINUS_GREAT,
 		/// @brief =>
@@ -107,11 +111,7 @@ namespace colt::lang
 		/// @brief [
 		TKN_LEFT_SQUARE,
 		/// @brief ]
-		TKN_RIGHT_SQUARE,
-		/// @brief {
-		TKN_LEFT_CURLY,
-		/// @brief }
-		TKN_RIGHT_CURLY,
+		TKN_RIGHT_SQUARE,		
 		
 		/// @brief true/false
 		TKN_BOOL_L,
@@ -183,10 +183,8 @@ namespace colt::lang
 		TKN_KEYWORD_DOUBLE,
 		/// @brief lstring
 		TKN_KEYWORD_LSTRING,
-		/// @brief const
-		TKN_KEYWORD_CONST,
-		/// @brief volatile
-		TKN_KEYWORD_VOLATILE,
+		/// @brief mut
+		TKN_KEYWORD_MUT,
 		/// @brief ptr
 		TKN_KEYWORD_PTR,
 

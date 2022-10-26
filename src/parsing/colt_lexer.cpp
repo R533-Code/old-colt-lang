@@ -756,8 +756,8 @@ namespace colt::lang
 				return TKN_KEYWORD_CHAR;
 			else if (temp_str == "case")
 				return TKN_KEYWORD_CASE;
-			else if (temp_str == "const")
-				return TKN_KEYWORD_CONST;
+			else if (temp_str == "mut")
+				return TKN_KEYWORD_MUT;
 			else if (temp_str == "continue")
 				return TKN_KEYWORD_CONTINUE;
 		break; case 'd':
@@ -838,8 +838,6 @@ namespace colt::lang
 				return TKN_KEYWORD_VAR;
 			else if (temp_str == "void")
 				return TKN_KEYWORD_VOID;
-			else if (temp_str == "volatile")
-				return TKN_KEYWORD_VOLATILE;
 		break; default:
 			return TKN_IDENTIFIER;
 		}
