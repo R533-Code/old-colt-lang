@@ -152,6 +152,7 @@ namespace colt::lang
       ContiguousView<BinaryOperator>{ BuiltInType::FloatingSupported, std::size(BuiltInType::FloatingSupported) })
     );
   }
+  
   PTR<Type> BuiltInType::CreateBool(bool is_mut, COLTContext& ctx) noexcept
   {
     return ctx.add_type(make_unique<BuiltInType>(BuiltInID::BOOL, is_mut,
@@ -159,12 +160,12 @@ namespace colt::lang
     );
   }
   
-  PTR<Type> PtrType::CreatePtr(bool is_mut, PTR<Type> ptr_to, COLTContext& ctx) noexcept
+  PTR<Type> PtrType::CreatePtr(bool is_mut, PTR<const Type> ptr_to, COLTContext& ctx) noexcept
   {
     return ctx.add_type(make_unique<PtrType>(is_mut, ptr_to));
   }
   
-  PTR<Type> FnType::CreateFn(PTR<Type> return_type, SmallVector<PTR<Type>>&& args_type, COLTContext& ctx) noexcept
+  PTR<Type> FnType::CreateFn(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, COLTContext& ctx) noexcept
   {
     return ctx.add_type(make_unique<FnType>(return_type, std::move(args_type)));
   }

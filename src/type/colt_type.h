@@ -344,7 +344,7 @@ namespace colt::lang
 
   private:
     /// @brief The type pointed to
-    PTR<Type> ptr_to;
+    PTR<const Type> ptr_to;
 
   public:
     /// @brief No default constructor
@@ -354,7 +354,7 @@ namespace colt::lang
     /// @brief Creates a pointer type
     /// @param is_mut True if the pointer is mutable
     /// @param ptr_to The type pointed by the pointer
-    constexpr PtrType(bool is_mut, PTR<Type> ptr_to) noexcept
+    constexpr PtrType(bool is_mut, PTR<const Type> ptr_to) noexcept
       : Type(TYPE_PTR, is_mut), ptr_to(ptr_to) {}
 
     /// @brief Returns the type pointed to by the pointer
@@ -366,7 +366,7 @@ namespace colt::lang
     /// @param ptr_to The type pointed by the pointer
     /// @param ctx The COLTContext to store the resulting type
     /// @return Pointer to the resulting type
-    static PTR<Type> CreatePtr(bool is_mut, PTR<Type> ptr_to, COLTContext& ctx) noexcept;
+    static PTR<Type> CreatePtr(bool is_mut, PTR<const Type> ptr_to, COLTContext& ctx) noexcept;
 
     /// @brief Compares 2 pointers type, without checking for mutability
     /// @param lhs The left hand side
@@ -385,9 +385,9 @@ namespace colt::lang
 
   private:
     /// @brief The parameters' type
-    SmallVector<PTR<Type>> args_type;
+    SmallVector<PTR<const Type>, 4> args_type;
     /// @brief The function return type
-    PTR<Type> return_type;
+    PTR<const Type> return_type;
 
   public:
     /// @brief No default constructor
@@ -397,7 +397,7 @@ namespace colt::lang
     /// @brief Creates a function type
     /// @param return_type Return type of the function
     /// @param args_type Parameters' type
-    constexpr FnType(PTR<Type> return_type, SmallVector<PTR<Type>>&& args_type) noexcept
+    constexpr FnType(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type) noexcept
       : Type(TYPE_FN, false), args_type(std::move(args_type)), return_type(return_type) {}
 
     /// @brief Returns the return type of the function
@@ -406,14 +406,14 @@ namespace colt::lang
 
     /// @brief Returns the parameters' type of the function
     /// @return View over the parameters' type
-    constexpr ContiguousView<PTR<Type>> get_params_type() const noexcept { return args_type.to_view(); }
+    constexpr ContiguousView<PTR<const Type>> get_params_type() const noexcept { return args_type.to_view(); }
 
     /// @brief Creates a function type
     /// @param return_type Return type of the function
     /// @param args_type Parameters' type
     /// @param ctx The COLTContext to store the resulting type
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateFn(PTR<Type> return_type, SmallVector<PTR<Type>>&& args_type, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateFn(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, COLTContext& ctx) noexcept;
 
     /// @brief Compares 2 pointers type, without checking for mutability
     /// @param lhs The left hand side
