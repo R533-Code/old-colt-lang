@@ -34,6 +34,7 @@
 #define HG_COLT_DYN_CAST
 
 #include <type_traits>
+#include "colt_config.h"
 
 namespace colt
 {
@@ -62,19 +63,7 @@ namespace colt
     /// @brief Short hand over is_dyn_castable<T>::value
     /// @tparam T The type to check for
     static constexpr bool is_dyn_castable_v = is_dyn_castable<T>::value;
-  }
-
-  template<typename Target, typename Input>
-  [[nodiscard]]
-  /// @brief Short-hand for static_cast<Target>(Input)
-  /// @tparam Target The resulting type
-  /// @tparam Input The type to convert from
-  /// @param input The value to convert
-  /// @return static_cast<Target>(input)
-  static constexpr Target as(Input&& input)
-  {
-    return static_cast<Target>(std::forward<Input>(input));
-  }
+  }  
 
   template<typename To, typename From>
   [[nodiscard]]
@@ -214,6 +203,29 @@ namespace colt
       "Return type of 'classof()' of To and From should match!");
 
     return ptr->classof() == To_t::classof_v;
+  }
+
+  template<typename Target, typename Input>
+  [[nodiscard]]
+  /// @brief Short-hand for static_cast<Target>(Input)
+  /// @tparam Target The resulting type
+  /// @tparam Input The type to convert from
+  /// @param input The value to convert
+  /// @return static_cast<Target>(input)
+  static constexpr Target as(Input&& input)
+  {    
+#ifdef COLT_DEBUG_BUILD
+    if constexpr (traits::is_dyn_castable_v<Input>
+      && traits::is_dyn_castable_v<Target>
+      && std::is_pointer_v<Target>
+      && std::is_pointer_v<Input>)
+    {
+      if (is_a<Target>(input))
+        return static_cast<Target>(std::forward<Input>(input));
+      colt_unreachable("'as' conversion failed as true type did not match the expected one!");
+    }
+#endif
+    return static_cast<Target>(std::forward<Input>(input));
   }
 }
 
