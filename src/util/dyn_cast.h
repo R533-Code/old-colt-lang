@@ -215,6 +215,7 @@ namespace colt
   static constexpr Target as(Input&& input)
   {    
 #ifdef COLT_DEBUG_BUILD
+    // DYNAMIC CASTING CHECK
     if constexpr (traits::is_dyn_castable_v<Input>
       && traits::is_dyn_castable_v<Target>
       && std::is_pointer_v<Target>
@@ -223,6 +224,16 @@ namespace colt
       if (is_a<Target>(input))
         return static_cast<Target>(std::forward<Input>(input));
       colt_unreachable("'as' conversion failed as true type did not match the expected one!");
+    }
+    // NUMERICAL TRUNCATION CHECK
+    else if constexpr (std::is_integral_v<Target>
+      && std::is_integral_v<Input>
+      && sizeof(Target) < sizeof(Input))
+    {
+      if (input > std::numeric_limits<Target>::max())
+        colt_unreachable("'as' conversion failed as resulting value would be truncated!");
+      else if (input < std::numeric_limits<Target>::min())
+        colt_unreachable("'as' conversion failed as resulting value would be truncated!");
     }
 #endif
     return static_cast<Target>(std::forward<Input>(input));
