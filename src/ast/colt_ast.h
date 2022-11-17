@@ -38,7 +38,7 @@ namespace colt::lang
         StringView line_strv;
         /// @brief StringView of the expression
         StringView expression;
-      };      
+      };
 
       /************* MEMBERS ************/
 
@@ -53,7 +53,7 @@ namespace colt::lang
       /// @brief The current token
       Token current_tkn;
       /// @brief The table storing local variables informations
-      Vector<std::pair<StringView, PTR<Type>>> local_var_table = {};
+      Vector<std::pair<StringView, PTR<const Type>>> local_var_table = {};
       /// @brief The current expression informations
       ExprInfo current_expr_info = {};
       /// @brief The context storing types and expressions
@@ -78,6 +78,10 @@ namespace colt::lang
         SavedExprInfo(ASTMaker& ast) noexcept;
         /// @brief Restores the old ASTMaker's line informations
         ~SavedExprInfo() noexcept;
+
+        /// @brief Transforms the current expression to a SourceCodeExprInfo
+        /// @return Source code information about current expression
+        SourceCodeExprInfo to_src_info() const noexcept;       
       };
 
       /// @brief Helper for storing and restoring local variable table state
@@ -154,6 +158,26 @@ namespace colt::lang
       /// Precondition: current_tkn contains a UnaryOperator
       PTR<Expr> parse_unary() noexcept;
 
+      PTR<Expr> parse_global_declaration() noexcept;
+
+      PTR<Expr> parse_fn_decl() noexcept;
+
+      PTR<Expr> parse_scope(bool one_expr = true) noexcept;
+
+      PTR<Expr> parse_statement() noexcept;
+
+      PTR<Expr> parse_condition() noexcept;
+
+      PTR<Expr> parse_variable_decl(bool is_global) noexcept;
+      
+      PTR<Expr> parse_assignment(PTR<Expr> lhs) noexcept;
+      
+      PTR<const Type> parse_typename() noexcept;
+
+      /************* PEEKING HELPERS ************/
+
+      bool is_valid_scope_begin() const noexcept { return current_tkn == TKN_COLON; }
+
       /************* ERROR HANDLING HELPERS ************/
 
       template<typename... Args>
@@ -167,6 +191,9 @@ namespace colt::lang
 
       /// @brief Consumes tokens until a 'TKN_EOF' or 'TKN_SEMICOLON' is hit
       void panic_consume() noexcept;
+
+      /// @brief Consumes tokens until a 'TKN_EOF' or 'TKN_LEFT_PAREN' is hit
+      void panic_consume_rparen() noexcept;
 
       template<typename... Args>
       /// @brief Generates an error over the current lexeme

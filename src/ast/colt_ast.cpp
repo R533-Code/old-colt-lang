@@ -27,10 +27,10 @@ namespace colt::lang::details
       3, 2,  // && ||
       9, 9, 9, 9, 10, 10, // < <= > >= != ==
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // = += -= *= /= %= &= |= ^= <<= >>=
-      0, 0, 0, 0, 0 // , ; EOF ERROR )
+      0, 0, 0, 0, 0, 0, 0, 0, 0 // , ; EOF ERROR ) ( : } {
     };
     assert_true(static_cast<size_t>(tkn) >= 0, "Token should be greater or equal to 0!");
-    if (tkn < TKN_LEFT_PAREN)
+    if (tkn < TKN_MINUS_GREAT)
       return operator_precedence_table[tkn];
     return 255;
   }
@@ -49,6 +49,15 @@ namespace colt::lang::details
   ASTMaker::SavedExprInfo::~SavedExprInfo() noexcept
   {
     ast.current_expr_info = infos;
+  }
+
+  SourceCodeExprInfo ASTMaker::SavedExprInfo::to_src_info() const noexcept
+  {
+    auto new_infos = ast.get_expr_info();
+    return SourceCodeExprInfo{ as<u32>(ast.current_expr_info.line_nb), as<u32>(new_infos.line_nb),
+      StringView{ast.current_expr_info.line_strv.begin(), new_infos.line_strv.end()},
+      StringView{ast.current_expr_info.expression.begin(), new_infos.expression.end()},
+    };
   }
   
   ASTMaker::SavedLocalState::SavedLocalState(ASTMaker& ast) noexcept
@@ -71,7 +80,7 @@ namespace colt::lang::details
     current_tkn = lexer.get_next_token();
     while (current_tkn != TKN_EOF)
     {
-      expressions.push_back(parse_binary());
+      expressions.push_back(parse_global_declaration());
     }
   }
   
@@ -84,37 +93,48 @@ namespace colt::lang::details
     switch (current_tkn)
     {
     break; case TKN_BOOL_L:
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateBool(true, ctx), ctx);
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateBool(true, ctx),
+        line_state.to_src_info(), ctx);
 
     break; case TKN_U8_L:
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU8(true, ctx), ctx);
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU8(true, ctx),
+        line_state.to_src_info(), ctx);
       consume_current_tkn();
     break; case TKN_U16_L:
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU16(true, ctx), ctx);
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU16(true, ctx),
+        line_state.to_src_info(), ctx);
       consume_current_tkn();
     break; case TKN_U32_L:
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU32(true, ctx), ctx);
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU32(true, ctx),
+        line_state.to_src_info(), ctx);
       consume_current_tkn();
     break; case TKN_U64_L:
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU64(true, ctx), ctx);
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU64(true, ctx),
+        line_state.to_src_info(), ctx);
       consume_current_tkn();
     break; case TKN_I8_L:
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI8(true, ctx), ctx);
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI8(true, ctx),
+        line_state.to_src_info(), ctx);
       consume_current_tkn();
     break; case TKN_I16_L:
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI16(true, ctx), ctx);
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI16(true, ctx),
+        line_state.to_src_info(), ctx);
       consume_current_tkn();
     break; case TKN_I32_L:
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI32(true, ctx), ctx);
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI32(true, ctx),
+        line_state.to_src_info(), ctx);
       consume_current_tkn();
     break; case TKN_I64_L:
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI64(true, ctx), ctx);
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI64(true, ctx),
+        line_state.to_src_info(), ctx);
       consume_current_tkn();
     break; case TKN_FLOAT_L:
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF32(true, ctx), ctx);
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF32(true, ctx),
+        line_state.to_src_info(), ctx);
       consume_current_tkn();
     break; case TKN_DOUBLE_L:
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF64(true, ctx), ctx);
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF64(true, ctx),
+        line_state.to_src_info(), ctx);
       consume_current_tkn();
     break; case TKN_STRING_L:      
       to_ret = ErrorExpr::CreateExpr(ctx);
@@ -154,7 +174,7 @@ namespace colt::lang::details
     //Post-unary operators
     if (current_tkn == TKN_PLUS_PLUS || current_tkn == TKN_MINUS_MINUS)
     {
-      to_ret = UnaryExpr::CreateExpr(to_ret->get_type(), current_tkn, true, to_ret, ctx);
+      to_ret = UnaryExpr::CreateExpr(to_ret->get_type(), current_tkn, true, to_ret, line_state.to_src_info(), ctx);
       consume_current_tkn(); //consume the post unary operator
     }
     return to_ret;
@@ -178,7 +198,7 @@ namespace colt::lang::details
     //As assignment operators are right associative, they are handled
     //in a different function
     if (isAssignmentToken(binary_op))
-      return nullptr;// parse_assignment(lhs);
+      return parse_assignment(lhs);
 
     //The current operator's precedence
     u8 op_precedence = GetOpPrecedence(binary_op);
@@ -197,7 +217,8 @@ namespace colt::lang::details
       PTR<Expr> rhs = parse_binary(GetOpPrecedence(binary_op));
 
       //Pratt's parsing, which allows operators priority
-      lhs = BinaryExpr::CreateExpr(lhs->get_type(), lhs, binary_op, rhs, ctx);
+      lhs = BinaryExpr::CreateExpr(lhs->get_type(), lhs, binary_op, rhs,
+        line_state.to_src_info(), ctx);
 
       //Update the Token
       binary_op = current_tkn;
@@ -225,13 +246,310 @@ namespace colt::lang::details
 
     //No need to consume a Token as the previous call to parse_primary
     //already does
-    return UnaryExpr::CreateExpr(child->get_type(), op, child, ctx);
+    return UnaryExpr::CreateExpr(child->get_type(), op, child, line_state.to_src_info(), ctx);
 
+  }
+
+  PTR<Expr> ASTMaker::parse_global_declaration() noexcept
+  {
+    //Function:
+    // fn NAME \( (TYPE NAME,)* (TYPE NAME)? \) -> TYPE PARSE_SCOPE
+    if (current_tkn == TKN_KEYWORD_FN)
+      return parse_fn_decl();
+    //Global Variable:
+    //var NAME = VALUE;
+    else
+      return parse_variable_decl(true);
+  }
+
+  PTR<Expr> ASTMaker::parse_fn_decl() noexcept
+  {
+    SavedExprInfo line_state = { *this };
+
+    assert(current_tkn == TKN_KEYWORD_FN);
+    consume_current_tkn();
+    auto fn_name = lexer.get_parsed_identifier();
+    check_and_consume(TKN_IDENTIFIER, "Expected an identifier, not '{}'!", fn_name);
+    check_and_consume(TKN_LEFT_PAREN, "Expected a '('!");
+    
+    SmallVector<PTR<const Type>, 4> args_type;
+    SmallVector<StringView, 4> args_name;
+    while (current_tkn != TKN_EOF && current_tkn != TKN_RIGHT_PAREN)
+    {
+      args_type.push_back(parse_typename());
+      auto arg_name = lexer.get_parsed_identifier();
+      if (check_and_consume(TKN_IDENTIFIER, "Expected an identifier!"))
+      {
+        panic_consume_rparen();
+        break;
+      }
+      
+      if (args_name.to_view().contains(arg_name))
+      {
+        auto line_info = lexer.get_line_info();
+        GenerateError(line_info.line_nb, line_info.line_strv, arg_name, "Cannot have parameters of same name '{}'!", arg_name);
+
+        ++error_count;
+        panic_consume_rparen();
+        break;
+      }
+      args_name.push_back(arg_name);
+
+      if (current_tkn == TKN_RIGHT_PAREN)
+        break;
+      if (check_and_consume(TKN_COMMA, "Expected a ','!"))
+      {
+        panic_consume_rparen();
+        break;
+      }
+    }
+
+    check_and_consume(TKN_RIGHT_PAREN, "Expected a ')'!");
+    check_and_consume(TKN_MINUS_GREAT, "Expected a '->'!");
+    //The return type of the function
+    PTR<const Type> return_t = parse_typename();
+
+    PTR<const Type> fn_ptr_t = FnType::CreateFn(return_t, std::move(args_type), ctx);
+    PTR<FnDeclExpr> declaration = as<FnDeclExpr*>(FnDeclExpr::CreateExpr(fn_ptr_t, fn_name, std::move(args_name), line_state.to_src_info(), ctx));
+
+    if (is_valid_scope_begin())
+      return FnDefExpr::CreateExpr(declaration, parse_scope(), line_state.to_src_info(), ctx);
+    check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
+    return declaration;
+  }
+
+  PTR<Expr> ASTMaker::parse_scope(bool one_expr) noexcept
+  {
+    if (current_tkn == TKN_COLON && one_expr)
+    {
+      consume_current_tkn(); // :
+      return parse_statement();
+    }
+    else if (current_tkn == TKN_LEFT_CURLY)
+    {
+      Vector<PTR<Expr>> statements = {};
+      consume_current_tkn(); // {
+      while (current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF)
+        statements.push_back(parse_statement());
+      check_and_consume(TKN_RIGHT_CURLY, "Expected a '}'!");
+    }
+    else
+      gen_error_lexeme("Expected a scope!");
+    return ErrorExpr::CreateExpr(ctx);
+  }
+
+  PTR<Expr> ASTMaker::parse_statement() noexcept
+  {
+    //TODO: add if/for/while handling
+    switch (current_tkn)
+    {
+    case TKN_KEYWORD_VAR:
+      return parse_variable_decl(false);
+    case TKN_LEFT_CURLY:
+      return parse_scope(false);
+    case TKN_KEYWORD_IF:
+      return parse_condition();
+    case TKN_SEMICOLON:
+      gen_error_lexeme("Expected a statement!");
+      return ErrorExpr::CreateExpr(ctx);
+    }
+    auto to_ret = parse_binary();
+    check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
+    return to_ret;
+  }
+
+  PTR<Expr> ASTMaker::parse_condition() noexcept
+  {
+    return PTR<Expr>();
+  }
+
+  PTR<Expr> ASTMaker::parse_variable_decl(bool is_global) noexcept
+  {
+    SavedExprInfo line_state = { *this };
+
+    check_and_consume(TKN_KEYWORD_VAR, "Expected a variable declaration!");
+    check_and_consume(TKN_IDENTIFIER, "Expected an identifier!");
+    StringView var_name = lexer.get_parsed_identifier();
+
+    PTR<const Type> var_type = nullptr;
+    if (current_tkn == TKN_COLON)
+    {
+      consume_current_tkn();
+      var_type = parse_typename();
+    }
+    
+    PTR<Expr> var_init = nullptr;
+    if (current_tkn != TKN_SEMICOLON)
+    {
+      if (check_and_consume(TKN_EQUAL, "Expected a '='!"))
+        return ErrorExpr::CreateExpr(ctx);
+      var_init = parse_binary();
+    }
+    else if (var_type == nullptr)
+    {
+      gen_error_expr("An uninitialized variable should specify its type!");
+      return ErrorExpr::CreateExpr(ctx);
+    }
+
+    //If the type is not explicit, deduce it from left hand side
+    //else convert left hand side to explicit type
+    if (var_type == nullptr)
+      var_type = var_init->get_type();
+    else
+      var_init = ConvertExpr::CreateExpr(var_type, var_init, line_state.to_src_info(), ctx);
+    
+    check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
+
+    if (is_global)
+      return VarDeclExpr::CreateExpr(var_type, var_name, var_init, true, line_state.to_src_info(), ctx);
+    local_var_table.push_back({ var_name, var_type });
+    return VarDeclExpr::CreateExpr(var_type, var_name, var_init, false, line_state.to_src_info(), ctx);
+  }
+
+  PTR<Expr> ASTMaker::parse_assignment(PTR<Expr> lhs) noexcept
+  {
+    //Save current expression state
+    SavedExprInfo line_state = { *this };
+
+    Token assignment_tkn = current_tkn;
+    PTR<Expr> rhs = parse_binary();
+
+    if (!is_a<VarReadExpr>(lhs))
+    {
+      gen_error_expr("Left hand side of an assignment should be a variable!");
+      return ErrorExpr::CreateExpr(ctx);
+    }
+
+    if (assignment_tkn == TKN_EQUAL)
+      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(), rhs,
+        line_state.to_src_info(), ctx);
+
+    //Expands VAR += VALUE as VAR = VAR + VALUE
+    switch (assignment_tkn)
+    {    
+    case colt::lang::TKN_PLUS_EQUAL:
+      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_PLUS, rhs, line_state.to_src_info(), ctx), line_state.to_src_info(), ctx);
+    case colt::lang::TKN_MINUS_EQUAL:
+      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_MINUS, rhs, line_state.to_src_info(), ctx), line_state.to_src_info(), ctx);
+    case colt::lang::TKN_STAR_EQUAL:
+      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_STAR, rhs, line_state.to_src_info(), ctx), line_state.to_src_info(), ctx);
+    case colt::lang::TKN_SLASH_EQUAL:
+      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_SLASH, rhs, line_state.to_src_info(), ctx), line_state.to_src_info(), ctx);
+    case colt::lang::TKN_PERCENT_EQUAL:
+      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_PERCENT, rhs, line_state.to_src_info(), ctx), line_state.to_src_info(), ctx);
+    case colt::lang::TKN_AND_EQUAL:
+      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_AND, rhs, line_state.to_src_info(), ctx), line_state.to_src_info(), ctx);
+    case colt::lang::TKN_OR_EQUAL:
+      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_OR, rhs, line_state.to_src_info(), ctx), line_state.to_src_info(), ctx);
+    case colt::lang::TKN_CARET_EQUAL:
+      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_CARET, rhs, line_state.to_src_info(), ctx), line_state.to_src_info(), ctx);
+    case colt::lang::TKN_LESS_LESS_EQUAL:
+      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_LESS_LESS, rhs, line_state.to_src_info(), ctx), line_state.to_src_info(), ctx);
+    case colt::lang::TKN_GREAT_GREAT_EQUAL:
+      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_GREAT_GREAT, rhs, line_state.to_src_info(), ctx), line_state.to_src_info(), ctx);
+    default:
+      colt_unreachable("Invalid assignment token!");
+    }
+  }
+
+  PTR<const Type> ASTMaker::parse_typename() noexcept
+  {
+    //Save current expression state
+    SavedExprInfo line_state = { *this };
+
+    if (current_tkn == TKN_KEYWORD_TYPEOF) //typeof(10 + 5) -> get_type of (10 + 5)
+    {
+      consume_current_tkn();
+      return parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0))->get_type();
+    }
+    
+    bool is_mut = false;
+    if (current_tkn == TKN_KEYWORD_MUT) // mut TYPE
+    {
+      is_mut = true;
+      consume_current_tkn();
+    }
+
+    //Consume the typename token
+    ON_EXIT{ consume_current_tkn(); };
+
+    switch (current_tkn)
+    {
+    case TKN_KEYWORD_VOID:
+    {
+      if (!is_mut)
+        return VoidType::CreateType(ctx);
+      gen_error_expr("'void' typename cannot be marked as mutable!");
+    }
+    case TKN_KEYWORD_BOOL:
+      return BuiltInType::CreateBool(is_mut, ctx);
+    case TKN_KEYWORD_CHAR:
+      //TODO: add
+      colt_unreachable("not implemented");
+      //return BuiltInType::CreateChar(is_mut, ctx);
+    case TKN_KEYWORD_I8:
+      return BuiltInType::CreateI8(is_mut, ctx);
+    case TKN_KEYWORD_U8:
+      return BuiltInType::CreateU8(is_mut, ctx);
+    case TKN_KEYWORD_I16:
+      return BuiltInType::CreateI16(is_mut, ctx);
+    case TKN_KEYWORD_U16:
+      return BuiltInType::CreateU16(is_mut, ctx);
+    case TKN_KEYWORD_I32:
+      return BuiltInType::CreateI32(is_mut, ctx);
+    case TKN_KEYWORD_U32:
+      return BuiltInType::CreateU32(is_mut, ctx);
+    case TKN_KEYWORD_I64:
+      return BuiltInType::CreateI64(is_mut, ctx);
+    case TKN_KEYWORD_U64:
+      return BuiltInType::CreateU64(is_mut, ctx);
+    case TKN_KEYWORD_FLOAT:
+      return BuiltInType::CreateF32(is_mut, ctx);
+    case TKN_KEYWORD_DOUBLE:
+      return BuiltInType::CreateF64(is_mut, ctx);
+    case TKN_KEYWORD_LSTRING:
+      //TODO: add
+      colt_unreachable("not implemented");
+    case TKN_KEYWORD_PTR:
+    {
+      if (!check_and_consume(TKN_LESS, "Expected a '<'!"))
+      {
+        PTR<const Type> ptr_to = parse_typename();
+        if (current_tkn == TKN_GREAT_GREAT) // '>>' is parsed as '>' '>'
+          current_tkn = TKN_GREAT;
+        else if (!check_and_consume(TKN_GREAT, "Expected a '>'!"))
+          return PtrType::CreatePtr(is_mut, ptr_to, ctx);
+      }
+    }
+    case TKN_IDENTIFIER:
+      //TODO: add
+      colt_unreachable("not implemented");
+    default:
+      gen_error_expr("Expected a typename!");
+    }
+    //return an error
+    return ErrorType::CreateType(ctx);
   }
   
   void ASTMaker::panic_consume() noexcept
   {
     while (current_tkn != TKN_EOF && current_tkn != TKN_SEMICOLON)
+      consume_current_tkn();
+  }
+  
+  void ASTMaker::panic_consume_rparen() noexcept
+  {
+    while (current_tkn != TKN_RIGHT_PAREN && current_tkn != TKN_EOF)
       consume_current_tkn();
   }
 }
