@@ -6,9 +6,17 @@
 
 namespace colt::lang
 {
+	Lexer::Lexer(StringView strv) noexcept
+		: to_scan(strv)
+	{
+		if (strv.is_empty())
+			to_scan = "";
+		assert_true(strv.get_back() == '\0', "The StringView should be NUL-terminated!");
+	}
+	
 	Lexer::LineInformations Lexer::get_line_info() const noexcept
 	{
-		return { current_line, offset - line_begin_old, get_line_strv() };
+		return { current_line, as<u32>(offset - line_begin_old), get_line_strv() };
 	}
 
 	Token Lexer::get_next_token() noexcept
@@ -136,7 +144,7 @@ namespace colt::lang
 		{
 			char to_ret = to_scan[offset++];
 			if (to_ret == '\n')
-				line_begin_old = std::exchange(line_begin_new, offset);
+				line_begin_old = std::exchange(line_begin_new, as<u32>(offset));
 			return to_ret;
 		}
 		return EOF;
@@ -149,7 +157,7 @@ namespace colt::lang
 		return to_scan[(this->offset -= offset) - 1];
 	}
 	
-	char Lexer::peek_next_char(uint64_t offset) noexcept
+	char Lexer::peek_next_char(uint64_t offset) const noexcept
 	{
 		if (this->offset + offset < to_scan.get_size())
 			return to_scan[this->offset + offset];
@@ -437,7 +445,7 @@ namespace colt::lang
 		{
 			//in the case of an unterminated multi-line comment, we want
 			//to print the line of the beginning of the multi-line comment.
-			size_t line_count = 0;
+			u32 line_count = 0;
 			current_char = get_next_char();
 			while (current_char != EOF)
 			{

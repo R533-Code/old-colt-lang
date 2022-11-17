@@ -30,22 +30,24 @@ namespace colt::lang
 		/// @brief The offset to the beginning of the current lexeme
 		size_t lexeme_begin = 0;		
 		/// @brief The offset to the beginning of the line being parsed
-		size_t line_begin_old = 0;
+		u32 line_begin_old = 0;
 		/// @brief The offset to the beginning of the line being parsed
-		size_t line_begin_new = 0;
+		u32 line_begin_new = 0;
 		/// @brief The current line number
-		size_t current_line = 1;
+		u32 current_line = 1;
 		
 		/// @brief The current char, which is the one to parse next
 		char current_char = ' ';
+		/// @brief If true, next call of get_next_token should increment 'current_line'
+		bool inc_next_tkn = false;
 
 		/// @brief Contains informations about the current line being parsed
 		struct LineInformations
 		{
 			/// @brief The line number
-			size_t line_nb = 0;
+			u32 line_nb = 0;
 			/// @brief The column of the current char
-			size_t char_column = 0;
+			u32 char_column = 0;
 			/// @brief String view over the line being parsed
 			StringView line_strv = {};
 		};
@@ -57,13 +59,7 @@ namespace colt::lang
 		Lexer() noexcept = default;
 		/// @brief Constructs a Lexer to parse 'strv'
 		/// @param strv A NUL terminated StringView
-		Lexer(StringView strv) noexcept
-			: to_scan(strv)
-		{
-			if (strv.is_empty())
-				to_scan = "";
-			assert_true(strv.get_back() == '\0', "The StringView should be NUL-terminated!");
-		}
+		Lexer(StringView strv) noexcept;
 		/// @brief Default destructor
 		~Lexer() noexcept = default;
 		/// @brief Default move constructor
@@ -118,7 +114,7 @@ namespace colt::lang
 		/// @brief Look ahead in the string to scan
 		/// @param offset The offset to add (0 being look ahead 1 character)
 		/// @return The character 'offset + 1' after the current one
-		char peek_next_char(uint64_t offset = 0) noexcept;
+		char peek_next_char(uint64_t offset = 0) const noexcept;
 		
 		/// @brief Handles identifiers and keywords 
 		Token handle_identifier() noexcept;
