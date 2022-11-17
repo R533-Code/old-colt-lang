@@ -32,7 +32,7 @@ namespace colt::lang
     PTR<Expr> add_expr(UniquePtr<Expr>&& expr) noexcept
     {
       expr_set.push_back(std::move(expr));
-      return expr_set.end()->get_ptr();
+      return expr_set.get_back().get_ptr();
     }
 
     /// @brief Save an type and returns a pointer to it
