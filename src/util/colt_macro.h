@@ -53,4 +53,31 @@
 	#define colt_unreachable(err) std::abort()
 #endif
 
+#define COLT_CONCAT_IMPL(a, b) a##b
+#define COLT_CONCAT(a, b) COLT_CONCAT_IMPL(a, b)
+
+namespace
+{
+	template<typename Fun>
+	struct ScopeGuard
+	{
+		Fun fn;
+
+		ScopeGuard(Fun&& fn) noexcept
+			: fn(std::forward<Fun>(fn)) {}
+
+		~ScopeGuard() noexcept { fn(); }
+	};
+
+	enum class ScopeGuardOnExit {};
+	
+	template<typename Fun>
+	ScopeGuard<Fun> operator+(ScopeGuardOnExit, Fun&& fn) noexcept
+	{
+		return ScopeGuard<Fun>(std::forward<Fun>(fn));
+	}
+}
+
+#define ON_EXIT auto COLT_CONCAT(SCOPE_EXIT_HELPER, __LINE__) = ScopeGuardOnExit() + [&]() 
+
 #endif //!HG_COLT_MACRO
