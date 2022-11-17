@@ -23,7 +23,7 @@ namespace colt::lang
     /// @brief StableSet of types
     StableSet<UniquePtr<Type>> type_set;
     /// @brief StableSet of expressions
-    StableSet<UniquePtr<Expr>> expr_set;
+    Vector<UniquePtr<Expr>> expr_set;
 
   public:
     /// @brief Save an expression and returns a pointer to it
@@ -31,7 +31,8 @@ namespace colt::lang
     /// @return Pointer to the unique expression
     PTR<Expr> add_expr(UniquePtr<Expr>&& expr) noexcept
     {
-      return expr_set.insert(std::move(expr)).first->get_ptr();
+      expr_set.push_back(std::move(expr));
+      return expr_set.end()->get_ptr();
     }
 
     /// @brief Save an type and returns a pointer to it
