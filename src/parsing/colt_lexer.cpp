@@ -804,8 +804,8 @@ namespace colt::lang
 		break; case 'o':
 			if (temp_str == "or")
 				return TKN_OR_OR;
-		break; case 'p':
-			if (temp_str == "ptr")
+		break; case 'P':
+			if (temp_str == "PTR")
 				return TKN_KEYWORD_PTR;
 		break; case 'r':
 			if (temp_str == "return")
@@ -821,6 +821,8 @@ namespace colt::lang
 				parsed_value.bool_v = true;
 				return TKN_BOOL_L;
 			}
+			else if (temp_str == "typeof")
+				return TKN_KEYWORD_TYPEOF;
 		break; case 'u':
 			if (temp_str == "u8")
 				return TKN_KEYWORD_U8;
