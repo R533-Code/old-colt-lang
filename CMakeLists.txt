@@ -24,6 +24,9 @@ target_precompile_headers(${COLT_EXECUTABLE_NAME} PUBLIC
 target_compile_definitions(
   ${COLT_EXECUTABLE_NAME} PRIVATE $<$<CONFIG:DEBUG>:COLT_DEBUG>
 )
+target_compile_definitions(
+  ${COLT_EXECUTABLE_NAME} PRIVATE $<$<CONFIG:DEBUG>:COLT_DEBUG_BUILD>
+)
 
 # Set default build type to Release
 set(CMAKE_BUILD_TYPE "Release")
