@@ -39,6 +39,14 @@ namespace colt::lang::details
   {
     return TKN_EQUAL_EQUAL < tkn && tkn < TKN_COMMA;
   }
+
+  SourceCodeExprInfo ConcatInfo(const SourceCodeExprInfo& lhs, const SourceCodeExprInfo& rhs) noexcept
+  {
+    return SourceCodeExprInfo{ lhs.line_begin, rhs.line_end,
+      StringView{lhs.lines.begin(), rhs.lines.end()},
+      StringView{lhs.expression.begin(), rhs.expression.end()},
+    };
+  }
   
   ASTMaker::SavedExprInfo::SavedExprInfo(ASTMaker& ast) noexcept
     : ast(ast), infos(ast.current_expr_info)
@@ -73,6 +81,12 @@ namespace colt::lang::details
     auto scan_info = lexer.get_line_info();
     return { scan_info.line_nb, scan_info.line_strv, lexer.get_current_lexeme() };
   }
+
+  SourceCodeExprInfo ASTMaker::get_src_info() const noexcept
+  {
+    auto info = get_expr_info();
+    return { as<u32>(info.line_nb), as<u32>(info.line_nb), info.line_strv, info.expression};
+  }
   
   ASTMaker::ASTMaker(StringView strv, COLTContext& ctx) noexcept
     : lexer(strv), ctx(ctx)
@@ -95,7 +109,7 @@ namespace colt::lang::details
     break; case TKN_BOOL_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateBool(true, ctx),
         line_state.to_src_info(), ctx);
-
+      consume_current_tkn();
     break; case TKN_U8_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU8(true, ctx),
         line_state.to_src_info(), ctx);
@@ -218,7 +232,7 @@ namespace colt::lang::details
 
       //Pratt's parsing, which allows operators priority
       lhs = BinaryExpr::CreateExpr(lhs->get_type(), lhs, binary_op, rhs,
-        line_state.to_src_info(), ctx);
+        ConcatInfo(lhs->get_src_code(), rhs->get_src_code()), ctx);
 
       //Update the Token
       binary_op = current_tkn;
@@ -236,6 +250,9 @@ namespace colt::lang::details
 
     //Save the operator
     Token op = current_tkn;
+    //Save the operator's source code informations
+    SourceCodeExprInfo op_info = get_src_info();    
+
     consume_current_tkn(); //consume the unary operator
     
     if (op == TKN_PLUS_PLUS) // +5 -> 5
@@ -246,8 +263,8 @@ namespace colt::lang::details
 
     //No need to consume a Token as the previous call to parse_primary
     //already does
-    return UnaryExpr::CreateExpr(child->get_type(), op, child, line_state.to_src_info(), ctx);
-
+    return UnaryExpr::CreateExpr(child->get_type(), op, child,
+      ConcatInfo(op_info, child->get_src_code()), ctx);
   }
 
   PTR<Expr> ASTMaker::parse_global_declaration() noexcept

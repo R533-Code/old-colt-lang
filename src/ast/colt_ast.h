@@ -26,6 +26,12 @@ namespace colt::lang
     /// @return True if the Token is an assignment Token
     bool isAssignmentToken(Token tkn) noexcept;
 
+    /// @brief Concatenate two adjacent SourceCodeExprInfo
+    /// @param lhs The left hand side
+    /// @param rhs The right hand side
+    /// @return Concatenated SourceCodeExprInfo
+    SourceCodeExprInfo ConcatInfo(const SourceCodeExprInfo& lhs, const SourceCodeExprInfo& rhs) noexcept;
+
     /// @brief Class responsible of producing an AST
     class ASTMaker
     {
@@ -98,7 +104,7 @@ namespace colt::lang
         SavedLocalState(SavedLocalState&&) = delete;
         /// @brief Saves the local variable state of an ASTMaker
         /// @param ast The ASTMaker's state to save
-        SavedLocalState(ASTMaker& ast) noexcept;        
+        SavedLocalState(ASTMaker& ast) noexcept;
         /// @brief Restores the state of the ASTMaker
         ~SavedLocalState() noexcept;   
       };
@@ -106,6 +112,10 @@ namespace colt::lang
       /// @brief Get the current line informations
       /// @return The current line informations
       ExprInfo get_expr_info() const noexcept;
+
+      /// @brief Get the current lexeme source code information
+      /// @return The current lexeme source code information
+      SourceCodeExprInfo get_src_info() const noexcept;
 
     public:
       /// @brief Parses a StringView into an abstract syntax tree
