@@ -109,6 +109,8 @@ namespace colt::lang
     /// @brief Returns the type of the expression
     /// @return The type of the expression
     constexpr PTR<const Type> get_type() const noexcept { return type; }
+
+    constexpr const SourceCodeExprInfo& get_src_code() const noexcept { return src_info; }
   };
 
   /// @brief Represents a literal expression
