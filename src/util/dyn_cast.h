@@ -35,6 +35,7 @@
 
 #include <type_traits>
 #include "colt_config.h"
+#include "colt_macro.h"
 
 namespace colt
 {
