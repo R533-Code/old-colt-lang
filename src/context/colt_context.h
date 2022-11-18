@@ -23,7 +23,7 @@ namespace colt::lang
     /// @brief StableSet of types
     StableSet<UniquePtr<Type>> type_set;
     /// @brief StableSet of expressions
-    Vector<UniquePtr<Expr>> expr_set;
+    FlatList<UniquePtr<Expr>, 256> expr_set;
 
   public:
     /// @brief Save an expression and returns a pointer to it
