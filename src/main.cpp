@@ -51,7 +51,7 @@ int main(int argc, const char** argv)
       io::PrintError("Error reading file at path '{}'.", args::GlobalArguments.file_in);
     else
     {
-      str.get_value().c_str();
+      str.get_value().c_str(); //Appends a NUL terminator if needed
       compile(str.get_value());
     }
   }
