@@ -428,7 +428,7 @@ namespace colt
   template<>
   struct hash<lang::Type>
   {
-    constexpr size_t operator()(const lang::Type& type) const noexcept;    
+    size_t operator()(const lang::Type& type) const noexcept;    
   };  
 }
 
