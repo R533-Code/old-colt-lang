@@ -122,6 +122,10 @@ namespace colt::lang
 	
 	StringView Lexer::get_line_strv() const noexcept
 	{
+		//If the cached result is still valid, return it
+		if (current_line == cached_line_nb)
+			return cached_line_strv;
+
 		const char* line_begin = to_scan.get_data() +
 			(lexeme_begin - as<size_t>(offset == to_scan.get_size()));
 		line_begin -= as<size_t>(*line_begin == '\n');
@@ -134,7 +138,11 @@ namespace colt::lang
 		//a StringView's end is non-inclusive, so there is no need to change line_end
 		//depending on if it is a '\n' or not.
 
-		return { line_begin, line_end };
+		//Cache result for faster get_line_strv()
+		cached_line_strv = { line_begin, line_end };
+		cached_line_nb = current_line;
+
+		return cached_line_strv;
 	}
 
 	char Lexer::get_next_char() noexcept

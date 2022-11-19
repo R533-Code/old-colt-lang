@@ -35,6 +35,11 @@ namespace colt::lang
 		u32 line_begin_new = 0;
 		/// @brief The current line number
 		u32 current_line = 1;
+
+		/// @brief The cached line number
+		mutable u32 cached_line_nb = 0;
+		/// @brief The cached line StringView
+		mutable StringView cached_line_strv = {};
 		
 		/// @brief The current char, which is the one to parse next
 		char current_char = ' ';
