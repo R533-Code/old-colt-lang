@@ -53,7 +53,9 @@
 	#define colt_unreachable(err) std::abort()
 #endif
 
+/// @brief Internal concatenating macro
 #define COLT_CONCAT_IMPL(a, b) a##b
+/// @brief Concatenates 'a' and 'b'
 #define COLT_CONCAT(a, b) COLT_CONCAT_IMPL(a, b)
 
 namespace
@@ -78,6 +80,16 @@ namespace
 	}
 }
 
+/// @brief Register an action to be called at the end of the scope.
+/// Example:
+/// ```c++
+/// {
+///		auto hello = 10;
+///		ON_EXIT {
+///			std::cout << hello;
+///		}; // <- do not forget the semicolon
+/// }
+/// ```
 #define ON_EXIT auto COLT_CONCAT(SCOPE_EXIT_HELPER, __LINE__) = ScopeGuardOnExit() + [&]() 
 
 #endif //!HG_COLT_MACRO
