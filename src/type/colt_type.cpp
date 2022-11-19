@@ -187,14 +187,14 @@ namespace colt
     case Type::TYPE_VOID:
       return 0;
     case Type::TYPE_BUILTIN:
-      return GetHash(as<const BuiltInType*>(type)->get_builtin_id());
+      return GetHash(as<const BuiltInType*>(&type)->get_builtin_id());
     case Type::TYPE_PTR:
-      return GetHash(as<const PtrType*>(type)->get_type_to());
+      return GetHash(as<const PtrType*>(&type)->get_type_to());
     case Type::TYPE_FN:
-      return HashCombine(GetHash(static_cast<const FnType&>(type).get_return_type()),
-        GetHash(as<const FnType*>(type)->get_params_type()));
+      return HashCombine(GetHash(static_cast<const FnType*>(&type)->get_return_type()),
+        GetHash(as<const FnType*>(&type)->get_params_type()));
     case Type::TYPE_ERROR:
-      return 18446744073709548283;
+      return 18446744073709548283ULL;
 
     default:
       colt_unreachable("Invalid classof for type!");
