@@ -140,8 +140,8 @@ foreach(testPath ${ColtTestsPath})
   # Pop the 2 first characters which are //
   string(REPLACE "//" "" RegexTest ${firstLine})
   # Strip new lines from end of line
-  string(REGEX REPLACE "\n$" "" RegexTest "${RegexTest}")  
-  
+  string(REGEX REPLACE "\n$" "" RegexTest "${RegexTest}")
+
   # Get folder before test name
   get_filename_component(testFolder_temp "${testPath}/.." ABSOLUTE)
   
