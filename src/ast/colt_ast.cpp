@@ -49,22 +49,21 @@ namespace colt::lang::details
   }
   
   ASTMaker::SavedExprInfo::SavedExprInfo(ASTMaker& ast) noexcept
-    : ast(ast), infos(ast.current_expr_info)
+    : ast(ast), infos(ast.current_lexeme_info)
   {
-    ast.current_expr_info = ast.get_expr_info();
+    ast.current_lexeme_info = ast.get_expr_info();
   }
   
   ASTMaker::SavedExprInfo::~SavedExprInfo() noexcept
   {
-    ast.current_expr_info = infos;
+    ast.current_lexeme_info = infos;
   }
 
   SourceCodeExprInfo ASTMaker::SavedExprInfo::to_src_info() const noexcept
   {
-    auto new_infos = ast.get_expr_info();
-    return SourceCodeExprInfo{ as<u32>(ast.current_expr_info.line_nb), as<u32>(new_infos.line_nb),
-      StringView{ast.current_expr_info.line_strv.begin(), new_infos.line_strv.end()},
-      StringView{ast.current_expr_info.expression.begin(), new_infos.expression.end()},
+    return SourceCodeExprInfo{ as<u32>(ast.current_lexeme_info.line_nb), as<u32>(ast.last_lexeme_info.line_nb),
+      StringView{ast.current_lexeme_info.line_strv.begin(), ast.last_lexeme_info.line_strv.end()},
+      StringView{ast.current_lexeme_info.expression.begin(), ast.last_lexeme_info.expression.end()},
     };
   }
   
@@ -76,18 +75,12 @@ namespace colt::lang::details
     ast.local_var_table.pop_back_n(ast.local_var_table.get_size() - old_sz);
   }
   
-  ASTMaker::ExprInfo ASTMaker::get_expr_info() const noexcept
+  ASTMaker::SourceCodeLexemeInfo ASTMaker::get_expr_info() const noexcept
   {
     auto scan_info = lexer.get_line_info();
     return { scan_info.line_nb, scan_info.line_strv, lexer.get_current_lexeme() };
   }
 
-  SourceCodeExprInfo ASTMaker::get_src_info() const noexcept
-  {
-    auto info = get_expr_info();
-    return { as<u32>(info.line_nb), as<u32>(info.line_nb), info.line_strv, info.expression};
-  }
-  
   ASTMaker::ASTMaker(StringView strv, COLTContext& ctx) noexcept
     : lexer(strv), ctx(ctx)
   {
@@ -98,63 +91,60 @@ namespace colt::lang::details
     }
   }
   
+  void ASTMaker::consume_current_tkn() noexcept
+  {
+    last_lexeme_info = get_expr_info();
+    current_tkn = lexer.get_next_token();
+  }
+
   PTR<Expr> ASTMaker::parse_primary() noexcept
   {
     //Save current expression state
     SavedExprInfo line_state = { *this };
 
     PTR<Expr> to_ret;
-    switch (current_tkn)
+    
+    Token saved_tkn = current_tkn;
+    consume_current_tkn();
+    
+    switch (saved_tkn)
     {
     break; case TKN_BOOL_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateBool(true, ctx),
         line_state.to_src_info(), ctx);
-      consume_current_tkn();
     break; case TKN_U8_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU8(true, ctx),
         line_state.to_src_info(), ctx);
-      consume_current_tkn();
     break; case TKN_U16_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU16(true, ctx),
         line_state.to_src_info(), ctx);
-      consume_current_tkn();
     break; case TKN_U32_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU32(true, ctx),
         line_state.to_src_info(), ctx);
-      consume_current_tkn();
     break; case TKN_U64_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU64(true, ctx),
         line_state.to_src_info(), ctx);
-      consume_current_tkn();
     break; case TKN_I8_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI8(true, ctx),
         line_state.to_src_info(), ctx);
-      consume_current_tkn();
     break; case TKN_I16_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI16(true, ctx),
         line_state.to_src_info(), ctx);
-      consume_current_tkn();
     break; case TKN_I32_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI32(true, ctx),
         line_state.to_src_info(), ctx);
-      consume_current_tkn();
     break; case TKN_I64_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI64(true, ctx),
         line_state.to_src_info(), ctx);
-      consume_current_tkn();
     break; case TKN_FLOAT_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF32(true, ctx),
         line_state.to_src_info(), ctx);
-      consume_current_tkn();
     break; case TKN_DOUBLE_L:
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF64(true, ctx),
         line_state.to_src_info(), ctx);
-      consume_current_tkn();
     break; case TKN_STRING_L:      
       to_ret = ErrorExpr::CreateExpr(ctx);
-      consume_current_tkn();
     break; case TKN_CHAR_L:
-      consume_current_tkn();
       to_ret = ErrorExpr::CreateExpr(ctx);
 
       break;
@@ -176,7 +166,6 @@ namespace colt::lang::details
       to_ret = ErrorExpr::CreateExpr(ctx);
 
     break; case TKN_ERROR: //Lexer will have generated an error
-      consume_current_tkn(); //consume TKN_ERROR
       ++error_count;
       to_ret = ErrorExpr::CreateExpr(ctx);
       
@@ -232,7 +221,7 @@ namespace colt::lang::details
 
       //Pratt's parsing, which allows operators priority
       lhs = BinaryExpr::CreateExpr(lhs->get_type(), lhs, binary_op, rhs,
-        ConcatInfo(lhs->get_src_code(), rhs->get_src_code()), ctx);
+        line_state.to_src_info(), ctx);
 
       //Update the Token
       binary_op = current_tkn;
@@ -250,9 +239,6 @@ namespace colt::lang::details
 
     //Save the operator
     Token op = current_tkn;
-    //Save the operator's source code informations
-    SourceCodeExprInfo op_info = get_src_info();    
-
     consume_current_tkn(); //consume the unary operator
     
     if (op == TKN_PLUS_PLUS) // +5 -> 5
@@ -264,7 +250,7 @@ namespace colt::lang::details
     //No need to consume a Token as the previous call to parse_primary
     //already does
     return UnaryExpr::CreateExpr(child->get_type(), op, child,
-      ConcatInfo(op_info, child->get_src_code()), ctx);
+      line_state.to_src_info(), ctx);
   }
 
   PTR<Expr> ASTMaker::parse_global_declaration() noexcept
@@ -413,14 +399,18 @@ namespace colt::lang::details
     if (var_type == nullptr)
       var_type = var_init->get_type();
     else
-      var_init = ConvertExpr::CreateExpr(var_type, var_init, line_state.to_src_info(), ctx);
+      var_init = ConvertExpr::CreateExpr(var_type, var_init,
+        line_state.to_src_info(), ctx);
     
     check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
 
     if (is_global)
-      return VarDeclExpr::CreateExpr(var_type, var_name, var_init, true, line_state.to_src_info(), ctx);
-    local_var_table.push_back({ var_name, var_type });
-    return VarDeclExpr::CreateExpr(var_type, var_name, var_init, false, line_state.to_src_info(), ctx);
+      return VarDeclExpr::CreateExpr(var_type, var_name, var_init, true,
+        line_state.to_src_info(), ctx);
+    
+    local_var_table.push_back({ var_name, var_type });    
+    return VarDeclExpr::CreateExpr(var_type, var_name, var_init, false,
+      line_state.to_src_info(), ctx);
   }
 
   PTR<Expr> ASTMaker::parse_assignment(PTR<Expr> lhs) noexcept

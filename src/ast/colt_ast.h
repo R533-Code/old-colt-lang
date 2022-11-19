@@ -35,8 +35,8 @@ namespace colt::lang
     /// @brief Class responsible of producing an AST
     class ASTMaker
     {
-      /// @brief POD for line and expression informations
-      struct ExprInfo
+      /// @brief POD for line and expression informations of a single lexeme
+      struct SourceCodeLexemeInfo
       {
         /// @brief The line number of the beginning of the current expression
         size_t line_nb;
@@ -61,31 +61,37 @@ namespace colt::lang
       /// @brief The table storing local variables informations
       Vector<std::pair<StringView, PTR<const Type>>> local_var_table = {};
       /// @brief The current expression informations
-      ExprInfo current_expr_info = {};
+      SourceCodeLexemeInfo current_lexeme_info = {};
+      /// @brief The last parsed lexeme informations
+      SourceCodeLexemeInfo last_lexeme_info = {};
       /// @brief The context storing types and expressions
       COLTContext& ctx;
 
       /************* STATE HANDLING HELPERS ************/
 
-      /// @brief Helper for saving and restoring expressions informations
+      /// @brief Helper for saving and restoring expressions informations.
+      /// This class allows simplified generation of SourceCodeExprInfo for any expression.      
       struct SavedExprInfo
       {
         /// @brief The AST whose data to override and restore
         ASTMaker& ast;
         /// @brief The old AST's line informations
-        ExprInfo infos;
+        SourceCodeLexemeInfo infos;
 
         //No copy constructor
         SavedExprInfo(const SavedExprInfo&) = delete;
         //No move constructor
         SavedExprInfo(SavedExprInfo&&) = delete;
-        /// @brief Saves the ExprInfo state of the ASTMaker
+        /// @brief Saves the SourceCodeLexemeInfo state of the ASTMaker
         /// @param ast The ASTMaker whose state to save
         SavedExprInfo(ASTMaker& ast) noexcept;
         /// @brief Restores the old ASTMaker's line informations
         ~SavedExprInfo() noexcept;
 
-        /// @brief Transforms the current expression to a SourceCodeExprInfo
+        /// @brief Transforms the current expression to a SourceCodeExprInfo.
+        /// The reason to_src_info uses last_lexeme_info is because of 'current_tkn',
+        /// which contains the NEXT token to consume, which means 'current_lexeme_info' contains
+        /// information about the NEXT token which is not part of the current expression.
         /// @return Source code information about current expression
         SourceCodeExprInfo to_src_info() const noexcept;       
       };
@@ -111,11 +117,7 @@ namespace colt::lang
 
       /// @brief Get the current line informations
       /// @return The current line informations
-      ExprInfo get_expr_info() const noexcept;
-
-      /// @brief Get the current lexeme source code information
-      /// @return The current lexeme source code information
-      SourceCodeExprInfo get_src_info() const noexcept;
+      SourceCodeLexemeInfo get_expr_info() const noexcept;
 
     public:
       /// @brief Parses a StringView into an abstract syntax tree
@@ -147,7 +149,7 @@ namespace colt::lang
 
     private:
       /// @brief Updates 'current_tkn' to the next token
-      void consume_current_tkn() noexcept { current_tkn = lexer.get_next_token(); }
+      void consume_current_tkn() noexcept;
 
       /************* EXPRESSION PARSING ************/
 
@@ -259,10 +261,10 @@ namespace colt::lang
     void ASTMaker::gen_error_expr(fmt::format_string<Args...> fmt, Args&&... args) noexcept
     {
       auto new_line_info = lexer.get_line_info();
-      StringView line_strv = { current_expr_info.line_strv.get_data(),
+      StringView line_strv = { current_lexeme_info.line_strv.get_data(),
         new_line_info.line_strv.get_data() + new_line_info.line_strv.get_size() };
 
-      GenerateError(current_expr_info.line_nb, line_strv, current_expr_info.expression, fmt, std::forward<Args>(args)...);
+      GenerateError(current_lexeme_info.line_nb, line_strv, current_lexeme_info.expression, fmt, std::forward<Args>(args)...);
       
       ++error_count;
       panic_consume();
