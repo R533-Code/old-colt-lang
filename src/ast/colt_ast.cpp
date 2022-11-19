@@ -102,52 +102,59 @@ namespace colt::lang::details
     //Save current expression state
     SavedExprInfo line_state = { *this };
 
-    PTR<Expr> to_ret;
-    
-    if (current_tkn == TKN_LEFT_PAREN)
-      return parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0));
+    PTR<Expr> to_ret;    
 
-    Token saved_tkn = current_tkn;
-    consume_current_tkn();
-    
-    switch (saved_tkn)
+    switch (current_tkn)
     {
     break; case TKN_BOOL_L:
+      consume_current_tkn();
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateBool(true, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_U8_L:
+      consume_current_tkn();
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU8(true, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_U16_L:
+      consume_current_tkn();
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU16(true, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_U32_L:
+      consume_current_tkn();
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU32(true, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_U64_L:
+      consume_current_tkn();
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU64(true, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_I8_L:
+      consume_current_tkn();
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI8(true, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_I16_L:
+      consume_current_tkn();
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI16(true, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_I32_L:
+      consume_current_tkn();
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI32(true, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_I64_L:
+      consume_current_tkn();
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI64(true, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_FLOAT_L:
+      consume_current_tkn();
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF32(true, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_DOUBLE_L:
+      consume_current_tkn();
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF64(true, ctx),
         line_state.to_src_info(), ctx);
-    break; case TKN_STRING_L:      
+    break; case TKN_STRING_L:
+      consume_current_tkn();
       to_ret = ErrorExpr::CreateExpr(ctx);
     break; case TKN_CHAR_L:
+      consume_current_tkn();
       to_ret = ErrorExpr::CreateExpr(ctx);
 
       break;
@@ -169,6 +176,9 @@ namespace colt::lang::details
       ++error_count;
       to_ret = ErrorExpr::CreateExpr(ctx);
       
+    break; case TKN_LEFT_PAREN:
+      to_ret = parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0));
+
     break; default:
       gen_error_expr("Expected an expression!");
       return ErrorExpr::CreateExpr(ctx);
