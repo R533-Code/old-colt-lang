@@ -686,19 +686,31 @@ namespace colt::lang
 
 	Token Lexer::str_to_float() noexcept
 	{
+#ifdef __cpp_lib_to_chars
 		float value = 0.0;
 		auto [ptr, err] = std::from_chars(temp_str.begin(), temp_str.end(), value);
 		if (ptr == temp_str.end() && err == std::errc{})
 		{
 			parsed_value.float_v = value;
 			return TKN_FLOAT_L;
+		}		
+#else
+		char* end_ptr = nullptr;
+		float value = std::strtof(temp_str.begin(), &end_ptr);
+		if (end_ptr != temp_str.begin() && !(value == HUGE_VALF && errno == ERANGE))
+		{
+			parsed_value.float_v = value;
+			return TKN_FLOAT_L;
 		}
+		errno = 0;
+#endif
 		gen_error(get_current_lexeme(), "Invalid float literal!");
 		return TKN_ERROR;
 	}
 
 	Token Lexer::str_to_double() noexcept
 	{
+#ifdef __cpp_lib_to_chars
 		double value = 0.0;
 		auto [ptr, err] = std::from_chars(temp_str.begin(), temp_str.end(), value);
 		if (ptr == temp_str.end() && err == std::errc{})
@@ -706,6 +718,16 @@ namespace colt::lang
 			parsed_value.double_v = value;
 			return TKN_DOUBLE_L;
 		}
+#else
+		char* end_ptr = nullptr;
+		double value = std::strtod(temp_str.begin(), &end_ptr);
+		if (end_ptr != temp_str.begin() && !(value == HUGE_VAL && errno == ERANGE))
+		{
+			parsed_value.double_v = value;
+			return TKN_DOUBLE_L;
+		}
+		errno = 0;
+#endif
 		gen_error(get_current_lexeme(), "Invalid double literal!");
 		return TKN_ERROR;
 	}
