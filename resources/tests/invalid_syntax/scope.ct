@@ -1,0 +1,7 @@
+//Error: Unclosed curly bracket delimiter!
+fn hello()->i32
+{
+  10 + 5;
+  {
+    10 + 10;
+  }

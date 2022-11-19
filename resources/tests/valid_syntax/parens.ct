@@ -1,0 +1,2 @@
+//Compilation successful!
+fn hello()->i32: (10 + 10) + (10 + (10));

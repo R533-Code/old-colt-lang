@@ -1,0 +1,2 @@
+//Error: Unclosed parenthesis delimiter!
+fn hello()->i32: (10 + 10 + (10 + (10));
