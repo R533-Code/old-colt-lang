@@ -188,7 +188,7 @@ namespace colt::lang
 
       /************* PEEKING HELPERS ************/
 
-      bool is_valid_scope_begin() const noexcept { return current_tkn == TKN_COLON; }
+      bool is_valid_scope_begin() const noexcept { return current_tkn == TKN_COLON || current_tkn == TKN_LEFT_CURLY; }
 
       /************* ERROR HANDLING HELPERS ************/
 
@@ -225,9 +225,16 @@ namespace colt::lang
     template<typename ...Args>
     PTR<Expr> ASTMaker::parse_parenthesis(PTR<Expr>(ASTMaker::*method_ptr)(Args...), Args&&... args) noexcept
     {
+      auto lexeme_info = get_expr_info();
       check_and_consume(TKN_LEFT_PAREN, "Expected a '('!");
       auto to_ret = (*this.*method_ptr)(std::forward<Args>(args)...); //Call method
-      check_and_consume(TKN_RIGHT_PAREN, "Expected a ')'!");
+      if (current_tkn != TKN_RIGHT_PAREN)
+      {
+        GenerateError(lexeme_info.line_nb, lexeme_info.line_strv, lexeme_info.expression, "Unclosed parenthesis delimiter!");
+        ++error_count;
+      }
+      else
+        consume_current_tkn();
 
       return to_ret;
     }

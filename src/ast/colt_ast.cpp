@@ -104,6 +104,9 @@ namespace colt::lang::details
 
     PTR<Expr> to_ret;
     
+    if (current_tkn == TKN_LEFT_PAREN)
+      return parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0));
+
     Token saved_tkn = current_tkn;
     consume_current_tkn();
     
@@ -156,13 +159,10 @@ namespace colt::lang::details
     case TKN_BANG:         // !(any)
     case TKN_MINUS:        // -(any)
     case TKN_PLUS:         // +(any)
-      to_ret = parse_unary();
-    
-    break; case TKN_LEFT_PAREN:
-      to_ret = parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0));
+      to_ret = parse_unary();    
     
     break; case TKN_IDENTIFIER:
-      //consume_current_tkn();
+      //TODO: add variable handling
       to_ret = ErrorExpr::CreateExpr(ctx);
 
     break; case TKN_ERROR: //Lexer will have generated an error
@@ -330,11 +330,21 @@ namespace colt::lang::details
     }
     else if (current_tkn == TKN_LEFT_CURLY)
     {
-      Vector<PTR<Expr>> statements = {};
+      //Save '{' informations
+      auto lexeme_info = get_expr_info();
       consume_current_tkn(); // {
+      
+      Vector<PTR<Expr>> statements = {};
       while (current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF)
         statements.push_back(parse_statement());
-      check_and_consume(TKN_RIGHT_CURLY, "Expected a '}'!");
+      
+      if (current_tkn != TKN_RIGHT_CURLY)
+      {
+        GenerateError(lexeme_info.line_nb, lexeme_info.line_strv, lexeme_info.expression, "Unclosed curly bracket delimiter!");
+        ++error_count;
+      }
+      else
+        consume_current_tkn();
     }
     else
       gen_error_lexeme("Expected a scope!");
