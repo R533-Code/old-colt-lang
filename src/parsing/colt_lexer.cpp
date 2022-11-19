@@ -24,7 +24,9 @@ namespace colt::lang
 		//We skip spaces
 		while (isSpace(current_char))
 		{
-			if (current_char == '\n')
+			//We increment the line number if the token being parsed is NOT an TKN_EOF
+			//TKN_EOF is returned if a '\0' is found
+			if (current_char == '\n' && peek_next_char() != '\0')
 				current_line += 1;
 			current_char = get_next_char();
 		}
