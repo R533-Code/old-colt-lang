@@ -44,7 +44,7 @@ int main(int argc, const char** argv)
   //Populates GlobalArguments
   args::ParseArguments(argc, argv);
 
-  if (args::GlobalArguments.file_in)
+  if (args::GlobalArguments.file_in != nullptr)
   {
     auto str = String::getFileContent(args::GlobalArguments.file_in);
     if (str.is_error())
