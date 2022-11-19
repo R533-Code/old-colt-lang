@@ -178,7 +178,7 @@ namespace colt::lang
 
 namespace colt
 {
-  size_t hash(const lang::Type& type) noexcept
+  constexpr size_t hash<lang::Type>::operator()(const lang::Type& type) const noexcept
   {
     using namespace colt::lang;
 
@@ -195,7 +195,7 @@ namespace colt
         GetHash(static_cast<const FnType&>(type).get_params_type()));
     case Type::TYPE_ERROR:
       return 18446744073709548283;
-    
+
     default:
       colt_unreachable("Invalid classof for type!");
     }

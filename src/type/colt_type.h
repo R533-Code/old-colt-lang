@@ -425,10 +425,11 @@ namespace colt::lang
 
 namespace colt
 {
-  /// @brief Hashes a Type
-  /// @param type The type to hash
-  /// @return Hashing result
-  size_t hash(const lang::Type& type) noexcept;
+  template<>
+  struct hash<lang::Type>
+  {
+    constexpr size_t operator()(const lang::Type& type) const noexcept;    
+  };  
 }
 
 #endif //!HG_COLT_TYPE
