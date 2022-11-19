@@ -445,9 +445,8 @@ namespace colt::lang
 			current_char = get_next_char();
 			while (current_char != EOF && current_char != '\n')
 				current_char = get_next_char();
-
-			if (current_char == '\n')
-				current_line++;
+			//No need to modify current line if current_char == '\n':
+			//get_next_token will do so
 			return get_next_token(); //recurse and return the token after the comment
 		}
 		case '*': // multi-line comment
@@ -460,7 +459,7 @@ namespace colt::lang
 			{
 				if (current_char == '\n')
 					line_count++;
-				if (current_char == '*')
+				else if (current_char == '*')
 				{
 					current_char = get_next_char();
 					if (current_char == '/')
