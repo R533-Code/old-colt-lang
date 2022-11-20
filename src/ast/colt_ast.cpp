@@ -394,8 +394,11 @@ namespace colt::lang::details
   {
     SavedExprInfo line_state = { *this };
 
-    check_and_consume(TKN_KEYWORD_VAR, "Expected a variable declaration!");
-    check_and_consume(TKN_IDENTIFIER, "Expected an identifier!");
+    if (check_and_consume(TKN_KEYWORD_VAR, "Expected a variable declaration!"))
+      return ErrorExpr::CreateExpr(ctx);
+    if (check_and_consume(TKN_IDENTIFIER, "Expected an identifier!"))
+      return ErrorExpr::CreateExpr(ctx);
+
     StringView var_name = lexer.get_parsed_identifier();
 
     PTR<const Type> var_type = nullptr;
@@ -426,7 +429,8 @@ namespace colt::lang::details
       var_init = ConvertExpr::CreateExpr(var_type, var_init,
         line_state.to_src_info(), ctx);
     
-    check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
+    if (check_and_consume(TKN_SEMICOLON, "Expected a ';'!"))
+      return ErrorExpr::CreateExpr(ctx);      
 
     if (is_global)
       return VarDeclExpr::CreateExpr(var_type, var_name, var_init, true,
@@ -606,7 +610,9 @@ namespace colt::lang::details
   
   void ASTMaker::panic_consume() noexcept
   {
-    while (current_tkn != TKN_EOF && current_tkn != TKN_SEMICOLON)
+    while (current_tkn != TKN_EOF && current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY)
+      consume_current_tkn();
+    if (current_tkn == TKN_SEMICOLON)
       consume_current_tkn();
   }
   
