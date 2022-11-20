@@ -131,7 +131,7 @@ namespace colt::lang
 		const char* line_begin = to_scan.get_data() +
 			(lexeme_begin - as<size_t>(offset == to_scan.get_size()));
 		line_begin -= as<size_t>(*line_begin == '\n');
-		while (*line_begin != '\n' && line_begin != to_scan.get_data())
+		while (*line_begin != '\n' && line_begin >= to_scan.get_data())
 			--line_begin;
 		line_begin += as<size_t>(*line_begin == '\n');
 
