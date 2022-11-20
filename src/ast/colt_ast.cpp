@@ -380,8 +380,10 @@ namespace colt::lang::details
       gen_error_lexeme("Expected a statement!");
       return ErrorExpr::CreateExpr(ctx);
     }
+    auto old_count = error_count;
     auto to_ret = parse_binary();
-    check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
+    if (old_count == error_count)
+      check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
     return to_ret;
   }
 
@@ -618,7 +620,9 @@ namespace colt::lang::details
   
   void ASTMaker::panic_consume_rparen() noexcept
   {
-    while (current_tkn != TKN_RIGHT_PAREN && current_tkn != TKN_EOF)
+    while (current_tkn != TKN_RIGHT_PAREN && current_tkn != TKN_EOF && current_tkn != TKN_SEMICOLON)
+      consume_current_tkn();
+    if (current_tkn == TKN_SEMICOLON)
       consume_current_tkn();
   }
 }

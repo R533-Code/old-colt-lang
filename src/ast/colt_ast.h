@@ -236,6 +236,7 @@ namespace colt::lang
       {
         GenerateError(lexeme_info.line_nb, lexeme_info.line_strv, lexeme_info.expression, "Unclosed parenthesis delimiter!");
         ++error_count;
+        panic_consume();
       }
       else
         consume_current_tkn();
