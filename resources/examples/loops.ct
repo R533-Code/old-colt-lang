@@ -1,6 +1,6 @@
 import std;
 
-main() {
+fn main() {
   for var i in range(10, 20) {
     std::print("{}", i);
   }

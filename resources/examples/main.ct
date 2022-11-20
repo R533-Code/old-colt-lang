@@ -1,5 +1,5 @@
 import std;
 
-main() {
+fn main() {
   std::print("Hello {}", "COLT!");
 }
