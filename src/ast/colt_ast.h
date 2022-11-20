@@ -64,6 +64,8 @@ namespace colt::lang
       SourceCodeLexemeInfo current_lexeme_info = {};
       /// @brief The last parsed lexeme informations
       SourceCodeLexemeInfo last_lexeme_info = {};
+      /// @brief The current function being parsed
+      PTR<const FnDeclExpr> current_function = nullptr;
       /// @brief The context storing types and expressions
       COLTContext& ctx;
 
@@ -185,6 +187,8 @@ namespace colt::lang
       PTR<Expr> parse_assignment(PTR<Expr> lhs) noexcept;
       
       PTR<const Type> parse_typename() noexcept;
+
+      PTR<Expr> handle_identifier() noexcept;
 
       /************* PEEKING HELPERS ************/
 

@@ -169,8 +169,7 @@ namespace colt::lang::details
       to_ret = parse_unary();    
     
     break; case TKN_IDENTIFIER:
-      //TODO: add variable handling
-      to_ret = ErrorExpr::CreateExpr(ctx);
+      to_ret = handle_identifier();
 
     break; case TKN_ERROR: //Lexer will have generated an error
       ++error_count;
@@ -324,6 +323,11 @@ namespace colt::lang::details
 
     PTR<const Type> fn_ptr_t = FnType::CreateFn(return_t, std::move(args_type), ctx);
     PTR<FnDeclExpr> declaration = as<FnDeclExpr*>(FnDeclExpr::CreateExpr(fn_ptr_t, fn_name, std::move(args_name), line_state.to_src_info(), ctx));
+
+    //Set the current function being parsed
+    current_function = declaration;
+    //And reset it on scope exit
+    ON_EXIT{ current_function = nullptr; };
 
     if (is_valid_scope_begin())
       return FnDefExpr::CreateExpr(declaration, parse_scope(), line_state.to_src_info(), ctx);
@@ -566,6 +570,38 @@ namespace colt::lang::details
     }
     //return an error
     return ErrorType::CreateType(ctx);
+  }
+
+  PTR<Expr> ASTMaker::handle_identifier() noexcept
+  {
+    SavedExprInfo line_state = { *this };
+
+    StringView identifier = lexer.get_parsed_identifier();
+    consume_current_tkn(); // consume identifier
+    if (current_tkn == TKN_LEFT_PAREN) // function call
+      return nullptr; //TODO: handle_function_call();
+
+    if (current_function != nullptr) //if parsing a function
+    {
+      //Search in local variables of function
+      for (i64 i = as<i64>(local_var_table.get_size()) - 1; i >= 0; i--)
+      {
+        if (local_var_table[i].first == identifier)
+          return VarReadExpr::CreateExpr(local_var_table[i].second, identifier, i,
+            line_state.to_src_info(), ctx);
+      }
+      auto fn_param = current_function->get_params_name();
+      //Search in arguments of function
+      for (size_t i = 0; i < fn_param.get_size(); i++)
+      {
+        if (fn_param[i] == identifier)
+          return VarReadExpr::CreateExpr(current_function->get_params_type()[i], identifier,
+            line_state.to_src_info(), ctx);
+      }
+    }
+    gen_error_expr("Variable of name '{}' does not exist!", identifier);
+    //TODO: Search global variables
+    return ErrorExpr::CreateExpr(ctx);
   }
   
   void ASTMaker::panic_consume() noexcept
