@@ -1,0 +1,10 @@
+//Compilation successful!
+fn hello()->i32
+{
+  var read = 10;
+  var reada = 11;
+  var readb = 11;
+  {
+    var readc = 11;
+  }
+}

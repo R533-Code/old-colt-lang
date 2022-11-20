@@ -1,0 +1,10 @@
+//Error: (Expected an identifier!)|(An uninitialized variable should specify its type!)|(Expected a '.'!)
+fn hello()->i32
+{
+  var fn = 10; //<- error
+  var read += 11; // <- error
+  var readb; // <- error
+  {
+    var readc = 11
+  } // <- error
+}

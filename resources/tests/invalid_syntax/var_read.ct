@@ -1,0 +1,10 @@
+//Error: Variable of name 'hell' does not exist!
+fn hello()->i32
+{
+  var read = 10;
+  {
+    var hel = 10;
+    read + hell; //<- error
+  }
+  read - 10;
+}
