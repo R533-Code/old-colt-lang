@@ -31,8 +31,7 @@ void REPL() noexcept
   char buffer[2048];
   for (;;)
   {
-    fgets(buffer, 2048, stdin);
-    if (feof(stdin))
+    if (fgets(buffer, 2048, stdin) == nullptr)
       break;    
 
     compile({ buffer, WithNUL });
