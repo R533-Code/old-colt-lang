@@ -128,14 +128,13 @@ namespace colt::lang
 		if (current_line == cached_line_nb)
 			return cached_line_strv;
 
-		const char* line_begin = to_scan.get_data() +
-			(lexeme_begin - as<size_t>(offset == to_scan.get_size()));
+		const char* line_begin = to_scan.get_data() + lexeme_begin;
 		line_begin -= as<size_t>(*line_begin == '\n');
-		while (*line_begin != '\n' && line_begin >= to_scan.get_data())
+		while (*line_begin != '\n' && line_begin > to_scan.get_data())
 			--line_begin;
 		line_begin += as<size_t>(*line_begin == '\n');
 
-		const char* line_end = to_scan.get_data() + (lexeme_begin - static_cast<size_t>(offset == to_scan.get_size()));
+		const char* line_end = line_begin;
 		while (*line_end != '\n' && *line_end != '\0')
 			++line_end;
 		//a StringView's end is non-inclusive, so there is no need to change line_end
