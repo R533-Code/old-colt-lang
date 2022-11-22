@@ -86,6 +86,14 @@ namespace colt::lang
       decl->get_type(), decl, nullptr, src_info
       ));
   }
+
+  PTR<Expr> FnCallExpr::CreateExpr(PTR<FnDeclExpr> decl, SmallVector<PTR<Expr>, 4>&& arguments, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
+  {
+    assert(decl->get_params_name().get_size() == arguments.get_size());
+    return ctx.add_expr(make_unique<FnCallExpr>(
+      decl, std::move(arguments), src_info, ctx
+      ));
+  }
   
   PTR<Expr> ScopeExpr::CreateExpr(Vector<PTR<Expr>>&& body, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {

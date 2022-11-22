@@ -701,6 +701,51 @@ namespace colt::lang
     static PTR<Expr> CreateExpr(PTR<FnDeclExpr> decl, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
+  class FnCallExpr
+    final : public Expr
+  {
+  public:
+    /// @brief Helper for dyn_cast and is_a
+    static constexpr ExprID classof_v = EXPR_FN_CALL;
+
+  private:
+    /// @brief The arguments of the function
+    SmallVector<PTR<Expr>, 4> arguments;
+    /// @brief The function's declaration
+    PTR<FnDeclExpr> declaration;
+
+  public:
+    //No default copy constructor 
+    FnCallExpr(const FnDefExpr&) = delete;
+    //No default constructor
+    FnCallExpr() = delete;
+    /// @brief Destructor
+    ~FnCallExpr() noexcept override = default;
+    /// @brief Creates function definition
+    /// @param decl The declaration of the function being called
+    /// @param arguments The arguments to pass to the function
+    /// @param src_info The source code information
+    FnCallExpr(PTR<FnDeclExpr> decl, SmallVector<PTR<Expr>, 4>&& arguments, const SourceCodeExprInfo& src_info) noexcept
+      : Expr(EXPR_FN_CALL, decl->get_return_type(), src_info), arguments(std::move(arguments)), declaration(decl)
+    {}
+
+    /// @brief Returns declaration of the function
+    /// @return The name of the variable
+    PTR<const FnDeclExpr> get_fn_decl() const noexcept { return declaration; }
+
+    /// @brief Returns the arguments of the function call
+    /// @return View over the arguments
+    ContiguousView<PTR<Expr>> get_arguments() const noexcept { return arguments.to_view(); }
+
+    /// @brief Creates a function call
+    // @param decl The declaration of the function being called
+    /// @param arguments The arguments to pass to the function
+    /// @param src_info The source code information
+    /// @param ctx The COLTContext to store the resulting expression
+    /// @return Pointer to the created expression
+    static PTR<Expr> CreateExpr(PTR<FnDeclExpr> decl, SmallVector<PTR<Expr>, 4>&& arguments, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+  };
+
   /// @brief Represents a scope
   class ScopeExpr
     final : public Expr
