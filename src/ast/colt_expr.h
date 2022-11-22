@@ -714,7 +714,7 @@ namespace colt::lang
     /// @brief The arguments of the function
     SmallVector<PTR<Expr>, 4> arguments;
     /// @brief The function's declaration
-    PTR<FnDeclExpr> declaration;
+    PTR<const FnDeclExpr> declaration;
 
   public:
     //No default copy constructor 
@@ -727,7 +727,7 @@ namespace colt::lang
     /// @param decl The declaration of the function being called
     /// @param arguments The arguments to pass to the function
     /// @param src_info The source code information
-    FnCallExpr(PTR<FnDeclExpr> decl, SmallVector<PTR<Expr>, 4>&& arguments, const SourceCodeExprInfo& src_info) noexcept
+    FnCallExpr(PTR<const FnDeclExpr> decl, SmallVector<PTR<Expr>, 4>&& arguments, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_FN_CALL, decl->get_return_type(), src_info), arguments(std::move(arguments)), declaration(decl)
     {}
 
@@ -745,7 +745,7 @@ namespace colt::lang
     /// @param src_info The source code information
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
-    static PTR<Expr> CreateExpr(PTR<FnDeclExpr> decl, SmallVector<PTR<Expr>, 4>&& arguments, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+    static PTR<Expr> CreateExpr(PTR<const FnDeclExpr> decl, SmallVector<PTR<Expr>, 4>&& arguments, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a scope

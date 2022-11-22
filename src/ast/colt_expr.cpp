@@ -87,7 +87,7 @@ namespace colt::lang
       ));
   }
 
-  PTR<Expr> FnCallExpr::CreateExpr(PTR<FnDeclExpr> decl, SmallVector<PTR<Expr>, 4>&& arguments, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
+  PTR<Expr> FnCallExpr::CreateExpr(PTR<const FnDeclExpr> decl, SmallVector<PTR<Expr>, 4>&& arguments, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
     assert(decl->get_params_name().get_size() == arguments.get_size());
     return ctx.add_expr(make_unique<FnCallExpr>(
