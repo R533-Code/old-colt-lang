@@ -686,6 +686,8 @@ namespace colt::lang
     /// @return The return type of the function
     PTR<const Type> get_return_type() const noexcept { return declaration->get_return_type(); }
 
+    PTR<const Expr> get_fn_decl() const noexcept { return declaration; }
+
     /// @brief Creates a FnDefExpr
     /// @param decl The declaration of the function
     /// @param body The body of the function
