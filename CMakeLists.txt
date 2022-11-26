@@ -191,8 +191,13 @@ foreach(testPath ${ColtTestsPath})
   # Create test for error count
   if (${withErrorCount})
     add_test(NAME "${testName}_ERRC" COMMAND ${COLT_EXECUTABLE_NAME} -C ${testPath})
-    set_property(TEST "${testName}_ERRC" PROPERTY PASS_REGULAR_EXPRESSION
-      "Warning: Compilation failed with ${ErrorCount} error(!|s!)")
+    if (${ErrorCount} EQUAL 0)
+      set_property(TEST "${testName}_ERRC" PROPERTY PASS_REGULAR_EXPRESSION
+          "Message: Compilation successful!")
+    else()
+      set_property(TEST "${testName}_ERRC" PROPERTY PASS_REGULAR_EXPRESSION
+        "Warning: Compilation failed with ${ErrorCount} error(!|s!)")
+    endif()
   endif()
 
   if (${ENUM_TESTS})
