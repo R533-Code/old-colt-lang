@@ -20,10 +20,10 @@ void compile(StringView str) noexcept
   io::PrintMessage("Finished compilation in {:.6}.",
     std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - begin_time));
 
-  if (AST.is_value())
+  if (AST.is_expected())
     io::PrintMessage("Compilation successful!");
   else
-    io::PrintWarning("Compilation failed!");
+    io::PrintWarning("Compilation failed with {} error{}", AST.get_error(), AST.get_error() == 1 ? "!" : "s!");
 }
 
 void REPL() noexcept
@@ -32,7 +32,7 @@ void REPL() noexcept
   for (;;)
   {
     if (fgets(buffer, 2048, stdin) == nullptr)
-      break;    
+      break;
 
     compile({ buffer, WithNUL });
   }
