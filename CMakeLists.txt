@@ -118,10 +118,18 @@ message(STATUS "Found " ${testCount} " tests.")
 # Testing for CTest
 enable_testing()
 
+option(ENUM_TESTS "Enumerates tests to run" ON)
+
+if (NOT ${testCount} EQUAL 0 AND ${ENUM_TESTS})
+  message(STATUS "Enumerating tests...")
+endif()
+
 # TESTING:
 # Each file in resources/tests/ that ends with .ct
 # is a file to try to run.
 # The first line of these files is a comment '//.*'
+# If the second line is a comment, it must be the expected error count
+# of the compilation (a positive integer).
 # which gives the regex to test the output of interpreting
 # the file against.
 foreach(testPath ${ColtTestsPath})
@@ -129,11 +137,13 @@ foreach(testPath ${ColtTestsPath})
   file(STRINGS ${testPath} testLines)
   # Store the first line
   list(GET testLines 0 firstLine)
+  # Store the second line
+  list(GET testLines 1 errorCountLine)
   
   # Get test name
   get_filename_component(testName ${testPath} NAME_WE)
 
-  if (NOT "${firstLine}" MATCHES "//*")
+  if (NOT "${firstLine}" MATCHES "//.*")
     message(SEND_ERROR "Test '${testName}.ct' should begin with a '//' followed by the Regex to check for!")
   endif()
 
@@ -141,6 +151,21 @@ foreach(testPath ${ColtTestsPath})
   string(REPLACE "//" "" RegexTest ${firstLine})
   # Strip new lines from end of line
   string(REGEX REPLACE "\n$" "" RegexTest "${RegexTest}")
+
+  # True if an error count was supplied for the test
+  set(withErrorCount FALSE)
+
+  if ("${errorCountLine}" MATCHES "^//.*")
+    # Pop the 2 first characters which are //
+    string(REPLACE "//" "" ErrorCount ${errorCountLine})
+    # Strip new lines from end of line
+    string(REGEX REPLACE "\n$" "" ErrorCount "${ErrorCount}")
+    if (NOT "${ErrorCount}" MATCHES "[0-9]+")
+      message(SEND_ERROR "Test '${testName}.ct': Second line may begin with a '//' followed only by a positive integer representing the expected error count!")
+    else()
+      set(withErrorCount TRUE)
+    endif()
+  endif()
 
   # Get folder before test name
   get_filename_component(testFolder_temp "${testPath}/.." ABSOLUTE)
@@ -162,4 +187,23 @@ foreach(testPath ${ColtTestsPath})
   # Create test
   add_test(NAME "${testName}" COMMAND ${COLT_EXECUTABLE_NAME} -C ${testPath})
   set_property(TEST ${testName} PROPERTY PASS_REGULAR_EXPRESSION ${RegexTest})
+  
+  # Create test for error count
+  if (${withErrorCount})
+    add_test(NAME "${testName}_ERRC" COMMAND ${COLT_EXECUTABLE_NAME} -C ${testPath})
+    set_property(TEST "${testName}_ERRC" PROPERTY PASS_REGULAR_EXPRESSION
+      "Warning: Compilation failed with ${ErrorCount} error(!|s!)")
+  endif()
+
+  if (${ENUM_TESTS})
+    if (${withErrorCount})
+      message("Created test '${testName}' of REGEX [${RegexTest}] and '${testName}_ERRC' of expected error(s) ${ErrorCount}.")
+    else()
+      message("Created test '${testName}' of REGEX [${RegexTest}].")
+    endif()
+  endif()
 endforeach()
+
+if (NOT ${testCount} EQUAL 0 AND ${ENUM_TESTS})
+  message(STATUS "Finished enumerating tests!")
+endif()
