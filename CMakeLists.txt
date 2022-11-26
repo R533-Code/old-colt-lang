@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.4)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-project(Colt-Lang VERSION 0.0.2.1 LANGUAGES CXX)
+project(Colt-Lang VERSION 0.0.2.2 LANGUAGES CXX)
 
 # Save all the files to compile
 file(GLOB_RECURSE ColtHeaders "src/*.h")
@@ -118,7 +118,7 @@ message(STATUS "Found " ${testCount} " tests.")
 # Testing for CTest
 enable_testing()
 
-option(ENUM_TESTS "Enumerates tests to run" ON)
+option(ENUM_TESTS "Enumerates tests to run" OFF)
 
 if (NOT ${testCount} EQUAL 0 AND ${ENUM_TESTS})
   message(STATUS "Enumerating tests...")
