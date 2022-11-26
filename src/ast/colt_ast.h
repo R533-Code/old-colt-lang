@@ -66,6 +66,8 @@ namespace colt::lang
       SourceCodeLexemeInfo last_lexeme_info = {};
       /// @brief The current function being parsed
       PTR<const FnDeclExpr> current_function = nullptr;
+      /// @brief Map responsible of storing global state (functions, global variables)
+      Map<StringView, PTR<Expr>> global_map;
       /// @brief The context storing types and expressions
       COLTContext& ctx;
 
@@ -155,11 +157,11 @@ namespace colt::lang
 
       /************* EXPRESSION PARSING ************/
 
-      template<typename... Args>
+      template<typename RetT, typename... Args>
       /// @brief Parses any Expr enclosed in parenthesis.
       /// Usage Example: parse_parenthesis(&AST::parse_unary)
       /// @param method_ptr The method pointer to parse inside the parenthesis
-      PTR<Expr> parse_parenthesis(PTR<Expr>(ASTMaker::*method_ptr)(Args...), Args&&... args) noexcept;
+      RetT parse_parenthesis(RetT(ASTMaker::*method_ptr)(Args...), Args&&... args) noexcept;
 
       /// @brief Parses a LiteralExpr, VarReadExpr, FnCallExpr, or a UnaryExpr.
       PTR<Expr> parse_primary() noexcept;
@@ -182,13 +184,34 @@ namespace colt::lang
 
       PTR<Expr> parse_condition() noexcept;
 
+      /// @brief Parses a variable declaration (global or local)
+      /// @param is_global True if the variable declaration should is global
+      /// @return VarDeclExpr or ErrorExpr
       PTR<Expr> parse_variable_decl(bool is_global) noexcept;
       
+      /// @brief Parses an assignment (=, or any self assignment)
+      /// @param lhs The left hand side of the assignment
+      /// @return VarWriteExpr or ErrorExpr
       PTR<Expr> parse_assignment(PTR<Expr> lhs) noexcept;
       
+      /// @brief Parses a typename (can be function pointer/pointer)
+      /// @return Parsed typename or ErrorType
       PTR<const Type> parse_typename() noexcept;
 
-      PTR<Expr> handle_identifier() noexcept;
+      /// @brief Handles an identifier in a primary expression.
+      /// The identifier could represent a variable, or a function call
+      /// @return VarReadExpr, FnCallExpr, or ErrorExpr
+      PTR<Expr> parse_identifier() noexcept;
+
+      /// @brief Handles a function call, with overload resolution
+      /// @param identifier The function name
+      /// @param line_state The line state from of the function calling this function
+      /// @return FnCallExpr, or ErrorExpr
+      PTR<Expr> parse_function_call(StringView identifier, const SavedExprInfo& line_state) noexcept;
+
+      void parse_function_call_arguments(SmallVector<PTR<Expr>, 4>& arguments) noexcept;
+
+      bool validate_fn_call(SmallVector<PTR<Expr>, 4> arguments, PTR<const FnDeclExpr> decl, StringView identifier) noexcept;
 
       /************* PEEKING HELPERS ************/
 
@@ -224,24 +247,46 @@ namespace colt::lang
       /// @param fmt The format string
       /// @param ...args The argument pack to format
       void gen_error_expr(fmt::format_string<Args...> fmt, Args&& ...args) noexcept;
+
+      template<typename... Args>
+      /// @brief Generates an error over the expression represented by 'src_info'
+      /// @tparam ...Args The parameter pack to format
+      /// @param src_info The source code information representing the expression
+      /// @param fmt The format string
+      /// @param ...args The argument pack to format
+      void gen_error_src_info(const SourceCodeExprInfo& src_info, fmt::format_string<Args...> fmt, Args&& ...args) noexcept;
     };
     
-    template<typename ...Args>
-    PTR<Expr> ASTMaker::parse_parenthesis(PTR<Expr>(ASTMaker::*method_ptr)(Args...), Args&&... args) noexcept
+    template<typename RetT, typename ...Args>
+    RetT ASTMaker::parse_parenthesis(RetT(ASTMaker::*method_ptr)(Args...), Args&&... args) noexcept
     {
       auto lexeme_info = get_expr_info();
       check_and_consume(TKN_LEFT_PAREN, "Expected a '('!");
-      auto to_ret = (*this.*method_ptr)(std::forward<Args>(args)...); //Call method
-      if (current_tkn != TKN_RIGHT_PAREN)
+      if constexpr (std::is_same_v<RetT, void>)
       {
-        GenerateError(lexeme_info.line_nb, lexeme_info.line_strv, lexeme_info.expression, "Unclosed parenthesis delimiter!");
-        ++error_count;
-        panic_consume();
+        (*this.*method_ptr)(std::forward<Args>(args)...);
+        if (current_tkn != TKN_RIGHT_PAREN)
+        {
+          GenerateError(lexeme_info.line_nb, lexeme_info.line_strv, lexeme_info.expression, "Unclosed parenthesis delimiter!");
+          ++error_count;
+          panic_consume();
+        }
+        else
+          consume_current_tkn();
       }
       else
-        consume_current_tkn();
-
-      return to_ret;
+      {
+        auto to_ret = (*this.*method_ptr)(std::forward<Args>(args)...); //Call method
+        if (current_tkn != TKN_RIGHT_PAREN)
+        {
+          GenerateError(lexeme_info.line_nb, lexeme_info.line_strv, lexeme_info.expression, "Unclosed parenthesis delimiter!");
+          ++error_count;
+          panic_consume();
+        }
+        else
+          consume_current_tkn();
+        return to_ret;
+      }
     }
 
     template<typename ...Args>
@@ -281,6 +326,13 @@ namespace colt::lang
       ++error_count;
       panic_consume();
     }
+    
+    template<typename ...Args>
+    void ASTMaker::gen_error_src_info(const SourceCodeExprInfo& src_info, fmt::format_string<Args...> fmt, Args && ...args) noexcept
+    {
+      GenerateError(src_info.line_begin, src_info.lines, src_info.expression, fmt, std::forward<Args>(args)...);
+      ++error_count;
+    }
   }
 
   /// @brief An abstract tree of a COLT program
@@ -301,8 +353,8 @@ namespace colt::lang
   /// @brief Creates an Abstract Syntax Tree by parsing a StringView
   /// @param from The StringView to parse
   /// @param ctx The COLTContext where to store the expressions
-  /// @return None if error where detected else the AST
-  Optional<AST> CreateAST(StringView from, COLTContext& ctx) noexcept;
+  /// @return Error count if errors where detected else the AST
+  Expected<AST, u32> CreateAST(StringView from, COLTContext& ctx) noexcept;
 }
 
 #endif //!HG_COLT_AST

@@ -6,11 +6,11 @@
 
 namespace colt::lang
 {
-  Optional<AST> CreateAST(StringView from, COLTContext& ctx) noexcept
+  Expected<AST, u32> CreateAST(StringView from, COLTContext& ctx) noexcept
   {
     details::ASTMaker ast = { from, ctx };
     if (ast.is_empty() || ast.get_error_count() != 0)
-      return None;
+      return { Error, ast.get_error_count() };
     else
       return { InPlace, ast.steal_result(), ctx };
   }
@@ -169,7 +169,7 @@ namespace colt::lang::details
       to_ret = parse_unary();    
     
     break; case TKN_IDENTIFIER:
-      to_ret = handle_identifier();
+      to_ret = parse_identifier();
 
     break; case TKN_ERROR: //Lexer will have generated an error
       ++error_count;
@@ -267,7 +267,12 @@ namespace colt::lang::details
     //Function:
     // fn NAME \( (TYPE NAME,)* (TYPE NAME)? \) -> TYPE PARSE_SCOPE
     if (current_tkn == TKN_KEYWORD_FN)
-      return parse_fn_decl();
+    {
+      auto expr = parse_fn_decl();
+      if (is_a<FnDefExpr>(expr)) //add to the global table
+        global_map.insert(as<PTR<FnDefExpr>>(expr)->get_name(), expr);
+      return expr;
+    }
     //Global Variable:
     //var NAME = VALUE;
     else
@@ -322,7 +327,7 @@ namespace colt::lang::details
     PTR<const Type> return_t = parse_typename();
 
     PTR<const Type> fn_ptr_t = FnType::CreateFn(return_t, std::move(args_type), ctx);
-    PTR<FnDeclExpr> declaration = as<FnDeclExpr*>(FnDeclExpr::CreateExpr(fn_ptr_t, fn_name, std::move(args_name), line_state.to_src_info(), ctx));
+    PTR<FnDeclExpr> declaration = as<PTR<FnDeclExpr>>(FnDeclExpr::CreateExpr(fn_ptr_t, fn_name, std::move(args_name), line_state.to_src_info(), ctx));
 
     //Set the current function being parsed
     current_function = declaration;
@@ -332,7 +337,7 @@ namespace colt::lang::details
     if (is_valid_scope_begin())
       return FnDefExpr::CreateExpr(declaration, parse_scope(), line_state.to_src_info(), ctx);
     check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
-    return declaration;
+    return FnDefExpr::CreateExpr(declaration, line_state.to_src_info(), ctx);
   }
 
   PTR<Expr> ASTMaker::parse_scope(bool one_expr) noexcept
@@ -379,6 +384,7 @@ namespace colt::lang::details
     case TKN_SEMICOLON:
       gen_error_lexeme("Expected a statement!");
       return ErrorExpr::CreateExpr(ctx);
+    default: break;
     }
     //Save the error count
     auto old_count = error_count;
@@ -527,9 +533,9 @@ namespace colt::lang::details
     {
     case TKN_KEYWORD_VOID:
     {
-      if (!is_mut)
-        return VoidType::CreateType(ctx);
-      gen_error_expr("'void' typename cannot be marked as mutable!");
+      if (is_mut)
+        gen_error_expr("'void' typename cannot be marked as mutable!");
+      return VoidType::CreateType(ctx);
     }
     case TKN_KEYWORD_BOOL:
       return BuiltInType::CreateBool(is_mut, ctx);
@@ -571,6 +577,7 @@ namespace colt::lang::details
           return PtrType::CreatePtr(is_mut, ptr_to, ctx);
       }
     }
+    break;
     case TKN_IDENTIFIER:
       //TODO: add
       colt_unreachable("not implemented");
@@ -581,14 +588,16 @@ namespace colt::lang::details
     return ErrorType::CreateType(ctx);
   }
 
-  PTR<Expr> ASTMaker::handle_identifier() noexcept
+  PTR<Expr> ASTMaker::parse_identifier() noexcept
   {
+    assert(current_tkn == TKN_IDENTIFIER);
+    
     SavedExprInfo line_state = { *this };
-
+    
     StringView identifier = lexer.get_parsed_identifier();
     consume_current_tkn(); // consume identifier
     if (current_tkn == TKN_LEFT_PAREN) // function call
-      return nullptr; //TODO: handle_function_call();
+      return parse_function_call(identifier, line_state);
 
     if (current_function != nullptr) //if parsing a function
     {
@@ -612,10 +621,72 @@ namespace colt::lang::details
     //TODO: Search global variables
     return ErrorExpr::CreateExpr(ctx);
   }
+
+  PTR<Expr> ASTMaker::parse_function_call(StringView identifier, const SavedExprInfo& line_state) noexcept
+  {
+    assert(current_tkn == TKN_LEFT_PAREN);
+
+    SmallVector<PTR<Expr>, 4> arguments;
+    parse_parenthesis(&ASTMaker::parse_function_call_arguments, arguments);
+
+    if (auto found = global_map.find(identifier))
+    {
+      if (is_a<FnDefExpr>(found->second))
+      {
+        auto decl = as<PTR<FnDefExpr>>(found->second)->get_fn_decl();
+        if (validate_fn_call(arguments, decl, identifier))
+          return ErrorExpr::CreateExpr(ctx);        
+        return FnCallExpr::CreateExpr(decl, std::move(arguments),
+            line_state.to_src_info(), ctx);
+      }
+      else // and return an ErrorExpr
+        gen_error_expr("'{}' is not a function!", identifier);
+    }
+    else
+      gen_error_expr("Function of name '{}' does not exist!", identifier);
+    return ErrorExpr::CreateExpr(ctx);
+  }
+
+  void ASTMaker::parse_function_call_arguments(SmallVector<PTR<Expr>, 4>& arguments) noexcept
+  {
+    if (current_tkn != TKN_RIGHT_PAREN)
+      arguments.push_back(parse_binary());
+    while (current_tkn != TKN_RIGHT_PAREN)
+    {
+      if (check_and_consume(TKN_COMMA, "Expected a ')'!"))
+        break;
+      arguments.push_back(parse_binary());
+    }
+  }
+
+  bool ASTMaker::validate_fn_call(SmallVector<PTR<Expr>, 4> arguments, PTR<const FnDeclExpr> decl, StringView identifier) noexcept
+  {
+    if (arguments.get_size() != decl->get_params_name().get_size())
+    {
+      gen_error_expr("Function '{}' expects {} argument{} not {}!", identifier,
+        decl->get_params_name().get_size(), decl->get_params_name().get_size() == 1 ? "," : "s,", arguments.get_size());
+      return false;
+    }
+    bool ret = true;
+    for (size_t i = 0; i < arguments.get_size(); i++)
+    {
+      if (arguments[i]->get_type() != decl->get_params_type()[i])
+      {
+        if (arguments[i]->get_type()->classof() == decl->get_params_type()[i]->classof()
+          && arguments[i]->get_type()->is_mutable() != decl->get_params_type()[i]->is_mutable())
+          continue;
+        else
+          gen_error_src_info(arguments[i]->get_src_code(), "Type of argument does not match that of declaration!");
+        ret = false;
+      }
+    }
+    return ret;
+  }
   
   void ASTMaker::panic_consume() noexcept
   {
-    while (current_tkn != TKN_EOF && current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY)
+    while (current_tkn != TKN_EOF && current_tkn != TKN_SEMICOLON
+      && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_RIGHT_PAREN)
       consume_current_tkn();
     if (current_tkn == TKN_SEMICOLON)
       consume_current_tkn();
