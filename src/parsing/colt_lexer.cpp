@@ -794,9 +794,7 @@ namespace colt::lang
 			if (temp_str == "char")
 				return TKN_KEYWORD_CHAR;
 			else if (temp_str == "case")
-				return TKN_KEYWORD_CASE;
-			else if (temp_str == "mut")
-				return TKN_KEYWORD_MUT;
+				return TKN_KEYWORD_CASE;			
 			else if (temp_str == "continue")
 				return TKN_KEYWORD_CONTINUE;
 		break; case 'd':
@@ -843,6 +841,9 @@ namespace colt::lang
 		break; case 'o':
 			if (temp_str == "or")
 				return TKN_OR_OR;
+		break; case 'm':
+			if (temp_str == "mut")
+				return TKN_KEYWORD_MUT;
 		break; case 'P':
 			if (temp_str == "PTR")
 				return TKN_KEYWORD_PTR;
