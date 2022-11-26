@@ -211,7 +211,7 @@ namespace colt::lang
 
       void parse_function_call_arguments(SmallVector<PTR<Expr>, 4>& arguments) noexcept;
 
-      bool validate_fn_call(SmallVector<PTR<Expr>, 4> arguments, PTR<const FnDeclExpr> decl, StringView identifier) noexcept;
+      bool validate_fn_call(const SmallVector<PTR<Expr>, 4>& arguments, PTR<const FnDeclExpr> decl, StringView identifier, const SourceCodeExprInfo& info) noexcept;
 
       /************* PEEKING HELPERS ************/
 
