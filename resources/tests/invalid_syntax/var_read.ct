@@ -1,4 +1,5 @@
 //Error: Variable of name 'hell' does not exist!
+//1
 fn hello()->i32
 {
   var read = 10;
