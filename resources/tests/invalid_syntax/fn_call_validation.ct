@@ -1,0 +1,9 @@
+//Error: (Function 'hello' expects 1 argument, not 0!|Type of argument does not match that of declaration!)
+//2
+fn hello(i64 a)->i32;
+
+fn main()->i32
+{
+  hello(); //<- error
+  hello(10u64); //<- error
+}
