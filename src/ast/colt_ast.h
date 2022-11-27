@@ -192,7 +192,12 @@ namespace colt::lang
       /// @brief Parses an assignment (=, or any self assignment)
       /// @param lhs The left hand side of the assignment
       /// @return VarWriteExpr or ErrorExpr
-      PTR<Expr> parse_assignment(PTR<Expr> lhs) noexcept;
+      PTR<Expr> parse_assignment(PTR<Expr> lhs, const SavedExprInfo& line_state) noexcept;
+
+      /// @brief Parses a conversion (EXPR as TYPE)
+      /// @param lhs The expression to convert
+      /// @return ConvertExpr or ErrorExpr
+      PTR<Expr> parse_conversion(PTR<Expr> lhs, const SavedExprInfo& line_state) noexcept;
       
       /// @brief Parses a typename (can be function pointer/pointer)
       /// @return Parsed typename or ErrorType

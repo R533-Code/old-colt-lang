@@ -108,47 +108,47 @@ namespace colt::lang::details
     {
     break; case TKN_BOOL_L:
       consume_current_tkn();
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateBool(true, ctx),
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateBool(false, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_U8_L:
       consume_current_tkn();
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU8(true, ctx),
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU8(false, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_U16_L:
       consume_current_tkn();
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU16(true, ctx),
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU16(false, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_U32_L:
       consume_current_tkn();
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU32(true, ctx),
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU32(false, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_U64_L:
       consume_current_tkn();
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU64(true, ctx),
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateU64(false, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_I8_L:
       consume_current_tkn();
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI8(true, ctx),
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI8(false, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_I16_L:
       consume_current_tkn();
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI16(true, ctx),
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI16(false, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_I32_L:
       consume_current_tkn();
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI32(true, ctx),
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI32(false, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_I64_L:
       consume_current_tkn();
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI64(true, ctx),
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateI64(false, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_FLOAT_L:
       consume_current_tkn();
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF32(true, ctx),
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF32(false, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_DOUBLE_L:
       consume_current_tkn();
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF64(true, ctx),
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF64(false, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_STRING_L:
       consume_current_tkn();
@@ -210,7 +210,9 @@ namespace colt::lang::details
     //As assignment operators are right associative, they are handled
     //in a different function
     if (isAssignmentToken(binary_op))
-      return parse_assignment(lhs);
+      return parse_assignment(lhs, line_state);
+    if (current_tkn == TKN_KEYWORD_AS) // EXPR as TYPE <- conversion
+      return parse_conversion(lhs, line_state);
 
     //The current operator's precedence
     u8 op_precedence = GetOpPrecedence(binary_op);
@@ -227,6 +229,9 @@ namespace colt::lang::details
       consume_current_tkn();
       //Recurse: 10 + 5 + 8 -> (10 + (5 + 8))
       PTR<Expr> rhs = parse_binary(GetOpPrecedence(binary_op));
+
+      if (rhs->get_type() != lhs->get_type())
+        gen_error_src_info(line_state.to_src_info(), "Operands should be of same type!");
 
       //Pratt's parsing, which allows operators priority
       lhs = BinaryExpr::CreateExpr(lhs->get_type(), lhs, binary_op, rhs,
@@ -456,11 +461,8 @@ namespace colt::lang::details
       line_state.to_src_info(), ctx);
   }
 
-  PTR<Expr> ASTMaker::parse_assignment(PTR<Expr> lhs) noexcept
+  PTR<Expr> ASTMaker::parse_assignment(PTR<Expr> lhs, const SavedExprInfo& line_state) noexcept
   {
-    //Save current expression state
-    SavedExprInfo line_state = { *this };
-
     Token assignment_tkn = current_tkn;
     PTR<Expr> rhs = parse_binary();
 
@@ -510,6 +512,17 @@ namespace colt::lang::details
     default:
       colt_unreachable("Invalid assignment token!");
     }
+  }
+
+  PTR<Expr> ASTMaker::parse_conversion(PTR<Expr> lhs, const SavedExprInfo& line_state) noexcept
+  {
+    assert(current_tkn == TKN_KEYWORD_AS);
+
+    consume_current_tkn();
+    PTR<const Type> cnv_type = parse_typename();
+
+    return ConvertExpr::CreateExpr(cnv_type, lhs,
+      line_state.to_src_info(), ctx);
   }
 
   PTR<const Type> ASTMaker::parse_typename() noexcept
