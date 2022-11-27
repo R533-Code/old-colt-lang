@@ -8,12 +8,15 @@ project(Colt-Lang VERSION 0.0.2.2 LANGUAGES CXX)
 # Save all the files to compile
 file(GLOB_RECURSE ColtHeaders "src/*.h")
 file(GLOB_RECURSE ColtUnits "src/*.cpp")
+# Save test files
+file(GLOB_RECURSE ColtTestsPath "resources/tests/*.ct")
+
 # Name of the compiler executable
 set(COLT_EXECUTABLE_NAME colt)
 
 # Create the compiler executable
 add_executable(${COLT_EXECUTABLE_NAME}
-  ${ColtHeaders} ${ColtUnits}
+  ${ColtHeaders} ${ColtUnits} ${ColtTestsPath}
 )
 
 # Add precompiled header
@@ -37,10 +40,11 @@ if (MSVC)
 endif()
 
 # include {fmt}
-message(STATUS "Linking with {fmt}") # new line
+message(STATUS "Linking with {fmt}")
 add_subdirectory("${CMAKE_SOURCE_DIR}/libraries/fmt")
 target_link_libraries(${COLT_EXECUTABLE_NAME} PUBLIC fmt::fmt)
 
+# Directories for '#include <...>'
 target_include_directories(${COLT_EXECUTABLE_NAME} PUBLIC 
   "${CMAKE_SOURCE_DIR}/src"
   "${CMAKE_SOURCE_DIR}/libraries/colt-structs/include"
@@ -48,72 +52,13 @@ target_include_directories(${COLT_EXECUTABLE_NAME} PUBLIC
   "${CMAKE_SOURCE_DIR}/libraries/fmt/include"
 )
 
-# Useful macros for knowing which compiler is going to compile the code
-set(IMPL_COLT_CLANG 0)
-set(IMPL_COLT_GNU 0)
-set(IMPL_COLT_INTEL 0)
-set(IMPL_COLT_MSVC 0)
-
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # AppleClang or Clang
-  set(IMPL_COLT_CLANG 1)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(IMPL_COLT_GNU 1)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
-  set(IMPL_COLT_INTEL 1)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  set(IMPL_COLT_MSVC 1)
-endif()
-
-set(IMPL_COLT_OS_WINDOWS 0)
-set(IMPL_COLT_OS_LINUX 0)
-set(IMPL_COLT_OS_APPLE 0)
-
-if(WIN32)
-  set(IMPL_COLT_OS_WINDOWS 1)
-  set(IMPL_COLT_OS_STRING "Windows")
-elseif(APPLE)
-  set(IMPL_COLT_OS_APPLE 1)
-  set(IMPL_COLT_OS_STRING "Apple")
-elseif(UNIX AND NOT APPLE) #LINUX
-  set(IMPL_COLT_OS_LINUX 1)
-  set(IMPL_COLT_OS_STRING "Linux")
-else()
-  set(IMPL_COLT_OS_STRING "UNKNOWN")
-endif()
-
-configure_file("${CMAKE_SOURCE_DIR}/resources/cmake/cmake_colt_config.in"
-  "${CMAKE_SOURCE_DIR}/src/util/colt_config.h")
-
-# DOXYGEN
-option(BUILD_DOC "Build documentation" ON)
-
-message(STATUS "Searching for Doxygen executable...")
-# check if Doxygen is installed
-find_package(Doxygen)
-if (DOXYGEN_FOUND)
-  message(STATUS "Found Doxygen executable.")
-  # set input and output files
-  set(DOXYGEN_IN ${CMAKE_SOURCE_DIR}/resources/doxygen/Doxyfile.in)
-  set(DOXYGEN_OUT ${CMAKE_SOURCE_DIR}/docs/Doxyfile.out)
-
-  message(STATUS "Configuring Doxygen input file...")
-  # request to configure the file
-  configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT})
-
-  add_custom_target(GENERATE_DOCS
-    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Generating API documentation with Doxygen"
-    VERBATIM)
-else (DOXYGEN_FOUND)
-  message(WARNING "Doxygen was not found! Doxygen need to be installed to generate the documentation!")
-endif (DOXYGEN_FOUND)
-
 message(STATUS "Searching for tests...")
 # Load tests
-file(GLOB_RECURSE ColtTestsPath "resources/tests/*.ct")
 list(LENGTH ColtTestsPath testCount)
 message(STATUS "Found " ${testCount} " tests.")
+
+# For VS, group tests
+source_group("Colt Tests" FILES ${ColtTestsPath})
 
 # Testing for CTest
 enable_testing()
@@ -212,3 +157,68 @@ endforeach()
 if (NOT ${testCount} EQUAL 0 AND ${ENUM_TESTS})
   message(STATUS "Finished enumerating tests!")
 endif()
+
+# DOXYGEN
+option(BUILD_DOC "Build documentation" ON)
+
+message(STATUS "Searching for Doxygen executable...")
+# check if Doxygen is installed
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+  message(STATUS "Found Doxygen executable.")
+  # set input and output files
+  set(DOXYGEN_IN ${CMAKE_SOURCE_DIR}/resources/doxygen/Doxyfile.in)
+  set(DOXYGEN_OUT ${CMAKE_SOURCE_DIR}/docs/Doxyfile.out)
+
+  message(STATUS "Configuring Doxygen input file...")
+  # request to configure the file
+  configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT})
+
+  add_custom_target(GENERATE_DOCS
+    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Generating API documentation with Doxygen"
+    VERBATIM)
+else (DOXYGEN_FOUND)
+  message(WARNING "Doxygen was not found! Doxygen need to be installed to generate the documentation!")
+endif (DOXYGEN_FOUND)
+
+message(STATUS "Configuring 'colt_config.h'...")
+
+# Useful macros for knowing which compiler is going to compile the code
+set(IMPL_COLT_CLANG 0)
+set(IMPL_COLT_GNU 0)
+set(IMPL_COLT_INTEL 0)
+set(IMPL_COLT_MSVC 0)
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang") # AppleClang or Clang
+  set(IMPL_COLT_CLANG 1)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set(IMPL_COLT_GNU 1)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+  set(IMPL_COLT_INTEL 1)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(IMPL_COLT_MSVC 1)
+endif()
+
+set(IMPL_COLT_OS_WINDOWS 0)
+set(IMPL_COLT_OS_LINUX 0)
+set(IMPL_COLT_OS_APPLE 0)
+
+if(WIN32)
+  set(IMPL_COLT_OS_WINDOWS 1)
+  set(IMPL_COLT_OS_STRING "Windows")
+elseif(APPLE)
+  set(IMPL_COLT_OS_APPLE 1)
+  set(IMPL_COLT_OS_STRING "Apple")
+elseif(UNIX AND NOT APPLE) #LINUX
+  set(IMPL_COLT_OS_LINUX 1)
+  set(IMPL_COLT_OS_STRING "Linux")
+else()
+  set(IMPL_COLT_OS_STRING "UNKNOWN")
+endif()
+
+configure_file("${CMAKE_SOURCE_DIR}/resources/cmake/cmake_colt_config.in"
+  "${CMAKE_SOURCE_DIR}/src/util/colt_config.h")
+
+message(STATUS "Finished configuring 'colt_config.h'!")
