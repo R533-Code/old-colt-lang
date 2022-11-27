@@ -209,8 +209,8 @@ namespace colt::lang
 		/// @brief alignas
 		TKN_KEYWORD_ALIGNAS,
 		
-		/// @brief cast
-		TKN_KEYWORD_CAST,
+		/// @brief as
+		TKN_KEYWORD_AS,
 		/// @brief reinterpret_as
 		TKN_KEYWORD_REINTERPRET_AS,
 		

@@ -785,6 +785,8 @@ namespace colt::lang
 		break; case 'a':
 			if (temp_str == "and")
 				return TKN_AND_AND;
+			else if (temp_str == "as")
+				return TKN_KEYWORD_AS;
 		break; case 'b':
 			if (temp_str == "break")
 				return TKN_KEYWORD_BREAK;
