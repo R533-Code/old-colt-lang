@@ -444,8 +444,12 @@ namespace colt::lang::details
       return ErrorExpr::CreateExpr(ctx);      
 
     if (is_global)
-      return VarDeclExpr::CreateExpr(var_type, var_name, var_init, true,
+    {
+      auto var_expr = VarDeclExpr::CreateExpr(var_type, var_name, var_init, true,
         line_state.to_src_info(), ctx);
+      global_map.insert(var_name, var_expr);
+      return var_expr;
+    }
     
     local_var_table.push_back({ var_name, var_type });    
     return VarDeclExpr::CreateExpr(var_type, var_name, var_init, false,
