@@ -229,7 +229,10 @@ namespace colt::lang
 	inline void Lexer::gen_error(StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept
 	{
 		auto info = get_line_info();
-		GenerateError(info.line_nb, info.line_strv, lexeme, fmt, std::forward<Args>(args)...);
+		//Construct source information from lexeme information
+		SourceCodeExprInfo lexeme_info = { info.line_nb, info.line_nb, info.line_strv, get_current_lexeme() };
+		
+		GenerateError(lexeme_info, fmt, std::forward<Args>(args)...);
 	}
 }
 
