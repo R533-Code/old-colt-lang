@@ -8,33 +8,14 @@
 #define HG_COLT_EXPR
 
 #include <util/colt_pch.h>
+#include <parsing/colt_error_report.h>
 #include <type/colt_type.h>
 #include <ast/colt_operators.h>
 
 namespace colt::lang
 {
   //Forward declaration
-  class COLTContext;
-
-  /// @brief The source code information of an expression.
-  struct SourceCodeExprInfo
-  {
-    /// @brief The beginning line number of the expression
-    u32 line_begin = {};
-    /// @brief The end line number of the expression
-    u32 line_end = {};
-    /// @brief StringView over all the lines on which the expression spans
-    StringView lines;
-    /// @brief StringView over the expression (included in lines)
-    StringView expression;
-
-    /// @brief Check if the information are valid (not default constructed)
-    /// @return True if neither line_begin nor line_end are 0
-    bool is_valid() const noexcept { return line_begin != 0 && line_end != 0; }
-    /// @brief Check if the information represents a single line
-    /// @return True if line_begin == line_end
-    bool is_single_line() const noexcept { return line_begin == line_end; }
-  };
+  class COLTContext;  
 
   /// @brief Abstract base class of all expressions
   class Expr
