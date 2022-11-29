@@ -8,7 +8,7 @@ namespace colt::lang
 {
   Expected<AST, u32> CreateAST(StringView from, COLTContext& ctx) noexcept
   {
-    details::ASTMaker ast = { from, ctx };
+    ASTMaker ast = { from, ctx };
     if (ast.is_empty() || ast.get_error_count() != 0)
       return { Error, ast.get_error_count() };
     else
@@ -16,7 +16,7 @@ namespace colt::lang
   }
 }
 
-namespace colt::lang::details
+namespace colt::lang
 {
   u8 GetOpPrecedence(Token tkn) noexcept
   {
@@ -161,17 +161,18 @@ namespace colt::lang::details
     case TKN_AND:          // &(var)
     case TKN_PLUS_PLUS:    // ++(var)
     case TKN_MINUS_MINUS:  // --(var)
-    case TKN_STAR:         // *(ptr)
+    case TKN_STAR:         // *(var)
     case TKN_TILDE:        // ~(any)
-    case TKN_BANG:         // !(any)
+    case TKN_BANG:         // !(any) <- bool only
     case TKN_MINUS:        // -(any)
-    case TKN_PLUS:         // +(any)
+    case TKN_PLUS:         // +(any) <- error
       to_ret = parse_unary();    
     
     break; case TKN_IDENTIFIER:
       to_ret = parse_identifier();
 
     break; case TKN_ERROR: //Lexer will have generated an error
+      consume_current_tkn();
       ++error_count;
       to_ret = ErrorExpr::CreateExpr(ctx);
       
@@ -179,12 +180,12 @@ namespace colt::lang::details
       to_ret = parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0));
 
     break; default:
-      gen_error_expr("Expected an expression!");
+      generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_semicolon, "Expected an expression!");
       return ErrorExpr::CreateExpr(ctx);
     }
 
     //Post-unary operators
-    if (current_tkn == TKN_PLUS_PLUS || current_tkn == TKN_MINUS_MINUS)
+    if (is_valid_post_unary())
     {
       to_ret = UnaryExpr::CreateExpr(to_ret->get_type(), current_tkn, true, to_ret, line_state.to_src_info(), ctx);
       consume_current_tkn(); //consume the post unary operator
@@ -196,7 +197,7 @@ namespace colt::lang::details
   {
     if (precedence == 255) //token was not an operator: error
     {
-      gen_error_lexeme("Expected a binary operator!");
+      generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_semicolon, "Expected a binary operator!");
       return ErrorExpr::CreateExpr(ctx);
     }
     //Save current expression state
@@ -221,7 +222,7 @@ namespace colt::lang::details
     {
       if (op_precedence == 255) //token was not an operator: error
       {
-        gen_error_lexeme("Expected a ';'!");
+        generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_semicolon, "Expected a ';'!");
         return ErrorExpr::CreateExpr(ctx);
       }
 
@@ -231,7 +232,8 @@ namespace colt::lang::details
       PTR<Expr> rhs = parse_binary(GetOpPrecedence(binary_op));
 
       if (rhs->get_type() != lhs->get_type())
-        gen_error_src_info(line_state.to_src_info(), "Operands should be of same type!");
+        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+          "Operands should be of same type!");
 
       //Pratt's parsing, which allows operators priority
       lhs = BinaryExpr::CreateExpr(lhs->get_type(), lhs, binary_op, rhs,
@@ -255,8 +257,38 @@ namespace colt::lang::details
     Token op = current_tkn;
     consume_current_tkn(); //consume the unary operator
     
-    if (op == TKN_PLUS_PLUS) // +5 -> 5
+    if (op == TKN_PLUS)
+    {
+      generate_any<report_as::ERROR>(line_state.to_src_info(), &ASTMaker::panic_consume_semicolon,
+        "Unary '+' is not supported!");
+      return ErrorExpr::CreateExpr(ctx);
+    }
+
+    if (op == TKN_PLUS_PLUS || op == TKN_MINUS_MINUS)
       return parse_primary();
+    
+    //Dereference operator
+    if (op == TKN_STAR)
+    {
+      auto expr = parse_primary();
+      if (!is_a<VarReadExpr>(expr))
+      {
+        generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+          "Dereference operator '*' can only be applied on variables!");
+        return ErrorExpr::CreateExpr(ctx);
+      }
+      if (!expr->get_type()->is_ptr())
+      {
+        generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+          "Dereference operator '*' can only be applied on pointer types!");
+        return ErrorExpr::CreateExpr(ctx);
+      }
+      else
+      {
+        return UnaryExpr::CreateExpr(as<PTR<const PtrType>>(expr->get_type())->get_type_to(),
+          current_tkn, false, expr, line_state.to_src_info(), ctx);
+      }
+    }
 
     //Parse the child expression -(5 + 8) -> PARENT -, CHILD (5 + 8)
     PTR<Expr> child = parse_primary();
@@ -302,17 +334,18 @@ namespace colt::lang::details
       auto arg_name = lexer.get_parsed_identifier();
       if (check_and_consume(TKN_IDENTIFIER, "Expected an identifier!"))
       {
-        panic_consume_rparen();
+        //panic_consume_rparen();
         break;
       }
       
       if (args_name.to_view().contains(arg_name))
       {
+        //FIXME: error
         auto line_info = lexer.get_line_info();
-        GenerateError(line_info.line_nb, line_info.line_strv, arg_name, "Cannot have parameters of same name '{}'!", arg_name);
+        //GenerateError(line_info.line_nb, line_info.line_strv, arg_name, "Cannot have parameters of same name '{}'!", arg_name);
 
         ++error_count;
-        panic_consume_rparen();
+        //panic_consume_rparen();
         break;
       }
       args_name.push_back(arg_name);
@@ -321,7 +354,8 @@ namespace colt::lang::details
         break;
       if (check_and_consume(TKN_COMMA, "Expected a ','!"))
       {
-        panic_consume_rparen();
+        //TODO:
+        //panic_consume_rparen();
         break;
       }
     }
@@ -364,14 +398,15 @@ namespace colt::lang::details
       
       if (current_tkn != TKN_RIGHT_CURLY)
       {
-        GenerateError(lexeme_info.line_nb, lexeme_info.line_strv, lexeme_info.expression, "Unclosed curly bracket delimiter!");
+        //FIXME: error
+        //GenerateError(lexeme_info.line_nb, lexeme_info.line_strv, lexeme_info.expression, "Unclosed curly bracket delimiter!");
         ++error_count;
       }
       else
         consume_current_tkn();
     }
     else
-      gen_error_lexeme("Expected a scope!");
+      generate_any_current<report_as::ERROR>(nullptr, "Expected a scope!");
     return ErrorExpr::CreateExpr(ctx);
   }
 
@@ -387,7 +422,7 @@ namespace colt::lang::details
     case TKN_KEYWORD_IF:
       return parse_condition();
     case TKN_SEMICOLON:
-      gen_error_lexeme("Expected a statement!");
+      generate_any_current<report_as::ERROR>(nullptr, "Expected a statement!");
       return ErrorExpr::CreateExpr(ctx);
     default: break;
     }
@@ -433,8 +468,14 @@ namespace colt::lang::details
     }
     else if (var_type == nullptr)
     {
-      gen_error_expr("An uninitialized variable should specify its type!");
+      generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+        "An uninitialized variable should specify its type!");
       return ErrorExpr::CreateExpr(ctx);
+    }
+    else
+    {
+      consume_current_tkn();
+      goto GEN;
     }
 
     //If the type is not explicit, deduce it from left hand side
@@ -448,6 +489,7 @@ namespace colt::lang::details
     if (check_and_consume(TKN_SEMICOLON, "Expected a ';'!"))
       return ErrorExpr::CreateExpr(ctx);      
 
+  GEN:
     if (is_global)
     {
       auto var_expr = VarDeclExpr::CreateExpr(var_type, var_name, var_init, true,
@@ -468,7 +510,8 @@ namespace colt::lang::details
 
     if (!is_a<VarReadExpr>(lhs))
     {
-      gen_error_expr("Left hand side of an assignment should be a variable!");
+      generate_any<report_as::ERROR>(lhs->get_src_code(), nullptr,
+        "Left hand side of an assignment should be a variable!");
       return ErrorExpr::CreateExpr(ctx);
     }
 
@@ -543,54 +586,64 @@ namespace colt::lang::details
       consume_current_tkn();
     }
 
-    //Consume the typename token
-    ON_EXIT{ consume_current_tkn(); };
-
     switch (current_tkn)
     {
     case TKN_KEYWORD_VOID:
     {
       if (is_mut)
-        gen_error_expr("'void' typename cannot be marked as mutable!");
+        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+          "'void' typename cannot be marked as mutable!");
       return VoidType::CreateType(ctx);
     }
     case TKN_KEYWORD_BOOL:
+      consume_current_tkn();
       return BuiltInType::CreateBool(is_mut, ctx);
     case TKN_KEYWORD_CHAR:
       //TODO: add
       colt_unreachable("not implemented");
       //return BuiltInType::CreateChar(is_mut, ctx);
     case TKN_KEYWORD_I8:
+      consume_current_tkn();
       return BuiltInType::CreateI8(is_mut, ctx);
     case TKN_KEYWORD_U8:
+      consume_current_tkn();
       return BuiltInType::CreateU8(is_mut, ctx);
     case TKN_KEYWORD_I16:
+      consume_current_tkn();
       return BuiltInType::CreateI16(is_mut, ctx);
     case TKN_KEYWORD_U16:
+      consume_current_tkn();
       return BuiltInType::CreateU16(is_mut, ctx);
     case TKN_KEYWORD_I32:
+      consume_current_tkn();
       return BuiltInType::CreateI32(is_mut, ctx);
     case TKN_KEYWORD_U32:
+      consume_current_tkn();
       return BuiltInType::CreateU32(is_mut, ctx);
     case TKN_KEYWORD_I64:
+      consume_current_tkn();
       return BuiltInType::CreateI64(is_mut, ctx);
     case TKN_KEYWORD_U64:
+      consume_current_tkn();
       return BuiltInType::CreateU64(is_mut, ctx);
     case TKN_KEYWORD_FLOAT:
+      consume_current_tkn();
       return BuiltInType::CreateF32(is_mut, ctx);
     case TKN_KEYWORD_DOUBLE:
+      consume_current_tkn();
       return BuiltInType::CreateF64(is_mut, ctx);
     case TKN_KEYWORD_LSTRING:
       //TODO: add
       colt_unreachable("not implemented");
     case TKN_KEYWORD_PTR:
     {
+      consume_current_tkn();
       if (!check_and_consume(TKN_LESS, "Expected a '<'!"))
       {
         PTR<const Type> ptr_to = parse_typename();
         if (current_tkn == TKN_GREAT_GREAT) // '>>' is parsed as '>' '>'
           current_tkn = TKN_GREAT;
-        else if (!check_and_consume(TKN_GREAT, "Expected a '>'!"))
+        if (!check_and_consume(TKN_GREAT, "Expected a '>'!"))
           return PtrType::CreatePtr(is_mut, ptr_to, ctx);
       }
     }
@@ -599,7 +652,8 @@ namespace colt::lang::details
       //TODO: add
       colt_unreachable("not implemented");
     default:
-      gen_error_expr("Expected a typename!");
+      generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+        "Expected a typename!");
     }
     //return an error
     return ErrorType::CreateType(ctx);
@@ -612,6 +666,9 @@ namespace colt::lang::details
     SavedExprInfo line_state = { *this };
     
     StringView identifier = lexer.get_parsed_identifier();
+    //The source code information of the identifier
+    SourceCodeExprInfo identifier_info = line_state.to_src_info();
+
     consume_current_tkn(); // consume identifier
     if (current_tkn == TKN_LEFT_PAREN) // function call
       return parse_function_call(identifier, line_state);
@@ -634,7 +691,8 @@ namespace colt::lang::details
             line_state.to_src_info(), ctx);
       }
     }
-    gen_error_expr("Variable of name '{}' does not exist!", identifier);
+    generate_any<report_as::ERROR>(identifier_info, nullptr,
+      "Variable of name '{}' does not exist!", identifier);
     //TODO: Search global variables
     return ErrorExpr::CreateExpr(ctx);
   }
@@ -659,10 +717,12 @@ namespace colt::lang::details
             line_state.to_src_info(), ctx);
       }
       else // and return an ErrorExpr
-        gen_error_src_info(identifier_location, "'{}' is not a function!", identifier);
+        generate_any<report_as::ERROR>(identifier_location, nullptr,
+          "'{}' is not a function!", identifier);
     }
     else
-      gen_error_src_info(identifier_location, "Function of name '{}' does not exist!", identifier);
+      generate_any<report_as::ERROR>(identifier_location, nullptr,
+        "Function of name '{}' does not exist!", identifier);
     return ErrorExpr::CreateExpr(ctx);
   }
 
@@ -682,7 +742,7 @@ namespace colt::lang::details
   {
     if (arguments.get_size() != decl->get_params_name().get_size())
     {
-      gen_error_src_info(info, "Function '{}' expects {} argument{} not {}!", identifier,
+      generate_any<report_as::ERROR>(info, nullptr, "Function '{}' expects {} argument{} not {}!", identifier,
         decl->get_params_name().get_size(), decl->get_params_name().get_size() == 1 ? "," : "s,", arguments.get_size());
       return false;
     }
@@ -692,27 +752,17 @@ namespace colt::lang::details
       if (arguments[i]->get_type() != decl->get_params_type()[i])
       {
         //TODO: checking for pointer types
-        gen_error_src_info(arguments[i]->get_src_code(), "Type of argument does not match that of declaration!");
+        generate_any<report_as::ERROR>(arguments[i]->get_src_code(), nullptr,
+          "Type of argument does not match that of declaration!");
         ret = false;
       }
     }
     return ret;
   }
   
-  void ASTMaker::panic_consume() noexcept
+  void ASTMaker::panic_consume_semicolon() noexcept
   {
-    while (current_tkn != TKN_EOF && current_tkn != TKN_SEMICOLON
-      && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_RIGHT_PAREN)
-      consume_current_tkn();
-    if (current_tkn == TKN_SEMICOLON)
-      consume_current_tkn();
-  }
-  
-  void ASTMaker::panic_consume_rparen() noexcept
-  {
-    while (current_tkn != TKN_RIGHT_PAREN && current_tkn != TKN_EOF && current_tkn != TKN_SEMICOLON)
-      consume_current_tkn();
-    if (current_tkn == TKN_SEMICOLON)
+    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_EOF)
       consume_current_tkn();
   }
 }
