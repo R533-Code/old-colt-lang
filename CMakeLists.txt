@@ -132,6 +132,7 @@ foreach(testPath ${ColtTestsPath})
   # Create test
   add_test(NAME "${testName}" COMMAND ${COLT_EXECUTABLE_NAME} -C ${testPath})
   set_property(TEST ${testName} PROPERTY PASS_REGULAR_EXPRESSION ${RegexTest})
+  set_property(TEST ${testName} PROPERTY TIMEOUT 5) # 5s
   
   # Create test for error count
   if (${withErrorCount})
@@ -143,6 +144,7 @@ foreach(testPath ${ColtTestsPath})
       set_property(TEST "${testName}_ERRC" PROPERTY PASS_REGULAR_EXPRESSION
         "Warning: Compilation failed with ${ErrorCount} error(!|s!)")
     endif()
+    set_property(TEST "${testName}_ERRC" PROPERTY TIMEOUT 5) # 5s
   endif()
 
   if (${ENUM_TESTS})
