@@ -1,6 +1,6 @@
 //Error: Function of name 'hela' does not exist!
 //1
-fn hello(mut i64 a)->i32;
+fn hello(i64 a)->i32;
 
 fn main()->i32
 {
