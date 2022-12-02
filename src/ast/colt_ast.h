@@ -212,7 +212,7 @@ namespace colt::lang
     /// @brief Handles an identifier in a primary expression.
     /// The identifier could represent a variable, or a function call
     /// @return VarReadExpr, FnCallExpr, or ErrorExpr
-    PTR<Expr> parse_identifier() noexcept;
+    PTR<Expr> parse_identifier(const SavedExprInfo& line_state) noexcept;
 
     /// @brief Handles a function call, with overload resolution
     /// @param identifier The function name
@@ -243,7 +243,12 @@ namespace colt::lang
 
     /************* ERROR HANDLING HELPERS ************/
 
+    /// @brief Consumes all tokens till a TKN_SEMICOLON or TKN_EOF is hit
     void panic_consume_semicolon() noexcept;
+    /// @brief Consumes all tokens till a TKN_SEMICOLON, TKN_EOF or a valid scope beginning is hit
+    void panic_consume_fn_decl() noexcept;
+    /// @brief Consumes all tokens till a TKN_RIGHT_PAREN or TKN_EOF is hit
+    void panic_consume_rparen() noexcept;
 
     template<typename... Args>
     /// @brief Validates that the current token is 'expected' and consumes it, else generates 'error'
@@ -253,6 +258,16 @@ namespace colt::lang
     /// @param ...args The argument pack to format
     /// @return True if the token was invalid
     bool check_and_consume(Token expected, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
+
+    template<typename... Args>
+    /// @brief Validates that the current token is 'expected' and consumes it, else generates 'error'
+    /// @tparam ...Args The parameter pack to format
+    /// @param expected The expected token
+    /// @param panic The method to consume tokens in case of errors
+    /// @param fmt The error format to print if the current token does not match 'expected'
+    /// @param ...args The argument pack to format
+    /// @return True if the token was invalid
+    bool check_and_consume(Token expected, panic_consume_t panic, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
 
     template<report_as as, typename... Args>
     /// @brief Generates a message/warning/error using the 'src_info' and consumes tokens if required
@@ -317,6 +332,22 @@ namespace colt::lang
       return true;
     }
   }
+  
+  template<typename ...Args>
+  bool ASTMaker::check_and_consume(Token expected, panic_consume_t panic, fmt::format_string<Args...> fmt, Args && ...args) noexcept
+  {
+    if (current_tkn == expected)
+    {
+      consume_current_tkn();
+      return false;
+    }
+    else
+    {
+      generate_any_current<report_as::ERROR>(panic, fmt, std::forward<Args>(args)...);
+      return true;
+    }
+  }
+  
   template<ASTMaker::report_as as, typename ...Args>
   void ASTMaker::generate_any(const SourceCodeExprInfo& src_info, panic_consume_t panic_c,
     fmt::format_string<Args...> fmt, Args&&... args) noexcept

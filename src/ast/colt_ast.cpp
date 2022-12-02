@@ -4,6 +4,13 @@
 
 #include "colt_ast.h"
 
+/// @brief If 'boolean' evaluates to true, goto label
+#define IF_TRUE_GOTO(boolean, label) if ((boolean)) goto label
+/// @brief If 'boolean' evaluates to false, goto label
+#define IF_FALSE_GOTO(boolean, label) if (!(boolean)) goto label
+
+#define IF_TRUE_RET_ERR(boolean) if ((boolean)) return ErrorExpr::CreateExpr(ctx)
+
 namespace colt::lang
 {
   Expected<AST, u32> CreateAST(StringView from, COLTContext& ctx) noexcept
@@ -95,6 +102,7 @@ namespace colt::lang
   {
     last_lexeme_info = get_expr_info();
     current_tkn = lexer.get_next_token();
+    //current_lexeme_info = get_expr_info();
   }
 
   PTR<Expr> ASTMaker::parse_primary() noexcept
@@ -169,7 +177,7 @@ namespace colt::lang
       to_ret = parse_unary();    
     
     break; case TKN_IDENTIFIER:
-      to_ret = parse_identifier();
+      to_ret = parse_identifier(line_state);
 
     break; case TKN_ERROR: //Lexer will have generated an error
       consume_current_tkn();
@@ -323,45 +331,53 @@ namespace colt::lang
     assert(current_tkn == TKN_KEYWORD_FN);
     consume_current_tkn();
     auto fn_name = lexer.get_parsed_identifier();
-    check_and_consume(TKN_IDENTIFIER, "Expected an identifier, not '{}'!", fn_name);
-    check_and_consume(TKN_LEFT_PAREN, "Expected a '('!");
+    
+    IF_TRUE_RET_ERR(
+      check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_fn_decl, 
+        "Expected an identifier, not '{}'!", fn_name)
+    );
+    IF_TRUE_RET_ERR(
+      check_and_consume(TKN_LEFT_PAREN, &ASTMaker::panic_consume_fn_decl,
+        "Expected a '('!")
+    );
     
     SmallVector<PTR<const Type>, 4> args_type;
     SmallVector<StringView, 4> args_name;
     while (current_tkn != TKN_EOF && current_tkn != TKN_RIGHT_PAREN)
     {
+      SavedExprInfo line_state_arg = { *this };
+
       args_type.push_back(parse_typename());
       auto arg_name = lexer.get_parsed_identifier();
       if (check_and_consume(TKN_IDENTIFIER, "Expected an identifier!"))
       {
-        //panic_consume_rparen();
+        panic_consume_rparen();
         break;
       }
       
       if (args_name.to_view().contains(arg_name))
       {
-        //FIXME: error
-        auto line_info = lexer.get_line_info();
-        //GenerateError(line_info.line_nb, line_info.line_strv, arg_name, "Cannot have parameters of same name '{}'!", arg_name);
-
-        ++error_count;
-        //panic_consume_rparen();
+        generate_any<report_as::ERROR>(line_state_arg.to_src_info(), &ASTMaker::panic_consume_rparen,
+          "Cannot have parameters of same name '{}'!", arg_name);
         break;
       }
       args_name.push_back(arg_name);
 
       if (current_tkn == TKN_RIGHT_PAREN)
         break;
-      if (check_and_consume(TKN_COMMA, "Expected a ','!"))
-      {
-        //TODO:
-        //panic_consume_rparen();
+      if (check_and_consume(TKN_COMMA, &ASTMaker::panic_consume_rparen, "Expected a ','!"))
         break;
-      }
     }
 
-    check_and_consume(TKN_RIGHT_PAREN, "Expected a ')'!");
-    check_and_consume(TKN_MINUS_GREAT, "Expected a '->'!");
+    IF_TRUE_RET_ERR(
+      check_and_consume(TKN_RIGHT_PAREN, &ASTMaker::panic_consume_fn_decl, 
+        "Expected a ')'!")
+    );
+    IF_TRUE_RET_ERR(
+      check_and_consume(TKN_MINUS_GREAT, &ASTMaker::panic_consume_fn_decl,
+        "Expected a '->'!")
+    );
+
     //The return type of the function
     PTR<const Type> return_t = parse_typename();
 
@@ -373,14 +389,16 @@ namespace colt::lang
     //And reset it on scope exit
     ON_EXIT{ current_function = nullptr; };
 
+
     if (is_valid_scope_begin())
       return FnDefExpr::CreateExpr(declaration, parse_scope(), line_state.to_src_info(), ctx);
     check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
-    return FnDefExpr::CreateExpr(declaration, line_state.to_src_info(), ctx);
+    return FnDefExpr::CreateExpr(declaration, line_state.to_src_info(), ctx);    
   }
 
   PTR<Expr> ASTMaker::parse_scope(bool one_expr) noexcept
   {
+    SavedExprInfo line_state = { *this };
     if (current_tkn == TKN_COLON && one_expr)
     {
       consume_current_tkn(); // :
@@ -659,17 +677,15 @@ namespace colt::lang
     return ErrorType::CreateType(ctx);
   }
 
-  PTR<Expr> ASTMaker::parse_identifier() noexcept
+  PTR<Expr> ASTMaker::parse_identifier(const SavedExprInfo& line_state) noexcept
   {
     assert(current_tkn == TKN_IDENTIFIER);
     
-    SavedExprInfo line_state = { *this };
-    
     StringView identifier = lexer.get_parsed_identifier();
-    //The source code information of the identifier
+    consume_current_tkn(); // consume identifier
+    //The source code information of the identifier, done AFTER consuming
     SourceCodeExprInfo identifier_info = line_state.to_src_info();
 
-    consume_current_tkn(); // consume identifier
     if (current_tkn == TKN_LEFT_PAREN) // function call
       return parse_function_call(identifier, line_state);
 
@@ -765,5 +781,18 @@ namespace colt::lang
     while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_EOF)
       consume_current_tkn();
   }
+  
+  void ASTMaker::panic_consume_fn_decl() noexcept
+  {
+    while (current_tkn != TKN_SEMICOLON && is_valid_scope_begin() && current_tkn != TKN_EOF)
+      consume_current_tkn();
+  }
+  
+  void ASTMaker::panic_consume_rparen() noexcept
+  {
+    while (current_tkn != TKN_SEMICOLON && is_valid_scope_begin() && current_tkn != TKN_EOF)
+      consume_current_tkn();
+  }
 }
 
+#undef IF_TRUE_GOTO
