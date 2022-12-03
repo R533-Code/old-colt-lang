@@ -1,0 +1,9 @@
+//Error: Expression should be of type 'bool'!
+//1
+fn a()->i32
+{
+  if 10: //<- error
+    10;
+  else:
+    12;
+}

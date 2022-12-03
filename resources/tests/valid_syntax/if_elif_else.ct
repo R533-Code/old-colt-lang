@@ -1,0 +1,10 @@
+//Compilation successful!
+fn a()->i32
+{
+  if 10 == 10:
+    10;
+  elif 10 == 11:
+    11;
+  else:
+    12;
+}
