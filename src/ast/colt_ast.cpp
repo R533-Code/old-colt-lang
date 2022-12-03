@@ -429,6 +429,7 @@ namespace colt::lang
 
   PTR<Expr> ASTMaker::parse_statement() noexcept
   {
+    PTR<Expr> to_ret;
     switch (current_tkn)
     {
     case TKN_KEYWORD_VAR:
@@ -443,10 +444,26 @@ namespace colt::lang
       generate_any_current<report_as::ERROR>(nullptr, "Expected a statement!");
       consume_current_tkn(); // ';'
       return ErrorExpr::CreateExpr(ctx);
-    default: break;
+    
+      // EXPECTS ';'
+
+    case TKN_KEYWORD_CONTINUE:
+      to_ret = BreakContinueExpr::CreateExpr(false, get_expr_info().to_src_info(), ctx);
+      consume_current_tkn();
+      if (!is_parsing_loop)
+        generate_any<report_as::ERROR>(to_ret->get_src_code(), nullptr, "Statement 'continue' can only appear inside a loop!");
+    
+    break; case TKN_KEYWORD_BREAK:
+      to_ret = BreakContinueExpr::CreateExpr(true, get_expr_info().to_src_info(), ctx);
+      consume_current_tkn();
+      if (!is_parsing_loop)
+        generate_any<report_as::ERROR>(to_ret->get_src_code(), nullptr, "Statement 'break' can only appear inside a loop!");
+    
+    break; default:
+      to_ret = parse_binary();
     }
-    auto to_ret = parse_binary();
-    check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
+    check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_semicolon,
+      "Expected a ';'!");
     return to_ret;
   }
 
@@ -829,7 +846,7 @@ namespace colt::lang
   
   void ASTMaker::panic_consume_semicolon() noexcept
   {
-    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_EOF)
+    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF)
       consume_current_tkn();
   }
 
