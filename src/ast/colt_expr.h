@@ -58,7 +58,9 @@ namespace colt::lang
       /// @brief ForLoopExpr
       EXPR_FOR_LOOP,
       /// @brief WhileLoopExpr
-      EXPR_WHILE_LOOP
+      EXPR_WHILE_LOOP,
+      /// @brief BreakContinueExpr
+      EXPR_BREAK_CONTINUE
     };
 
     /// @brief Helper for dyn_cast and is_a
@@ -848,7 +850,7 @@ namespace colt::lang
 
   public:
     //No default copy constructor 
-    WhileLoopExpr(const ConditionExpr&) = delete;
+    WhileLoopExpr(const WhileLoopExpr&) = delete;
     //No default constructor
     WhileLoopExpr() = delete;
     /// @brief Destructor
@@ -879,6 +881,41 @@ namespace colt::lang
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(PTR<Expr> condition, PTR<Expr> body, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+  };
+
+  /// @brief Represents a while loop
+  class BreakContinueExpr
+    final : public Expr
+  {
+  public:
+    /// @brief Helper for dyn_cast and is_a
+    static constexpr ExprID classof_v = EXPR_BREAK_CONTINUE;
+
+  private:
+    /// @brief True if 'break', false if 'continue'
+    bool is_break_v;
+
+  public:
+    //No default copy constructor 
+    BreakContinueExpr(const BreakContinueExpr&) = delete;
+    //No default constructor
+    BreakContinueExpr() = delete;
+    /// @brief Destructor
+    ~BreakContinueExpr() noexcept override = default;
+    /// @brief Constructs a while loop expression
+    /// @param type The type of the resulting expression
+    /// @param src_info The source code information
+    BreakContinueExpr(PTR<const Type> type, bool is_break_v, const SourceCodeExprInfo& src_info) noexcept
+      : Expr(EXPR_BREAK_CONTINUE, type, src_info), is_break_v(is_break_v) {}
+
+    bool is_break() const noexcept { return is_break_v; }
+    bool is_continue() const noexcept { return !is_break_v; }
+
+    /// @brief Constructs a while loop expression
+    /// @param src_info The source code information
+    /// @param ctx The COLTContext to store the resulting expression
+    /// @return Pointer to the created expression
+    static PTR<Expr> CreateExpr(bool is_break, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 }
 

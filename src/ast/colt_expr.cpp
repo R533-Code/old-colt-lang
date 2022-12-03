@@ -114,11 +114,18 @@ namespace colt::lang
       ctx.add_type(make_unique<VoidType>()), condition, body, src_info
       ));
   }
+
+  PTR<Expr> BreakContinueExpr::CreateExpr(bool is_break, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
+  {
+    return ctx.add_expr(make_unique<BreakContinueExpr>(
+      ctx.add_type(make_unique<VoidType>()), is_break, src_info
+      ));
+  }
   
   PTR<Expr> ErrorExpr::CreateExpr(COLTContext& ctx) noexcept
   {
     return ctx.add_expr(make_unique<ErrorExpr>(
       ctx.add_type(make_unique<ErrorType>())
       ));
-  }
+  }  
 }
