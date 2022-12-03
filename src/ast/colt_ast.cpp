@@ -108,7 +108,7 @@ namespace colt::lang
     //Save current expression state
     SavedExprInfo line_state = { *this };
 
-    PTR<Expr> to_ret;    
+    PTR<Expr> to_ret;
 
     switch (current_tkn)
     {
@@ -309,19 +309,21 @@ namespace colt::lang
 
   PTR<Expr> ASTMaker::parse_global_declaration() noexcept
   {
-    //Function:
-    // fn NAME \( (TYPE NAME,)* (TYPE NAME)? \) -> TYPE PARSE_SCOPE
     if (current_tkn == TKN_KEYWORD_FN)
     {
-      auto expr = parse_fn_decl();
+      auto expr = parse_fn_decl(); //Function
       if (is_a<FnDefExpr>(expr)) //add to the global table
         global_map.insert(as<PTR<FnDefExpr>>(expr)->get_name(), expr);
       return expr;
     }
-    //Global Variable:
-    //var NAME = VALUE;
+    else if (current_tkn == TKN_KEYWORD_VAR)
+      return parse_variable_decl(true); //Global Variable
     else
-      return parse_variable_decl(true);
+    {
+      generate_any<report_as::ERROR>(get_expr_info().to_src_info(),
+        &ASTMaker::panic_consume_decl, "Expected a declaration!");
+      return ErrorExpr::CreateExpr(ctx);
+    }
   }
 
   PTR<Expr> ASTMaker::parse_fn_decl() noexcept
@@ -427,7 +429,6 @@ namespace colt::lang
 
   PTR<Expr> ASTMaker::parse_statement() noexcept
   {
-    //TODO: add if/for/while handling
     switch (current_tkn)
     {
     case TKN_KEYWORD_VAR:
@@ -436,6 +437,8 @@ namespace colt::lang
       return parse_scope(false);
     case TKN_KEYWORD_IF:
       return parse_condition();
+    case TKN_KEYWORD_WHILE:
+      return parse_while();
     case TKN_SEMICOLON:
       generate_any_current<report_as::ERROR>(nullptr, "Expected a statement!");
       consume_current_tkn(); // ';'
@@ -476,6 +479,31 @@ namespace colt::lang
     }
     return ConditionExpr::CreateExpr(if_cond, if_body, else_body,
         line_state.to_src_info(), ctx);
+  }
+
+  PTR<Expr> ASTMaker::parse_while() noexcept
+  {
+    assert(current_tkn == TKN_KEYWORD_WHILE);
+    //Save loop state
+    bool old_is_loop = is_parsing_loop;
+    is_parsing_loop = true;
+
+    SavedExprInfo line_state = { *this };
+
+    consume_current_tkn(); //consume while
+    
+    PTR<Expr> condition = parse_binary();
+    if (!condition->get_type()->is_equal(BuiltInType::CreateBool(false, ctx)))
+      generate_any<report_as::ERROR>(condition->get_src_code(), nullptr,
+        "Expression should be of type 'bool'!");
+
+    PTR<Expr> body = parse_scope();
+    
+    //Restore loop state
+    is_parsing_loop = old_is_loop;
+
+    return WhileLoopExpr::CreateExpr(condition, body,
+      line_state.to_src_info(), ctx);
   }
 
   PTR<Expr> ASTMaker::parse_variable_decl(bool is_global) noexcept
@@ -802,6 +830,12 @@ namespace colt::lang
   void ASTMaker::panic_consume_semicolon() noexcept
   {
     while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_EOF)
+      consume_current_tkn();
+  }
+
+  void ASTMaker::panic_consume_decl() noexcept
+  {
+    while (current_tkn != TKN_KEYWORD_VAR && current_tkn != TKN_KEYWORD_FN && current_tkn != TKN_EOF)
       consume_current_tkn();
   }
 

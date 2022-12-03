@@ -107,6 +107,13 @@ namespace colt::lang
       ctx.add_type(make_unique<VoidType>()), if_cond, if_stmt, else_stmt, src_info
       ));
   }
+
+  PTR<Expr> WhileLoopExpr::CreateExpr(PTR<Expr> condition, PTR<Expr> body, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
+  {
+    return ctx.add_expr(make_unique<WhileLoopExpr>(
+      ctx.add_type(make_unique<VoidType>()), condition, body, src_info
+      ));
+  }
   
   PTR<Expr> ErrorExpr::CreateExpr(COLTContext& ctx) noexcept
   {

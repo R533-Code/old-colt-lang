@@ -55,6 +55,10 @@ namespace colt::lang
       EXPR_SCOPE,
       /// @brief ConditionExpr
       EXPR_CONDITION,
+      /// @brief ForLoopExpr
+      EXPR_FOR_LOOP,
+      /// @brief WhileLoopExpr
+      EXPR_WHILE_LOOP
     };
 
     /// @brief Helper for dyn_cast and is_a
@@ -771,7 +775,7 @@ namespace colt::lang
     static PTR<Expr> CreateExpr(Vector<PTR<Expr>>&& body, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
-  /// @brief Represents a scope
+  /// @brief Represents a condition
   class ConditionExpr
     final : public Expr
   {
@@ -826,6 +830,55 @@ namespace colt::lang
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(PTR<Expr> if_cond, PTR<Expr> if_stmt, PTR<Expr> else_stmt, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+  };
+
+  /// @brief Represents a while loop
+  class WhileLoopExpr
+    final : public Expr
+  {
+  public:
+    /// @brief Helper for dyn_cast and is_a
+    static constexpr ExprID classof_v = EXPR_WHILE_LOOP;
+
+  private:
+    /// @brief The while condition
+    PTR<Expr> condition;
+    /// @brief The while body
+    PTR<Expr> body;
+
+  public:
+    //No default copy constructor 
+    WhileLoopExpr(const ConditionExpr&) = delete;
+    //No default constructor
+    WhileLoopExpr() = delete;
+    /// @brief Destructor
+    ~WhileLoopExpr() noexcept override = default;
+    /// @brief Constructs a while loop expression
+    /// @param type The type of the resulting expression
+    /// @param condition The while condition
+    /// @param body The body of the condition
+    /// @param src_info The source code information
+    WhileLoopExpr(PTR<const Type> type, PTR<Expr> condition, PTR<Expr> body, const SourceCodeExprInfo& src_info) noexcept
+      : Expr(EXPR_WHILE_LOOP, type, src_info), condition(condition), body(body)
+    {
+      assert(condition->get_type()->is_builtin());
+    }
+
+    /// @brief Get the expression to convert
+    /// @return The expression to converse
+    PTR<const Expr> get_condition() const noexcept { return condition; }
+
+    /// @brief Get the expression to convert
+    /// @return The expression to converse
+    PTR<const Expr> get_body() const noexcept { return body; }
+
+    /// @brief Constructs a while loop expression
+    /// @param condition The while condition
+    /// @param body The body of the condition
+    /// @param src_info The source code information
+    /// @param ctx The COLTContext to store the resulting expression
+    /// @return Pointer to the created expression
+    static PTR<Expr> CreateExpr(PTR<Expr> condition, PTR<Expr> body, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 }
 

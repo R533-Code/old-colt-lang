@@ -59,6 +59,8 @@ namespace colt::lang
     Lexer lexer;
     /// @brief The current token
     Token current_tkn;
+    /// @brief True if parsing body of loop
+    bool is_parsing_loop = false;
     /// @brief The table storing local variables informations
     Vector<std::pair<StringView, PTR<const Type>>> local_var_table = {};
     /// @brief The current expression informations
@@ -193,6 +195,8 @@ namespace colt::lang
 
     PTR<Expr> parse_condition() noexcept;
 
+    PTR<Expr> parse_while() noexcept;
+
     /// @brief Parses a variable declaration (global or local)
     /// @param is_global True if the variable declaration should is global
     /// @return VarDeclExpr or ErrorExpr
@@ -248,6 +252,8 @@ namespace colt::lang
 
     /// @brief Consumes all tokens till a TKN_SEMICOLON or TKN_EOF is hit
     void panic_consume_semicolon() noexcept;
+    /// @brief Consumes all tokens till a TKN_KEYWORD_VAR, TKN_KEYWORD_FN or TKN_EOF is hit
+    void panic_consume_decl() noexcept;
     /// @brief Consumes all tokens till a TKN_SEMICOLON or TKN_EOF is hit and consumes the TKN_SEMICOLON
     void panic_consume_var_decl() noexcept;
     /// @brief Consumes all tokens till a TKN_SEMICOLON, TKN_EOF or a valid scope beginning is hit
