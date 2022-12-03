@@ -42,6 +42,10 @@ namespace colt::lang
       StringView line_strv;
       /// @brief StringView of the expression
       StringView expression;
+
+      /// @brief Converts to a SourceCodeExprInfo
+      /// @return The SourceCodeExprInfo
+      SourceCodeExprInfo to_src_info() const noexcept;
     };
 
     /************* MEMBERS ************/
@@ -245,6 +249,8 @@ namespace colt::lang
 
     /// @brief Consumes all tokens till a TKN_SEMICOLON or TKN_EOF is hit
     void panic_consume_semicolon() noexcept;
+    /// @brief Consumes all tokens till a TKN_SEMICOLON or TKN_EOF is hit and consumes the TKN_SEMICOLON
+    void panic_consume_var_decl() noexcept;
     /// @brief Consumes all tokens till a TKN_SEMICOLON, TKN_EOF or a valid scope beginning is hit
     void panic_consume_fn_decl() noexcept;
     /// @brief Consumes all tokens till a TKN_RIGHT_PAREN or TKN_EOF is hit

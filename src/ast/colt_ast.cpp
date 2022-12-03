@@ -55,6 +55,11 @@ namespace colt::lang
     };
   }
   
+  SourceCodeExprInfo ASTMaker::SourceCodeLexemeInfo::to_src_info() const noexcept
+  {
+    return { as<u32>(line_nb), as<u32>(line_nb), line_strv, expression };
+  }
+
   ASTMaker::SavedExprInfo::SavedExprInfo(ASTMaker& ast) noexcept
     : ast(ast), infos(ast.current_lexeme_info)
   {
@@ -415,12 +420,9 @@ namespace colt::lang
         statements.push_back(parse_statement());
       
       if (current_tkn != TKN_RIGHT_CURLY)
-      {
-        //FIXME: error
-        //GenerateError(lexeme_info.line_nb, lexeme_info.line_strv, lexeme_info.expression, "Unclosed curly bracket delimiter!");
-        ++error_count;
-      }
-      else
+        generate_any<report_as::ERROR>(lexeme_info.to_src_info(), nullptr,
+          "Unclosed curly bracket delimiter!");
+      else //consume '}'
         consume_current_tkn();
     }
     else
@@ -463,10 +465,12 @@ namespace colt::lang
   {
     SavedExprInfo line_state = { *this };
 
-    if (check_and_consume(TKN_KEYWORD_VAR, "Expected a variable declaration!"))
-      return ErrorExpr::CreateExpr(ctx);
-    if (check_and_consume(TKN_IDENTIFIER, "Expected an identifier!"))
-      return ErrorExpr::CreateExpr(ctx);
+    IF_TRUE_RET_ERR(
+      check_and_consume(TKN_KEYWORD_VAR, &ASTMaker::panic_consume_var_decl, "Expected a variable declaration!")
+    );
+    IF_TRUE_RET_ERR(
+      check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_var_decl, "Expected an identifier!")
+    );
 
     StringView var_name = lexer.get_parsed_identifier();
 
@@ -480,13 +484,14 @@ namespace colt::lang
     PTR<Expr> var_init = nullptr;
     if (current_tkn != TKN_SEMICOLON)
     {
-      if (check_and_consume(TKN_EQUAL, "Expected a '='!"))
-        return ErrorExpr::CreateExpr(ctx);
+      IF_TRUE_RET_ERR(
+        check_and_consume(TKN_EQUAL, &ASTMaker::panic_consume_var_decl, "Expected a '='!")
+      );
       var_init = parse_binary();
     }
     else if (var_type == nullptr)
     {
-      generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+      generate_any<report_as::ERROR>(line_state.to_src_info(), &ASTMaker::panic_consume_var_decl,
         "An uninitialized variable should specify its type!");
       return ErrorExpr::CreateExpr(ctx);
     }
@@ -504,8 +509,9 @@ namespace colt::lang
       var_init = ConvertExpr::CreateExpr(var_type, var_init,
         line_state.to_src_info(), ctx);
     
-    if (check_and_consume(TKN_SEMICOLON, "Expected a ';'!"))
-      return ErrorExpr::CreateExpr(ctx);      
+    IF_TRUE_RET_ERR(
+      check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_var_decl, "Expected a ';'!")
+    );
 
   GEN:
     if (is_global)
@@ -779,6 +785,14 @@ namespace colt::lang
   void ASTMaker::panic_consume_semicolon() noexcept
   {
     while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_EOF)
+      consume_current_tkn();
+  }
+
+  void ASTMaker::panic_consume_var_decl() noexcept
+  {
+    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF)
+      consume_current_tkn();
+    if (current_tkn == TKN_SEMICOLON)
       consume_current_tkn();
   }
   
