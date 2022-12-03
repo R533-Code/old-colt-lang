@@ -1,0 +1,21 @@
+import std;
+
+//An lstring is by default 'const' or known at
+//compile-time, so 'const lstring' is optional.
+fn cprint(lstring fmt, i64 a, i64 b)
+{
+  //...
+}
+
+//The const? would be the same as the constexpr keyword.
+//By applying it to the function, all its arguments are
+//marked as 'const?'
+const? fn sum(i64 a, i64 b)->i64: return a + b;
+
+fn print(const? std::string_view fmt, i64 a, i64 b)
+{
+  if const(fmt): //if 'fmt' is known at compile time
+    cprint(fmt, a, b);
+  else:
+    vprint(fmt, a, b);
+}
