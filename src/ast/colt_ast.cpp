@@ -241,7 +241,7 @@ namespace colt::lang
       //Recurse: 10 + 5 + 8 -> (10 + (5 + 8))
       PTR<Expr> rhs = parse_binary(GetOpPrecedence(binary_op));
 
-      if (rhs->get_type() != lhs->get_type())
+      if (!rhs->get_type()->is_equal(lhs->get_type()))
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Operands should be of same type!");
 
@@ -768,7 +768,7 @@ namespace colt::lang
     bool ret = true;
     for (size_t i = 0; i < arguments.get_size(); i++)
     {
-      if (arguments[i]->get_type() != decl->get_params_type()[i])
+      if (!arguments[i]->get_type()->is_equal(decl->get_params_type()[i]))
       {
         //TODO: checking for pointer types
         generate_any<report_as::ERROR>(arguments[i]->get_src_code(), nullptr,
