@@ -92,6 +92,12 @@ namespace colt::lang
     /// @return True if error
     constexpr bool is_error() const noexcept { return ID == TYPE_ERROR; }
 
+    /// @brief Check if 2 types are equal (without looking at mutability).
+    /// If 'this' or 'to' are ErrorType, returns true.
+    /// @param to The type to compare against
+    /// @return True if the true type of 'to' and 'this' are the same
+    bool is_equal(PTR<const Type> to) const noexcept;
+
     /// @brief Compares two Type.
     /// This function dispatches to the right operator== depending on the true
     /// type of lhs and rhs.

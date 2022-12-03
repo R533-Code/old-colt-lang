@@ -29,6 +29,31 @@ namespace colt::lang
     }
   }
 
+  bool Type::is_equal(PTR<const Type> to) const noexcept
+  {
+    if (is_error() || to->is_error())
+      return true;
+    if (to->classof() != this->classof())
+      return false;
+
+    switch (to->classof())
+    {
+    case Type::TYPE_VOID:
+      return true;
+    case Type::TYPE_BUILTIN:
+      return static_cast<const BuiltInType&>(*to) == static_cast<const BuiltInType&>(*this);
+    case Type::TYPE_PTR:
+      return static_cast<const PtrType&>(*to) == static_cast<const PtrType&>(*this);
+    case Type::TYPE_FN:
+      return static_cast<const FnType&>(*to) == static_cast<const FnType&>(*this);
+    case Type::TYPE_ERROR:
+      return true;
+    default:
+      colt_unreachable("Invalid classof for type!");
+    }
+  }
+
+
   bool operator==(const BuiltInType& lhs, const BuiltInType& rhs) noexcept
   {
     return lhs.builtin_ID == rhs.builtin_ID;
@@ -173,7 +198,7 @@ namespace colt::lang
   PTR<Type> ErrorType::CreateType(COLTContext& ctx) noexcept
   {
     return ctx.add_type(make_unique<ErrorType>());
-  }
+  }  
 }
 
 namespace colt
