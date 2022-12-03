@@ -1,0 +1,10 @@
+//Error: Dereference operator '*' can only be applied on variables!
+//2
+fn hello()->i32
+{
+  var hello : PTR<i64>;
+  *hello; //no error
+  *10; //<- error
+  var aa = 10; //i64
+  *aa; //<- error
+}
