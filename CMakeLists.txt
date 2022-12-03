@@ -97,6 +97,12 @@ foreach(testPath ${ColtTestsPath})
   # Strip new lines from end of line
   string(REGEX REPLACE "\n$" "" RegexTest "${RegexTest}")
 
+  if (${RegexTest} MATCHES "^`.*")
+    string(REGEX REPLACE "([][+.*()^;])" "\\\\\\1" RegexTest "${RegexTest}")
+    # Pop the first characters which is '`'
+    string(REPLACE "`" "" RegexTest ${RegexTest})
+  endif()
+
   # True if an error count was supplied for the test
   set(withErrorCount FALSE)
 
