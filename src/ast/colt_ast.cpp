@@ -43,14 +43,6 @@ namespace colt::lang
   {
     return TKN_EQUAL_EQUAL < tkn && tkn < TKN_COMMA;
   }
-
-  SourceCodeExprInfo ConcatInfo(const SourceCodeExprInfo& lhs, const SourceCodeExprInfo& rhs) noexcept
-  {
-    return SourceCodeExprInfo{ lhs.line_begin, rhs.line_end,
-      StringView{lhs.lines.begin(), rhs.lines.end()},
-      StringView{lhs.expression.begin(), rhs.expression.end()},
-    };
-  }
   
   SourceCodeExprInfo ASTMaker::SourceCodeLexemeInfo::to_src_info() const noexcept
   {
@@ -104,7 +96,6 @@ namespace colt::lang
   {
     last_lexeme_info = get_expr_info();
     current_tkn = lexer.get_next_token();
-    //current_lexeme_info = get_expr_info();
   }
 
   PTR<Expr> ASTMaker::parse_primary() noexcept

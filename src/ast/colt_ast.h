@@ -24,12 +24,6 @@ namespace colt::lang
   /// @return True if the Token is an assignment Token
   bool isAssignmentToken(Token tkn) noexcept;
 
-  /// @brief Concatenate two adjacent SourceCodeExprInfo
-  /// @param lhs The left hand side
-  /// @param rhs The right hand side
-  /// @return Concatenated SourceCodeExprInfo
-  SourceCodeExprInfo ConcatInfo(const SourceCodeExprInfo& lhs, const SourceCodeExprInfo& rhs) noexcept;
-
   /// @brief Class responsible of producing an AST
   class ASTMaker
   {
