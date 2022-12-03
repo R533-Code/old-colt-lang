@@ -281,20 +281,20 @@ namespace colt::lang
       auto expr = parse_primary();
       if (!is_a<VarReadExpr>(expr))
       {
-        generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Dereference operator '*' can only be applied on variables!");
         return ErrorExpr::CreateExpr(ctx);
       }
       if (!expr->get_type()->is_ptr())
       {
-        generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Dereference operator '*' can only be applied on pointer types!");
         return ErrorExpr::CreateExpr(ctx);
       }
       else
       {
         return UnaryExpr::CreateExpr(as<PTR<const PtrType>>(expr->get_type())->get_type_to(),
-          current_tkn, false, expr, line_state.to_src_info(), ctx);
+          TKN_STAR, false, expr, line_state.to_src_info(), ctx);
       }
     }
 
@@ -334,7 +334,7 @@ namespace colt::lang
     
     IF_TRUE_RET_ERR(
       check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_fn_decl, 
-        "Expected an identifier, not '{}'!", fn_name)
+        "Expected an identifier, not '{}'!", lexer.get_current_lexeme())
     );
     IF_TRUE_RET_ERR(
       check_and_consume(TKN_LEFT_PAREN, &ASTMaker::panic_consume_fn_decl,
@@ -438,6 +438,7 @@ namespace colt::lang
       return parse_condition();
     case TKN_SEMICOLON:
       generate_any_current<report_as::ERROR>(nullptr, "Expected a statement!");
+      consume_current_tkn(); // ';'
       return ErrorExpr::CreateExpr(ctx);
     default: break;
     }
@@ -814,7 +815,7 @@ namespace colt::lang
   
   void ASTMaker::panic_consume_fn_decl() noexcept
   {
-    while (current_tkn != TKN_SEMICOLON && is_valid_scope_begin() && current_tkn != TKN_EOF)
+    while (current_tkn != TKN_KEYWORD_FN && current_tkn != TKN_KEYWORD_VAR && current_tkn != TKN_EOF)
       consume_current_tkn();
   }
   
