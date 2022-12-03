@@ -8,7 +8,7 @@
 #define IF_TRUE_GOTO(boolean, label) if ((boolean)) goto label
 /// @brief If 'boolean' evaluates to false, goto label
 #define IF_FALSE_GOTO(boolean, label) if (!(boolean)) goto label
-
+/// @brief If 'boolean' evaluates to true, returns ErrorExpr::CreateExpr(ctx)
 #define IF_TRUE_RET_ERR(boolean) if ((boolean)) return ErrorExpr::CreateExpr(ctx)
 
 namespace colt::lang
@@ -21,10 +21,7 @@ namespace colt::lang
     else
       return { InPlace, ast.steal_result(), ctx };
   }
-}
 
-namespace colt::lang
-{
   u8 GetOpPrecedence(Token tkn) noexcept
   {
     static constexpr u8 operator_precedence_table[] =
