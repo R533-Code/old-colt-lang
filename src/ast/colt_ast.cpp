@@ -43,6 +43,11 @@ namespace colt::lang
   {
     return TKN_EQUAL_EQUAL < tkn && tkn < TKN_COMMA;
   }
+
+  bool isComparisonToken(Token tkn) noexcept
+  {
+    return TKN_GREAT_GREAT < tkn && tkn < TKN_EQUAL;
+  }
   
   SourceCodeExprInfo ASTMaker::SourceCodeLexemeInfo::to_src_info() const noexcept
   {
@@ -237,7 +242,9 @@ namespace colt::lang
           "Operands should be of same type!");
 
       //Pratt's parsing, which allows operators priority
-      lhs = BinaryExpr::CreateExpr(lhs->get_type(), lhs, binary_op, rhs,
+      lhs = BinaryExpr::CreateExpr(
+        isComparisonToken(binary_op) ? BuiltInType::CreateBool(false, ctx) : lhs->get_type(),
+        lhs, binary_op, rhs,
         line_state.to_src_info(), ctx);
 
       //Update the Token

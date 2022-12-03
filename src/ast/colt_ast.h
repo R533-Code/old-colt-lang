@@ -23,6 +23,11 @@ namespace colt::lang
   /// @param tkn The token to check for
   /// @return True if the Token is an assignment Token
   bool isAssignmentToken(Token tkn) noexcept;
+  /// @brief Check if a Token represents any comparison Token (==, !=, ...)
+  /// '||' and '&&' are considered comparison tokens.
+  /// @param tkn The token to check for
+  /// @return True if the Token is a comparison Token
+  bool isComparisonToken(Token tkn) noexcept;
 
   /// @brief Class responsible of producing an AST
   class ASTMaker
