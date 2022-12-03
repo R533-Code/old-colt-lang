@@ -1,4 +1,4 @@
-//Error: Dereference operator '*' can only be applied on variables!
+//`Error: Dereference operator '*' can only be applied on variables!
 //2
 fn hello()->i32
 {
