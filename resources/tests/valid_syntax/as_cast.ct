@@ -1,0 +1,2 @@
+//Compilation successful!
+fn hello()->i64: 10u64 + 19i64 as u64;
