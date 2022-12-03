@@ -414,7 +414,7 @@ namespace colt::lang
         consume_current_tkn();
     }
     else
-      generate_any_current<report_as::ERROR>(nullptr, "Expected a scope!");
+      generate_any_current<report_as::ERROR>(nullptr, "Expected the beginning of a scope ('{{'{}", one_expr ? "or ':')!" : ")!");
     return ErrorExpr::CreateExpr(ctx);
   }
 
@@ -441,7 +441,33 @@ namespace colt::lang
 
   PTR<Expr> ASTMaker::parse_condition() noexcept
   {
-    return PTR<Expr>();
+    assert(current_tkn == TKN_KEYWORD_IF);    
+    SavedExprInfo line_state = { *this };
+
+    consume_current_tkn(); //consume if
+    
+    PTR<Expr> if_cond = parse_binary(); //if condition
+    if (!if_cond->get_type()->is_equal(BuiltInType::CreateBool(false, ctx)))
+      generate_any<report_as::ERROR>(if_cond->get_src_code(), nullptr,
+        "Expression should be of type 'bool'!");
+    
+    PTR<Expr> if_body = parse_scope(); //if body
+
+    if (current_tkn == TKN_KEYWORD_ELIF)
+    {
+      current_tkn = TKN_KEYWORD_IF;
+      PTR<Expr> else_body = parse_condition(); //we recurse
+      return ConditionExpr::CreateExpr(if_cond, if_body, else_body,
+        line_state.to_src_info(), ctx);
+    }
+    PTR<Expr> else_body = nullptr;
+    if (current_tkn == TKN_KEYWORD_ELSE)
+    {
+      consume_current_tkn(); //consume else
+      else_body = parse_scope(); // else body
+    }
+    return ConditionExpr::CreateExpr(if_cond, if_body, else_body,
+        line_state.to_src_info(), ctx);
   }
 
   PTR<Expr> ASTMaker::parse_variable_decl(bool is_global) noexcept
