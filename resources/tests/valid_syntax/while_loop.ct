@@ -1,0 +1,10 @@
+//Compilation successful!
+fn a()->i32
+{
+  while 10 == 10:
+    10;
+  while 10 != 10 {
+    continue;
+    break;
+  }
+}

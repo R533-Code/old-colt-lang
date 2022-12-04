@@ -1,0 +1,8 @@
+//Error: Statement 'continue' can only appear inside a loop!
+//3
+fn hello()->i32 {
+  while 10: //<- error
+    continue;
+  continue; //<- error
+  break; //<- error
+}
