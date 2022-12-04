@@ -65,6 +65,9 @@ namespace colt::lang
 		if (!args::GlobalArguments.print_messages)
 			return;
 		io::PrintMessage(fmt, std::forward<Args>(args)...);
+
+		if (!src_info.is_valid())
+			return;
 		
 		StringView begin_line = { src_info.lines.get_data(), src_info.expression.get_data() };
 		StringView end_line = { src_info.lines.get_data() + src_info.expression.get_size(), src_info.lines.get_data() + src_info.lines.get_size() };
@@ -80,17 +83,88 @@ namespace colt::lang
 		else
 			end_line = StringView{ src_info.expression.get_data() + src_info.expression.get_size(), src_info.lines.get_data() + src_info.lines.get_size() };
 		
-		size_t line_nb_size = fmt::formatted_size("{}", src_info.line_begin);
-		if (args::GlobalArguments.colored_output)
-			io::Print("{} | {}" CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET "{}", src_info.line_begin, begin_line, src_info.expression, end_line);
-		else
-			io::Print("{} | {}{}{}", src_info.line_begin, begin_line, src_info.expression, end_line);
+		size_t line_nb_size = fmt::formatted_size("{}", src_info.line_end);
+		if (src_info.is_single_line())
+		{
+			if (args::GlobalArguments.colored_output)
+				io::Print("{} | {}" CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET "{}", src_info.line_begin, begin_line, src_info.expression, end_line);
+			else
+				io::Print("{} | {}{}{}", src_info.line_begin, begin_line, src_info.expression, end_line);
 		
-		auto sz = src_info.expression.get_size();
-		//So no overflow happens when the expression is empty
-		sz += as<size_t>(sz == 0);
-		sz -= 1;
-		io::Print("{: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
+			auto sz = src_info.expression.get_size();
+			//So no overflow happens when the expression is empty
+			sz += as<size_t>(sz == 0);
+			sz -= 1;
+			io::Print("{: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
+		}
+		else
+		{
+			size_t offset = StringView::npos; //will overflow on first add
+			size_t previous_offset = 0;
+			size_t current_line = src_info.line_begin;
+			for (;;)
+			{
+				// +1 to skip over '\n'
+				//As offset start with npos, offset + 1 == 0 on first iteration
+				previous_offset = offset + 1;
+				offset = begin_line.find('\n', offset + 1);
+
+				if (offset == StringView::npos)
+				{
+					offset = src_info.expression.find('\n', 0);
+					offset *= as<size_t>(offset != StringView::npos);
+					break;
+				}
+
+				io::Print("{: >{}} | {}", current_line, line_nb_size,
+					StringView{ begin_line.get_data() + previous_offset, begin_line.get_data() + offset });
+				++current_line;
+			}
+			io::Print("{: >{}} | {}" CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
+				StringView{ begin_line.get_data() + previous_offset, begin_line.end() },
+				StringView{ src_info.expression.get_data(), src_info.expression.get_data() + offset });
+			++current_line;
+			for (;;)
+			{
+				previous_offset = offset + 1;
+				offset = src_info.expression.find('\n', offset + 1);
+
+				if (offset == StringView::npos)
+				{
+					offset = end_line.find('\n', 0);
+					offset *= as<size_t>(offset != StringView::npos);
+					offset += end_line.get_size() * as<size_t>(offset != StringView::npos);
+					break;
+				}
+
+				io::Print("{: >{}} | " CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
+					StringView{ src_info.expression.get_data() + previous_offset, src_info.expression.get_data() + offset });
+				++current_line;
+			}
+			io::Print("{: >{}} | " CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET "{}", current_line, line_nb_size,
+				StringView{ src_info.expression.get_data() + previous_offset, src_info.expression.end() },
+				StringView{ end_line.get_data(), end_line.get_data() + offset });
+			++current_line;
+			for (;;)
+			{
+				previous_offset = offset + 1;
+				offset = end_line.find('\n', offset + 1);
+
+				if (offset == StringView::npos)
+				{
+					if (previous_offset < end_line.get_size())
+					{
+						io::Print("{: >{}} | {}", current_line, line_nb_size,
+							StringView{ end_line.get_data() + previous_offset, end_line.end() });
+					}
+					break;
+				}
+
+				io::Print("{: >{}} | {}", current_line, line_nb_size,
+					StringView{ end_line.get_data() + previous_offset, end_line.get_data() + offset });
+				++current_line;
+			}
+		}
 	}
 
 	template<typename ...Args>
@@ -100,6 +174,9 @@ namespace colt::lang
 			return;
 		io::PrintWarning(fmt, std::forward<Args>(args)...);
 
+		if (!src_info.is_valid())
+			return;
+
 		StringView begin_line = { src_info.lines.get_data(), src_info.expression.get_data() };
 		StringView end_line = { src_info.lines.get_data() + src_info.expression.get_size(), src_info.lines.get_data() + src_info.lines.get_size() };
 
@@ -114,24 +191,99 @@ namespace colt::lang
 		else
 			end_line = StringView{ src_info.expression.get_data() + src_info.expression.get_size(), src_info.lines.get_data() + src_info.lines.get_size() };
 		
-		size_t line_nb_size = fmt::formatted_size("{}", src_info.line_begin);
-		if (args::GlobalArguments.colored_output)
-			io::Print("{} | {}" CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET "{}", src_info.line_begin, begin_line, src_info.expression, end_line);
-		else
-			io::Print("{} | {}{}{}", src_info.line_begin, begin_line, src_info.expression, end_line);
+		size_t line_nb_size = fmt::formatted_size("{}", src_info.line_end);
+		if (src_info.is_single_line())
+		{
+			if (args::GlobalArguments.colored_output)
+				io::Print("{} | {}" CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET "{}", src_info.line_begin, begin_line, src_info.expression, end_line);
+			else
+				io::Print("{} | {}{}{}", src_info.line_begin, begin_line, src_info.expression, end_line);
 
-		auto sz = src_info.expression.get_size();
-		//So no overflow happens when the expression is empty
-		sz += as<size_t>(sz == 0);
-		sz -= 1;
-		io::Print("{: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
+			auto sz = src_info.expression.get_size();
+			//So no overflow happens when the expression is empty
+			sz += as<size_t>(sz == 0);
+			sz -= 1;
+			io::Print("{: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
+		}
+		else
+		{
+			size_t offset = StringView::npos; //will overflow on first add
+			size_t previous_offset = 0;
+			size_t current_line = src_info.line_begin;
+			for (;;)
+			{
+				// +1 to skip over '\n'
+				//As offset start with npos, offset + 1 == 0 on first iteration
+				previous_offset = offset + 1;
+				offset = begin_line.find('\n', offset + 1);
+
+				if (offset == StringView::npos)
+				{
+					offset = src_info.expression.find('\n', 0);
+					offset *= as<size_t>(offset != StringView::npos);
+					break;
+				}
+
+				io::Print("{: >{}} | {}", current_line, line_nb_size,
+					StringView{ begin_line.get_data() + previous_offset, begin_line.get_data() + offset });
+				++current_line;
+			}
+			io::Print("{: >{}} | {}" CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
+				StringView{ begin_line.get_data() + previous_offset, begin_line.end() },
+				StringView{ src_info.expression.get_data(), src_info.expression.get_data() + offset });
+			++current_line;
+			for (;;)
+			{
+				previous_offset = offset + 1;
+				offset = src_info.expression.find('\n', offset + 1);
+
+				if (offset == StringView::npos)
+				{
+					offset = end_line.find('\n', 0);
+					offset *= as<size_t>(offset != StringView::npos);
+					offset += end_line.get_size() * as<size_t>(offset != StringView::npos);
+					break;
+				}
+
+				io::Print("{: >{}} | " CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
+					StringView{ src_info.expression.get_data() + previous_offset, src_info.expression.get_data() + offset });
+				++current_line;
+			}
+			io::Print("{: >{}} | " CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET "{}", current_line, line_nb_size,
+				StringView{ src_info.expression.get_data() + previous_offset, src_info.expression.end() },
+				StringView{ end_line.get_data(), end_line.get_data() + offset });
+			++current_line;
+			for (;;)
+			{
+				previous_offset = offset + 1;
+				offset = end_line.find('\n', offset + 1);
+
+				if (offset == StringView::npos)
+				{
+					if (previous_offset < end_line.get_size())
+					{
+						io::Print("{: >{}} | {}", current_line, line_nb_size,
+							StringView{ end_line.get_data() + previous_offset, end_line.end() });
+					}
+					break;
+				}
+
+				io::Print("{: >{}} | {}", current_line, line_nb_size,
+					StringView{ end_line.get_data() + previous_offset, end_line.get_data() + offset });
+				++current_line;
+			}
+		}
 	}
+	
 	template<typename ...Args>
 	void GenerateError(const SourceCodeExprInfo& src_info, fmt::format_string<Args...> fmt, Args&&... args) noexcept
 	{
 		if (!args::GlobalArguments.print_errors)
 			return;
 		io::PrintError(fmt, std::forward<Args>(args)...);
+
+		if (!src_info.is_valid())
+			return;
 
 		StringView begin_line = { src_info.lines.get_data(), src_info.expression.get_data() };
 		StringView end_line = { src_info.lines.get_data() + src_info.expression.get_size(), src_info.lines.get_data() + src_info.lines.get_size() };
@@ -147,17 +299,88 @@ namespace colt::lang
 		else
 			end_line = StringView{ src_info.expression.get_data() + src_info.expression.get_size(), src_info.lines.get_data() + src_info.lines.get_size() };
 
-		size_t line_nb_size = fmt::formatted_size("{}", src_info.line_begin);
-		if (args::GlobalArguments.colored_output)
-			io::Print("{} | {}" CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET "{}", src_info.line_begin, begin_line, src_info.expression, end_line);
-		else
-			io::Print("{} | {}{}{}", src_info.line_begin, begin_line, src_info.expression, end_line);
+		size_t line_nb_size = fmt::formatted_size("{}", src_info.line_end);
+		if (src_info.is_single_line())
+		{
+			if (args::GlobalArguments.colored_output)
+				io::Print("{} | {}" CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET "{}", src_info.line_begin, begin_line, src_info.expression, end_line);
+			else
+				io::Print("{} | {}{}{}", src_info.line_begin, begin_line, src_info.expression, end_line);
 
-		auto sz = src_info.expression.get_size();
-		//So no overflow happens when the expression is empty
-		sz += as<size_t>(sz == 0);
-		sz -= 1;
-		io::Print("{: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
+			auto sz = src_info.expression.get_size();
+			//So no overflow happens when the expression is empty
+			sz += as<size_t>(sz == 0);
+			sz -= 1;
+			io::Print("{: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
+		}
+		else
+		{
+			size_t offset = StringView::npos; //will overflow on first add
+			size_t previous_offset = 0;
+			size_t current_line = src_info.line_begin;
+			for (;;)
+			{
+				// +1 to skip over '\n'
+				//As offset start with npos, offset + 1 == 0 on first iteration
+				previous_offset = offset + 1;
+				offset = begin_line.find('\n', offset + 1);
+
+				if (offset == StringView::npos)
+				{
+					offset = src_info.expression.find('\n', 0);
+					offset *= as<size_t>(offset != StringView::npos);
+					break;
+				}
+
+				io::Print("{: >{}} | {}", current_line, line_nb_size,
+					StringView{ begin_line.get_data() + previous_offset, begin_line.get_data() + offset });
+				++current_line;
+			}
+			io::Print("{: >{}} | {}" CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
+				StringView{ begin_line.get_data() + previous_offset, begin_line.end() },
+				StringView{ src_info.expression.get_data(), src_info.expression.get_data() + offset });
+			++current_line;
+			for (;;)
+			{
+				previous_offset = offset + 1;
+				offset = src_info.expression.find('\n', offset + 1);
+
+				if (offset == StringView::npos)
+				{
+					offset = end_line.find('\n', 0);
+					offset *= as<size_t>(offset != StringView::npos);
+					offset += end_line.get_size() * as<size_t>(offset != StringView::npos);
+					break;
+				}
+
+				io::Print("{: >{}} | " CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
+					StringView{ src_info.expression.get_data() + previous_offset, src_info.expression.get_data() + offset });
+				++current_line;
+			}
+			io::Print("{: >{}} | " CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET "{}", current_line, line_nb_size,
+				StringView{ src_info.expression.get_data() + previous_offset, src_info.expression.end() },
+				StringView{ end_line.get_data(), end_line.get_data() + offset });
+			++current_line;
+			for (;;)
+			{
+				previous_offset = offset + 1;
+				offset = end_line.find('\n', offset + 1);
+
+				if (offset == StringView::npos)
+				{
+					if (previous_offset < end_line.get_size())
+					{
+						io::Print("{: >{}} | {}", current_line, line_nb_size,
+							StringView{ end_line.get_data() + previous_offset, end_line.end() });
+					}
+					break;
+				}
+
+				io::Print("{: >{}} | {}", current_line, line_nb_size,
+					StringView{ end_line.get_data() + previous_offset, end_line.get_data() + offset });
+				++current_line;
+			}
+		}
 	}
 }
 
