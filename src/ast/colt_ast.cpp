@@ -462,7 +462,8 @@ namespace colt::lang
     break; default:
       to_ret = parse_binary();
     }
-    check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_semicolon,
+    //panic_consume_var_decl to consume the semicolon
+    check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_var_decl,
       "Expected a ';'!");
     return to_ret;
   }
@@ -557,10 +558,10 @@ namespace colt::lang
         "An uninitialized variable should specify its type!");
       return ErrorExpr::CreateExpr(ctx);
     }
-    else
+    else //uninitialized variable with explicit type
     {
       consume_current_tkn();
-      goto GEN;
+      goto GEN; //skip type conversions
     }
 
     //If the type is not explicit, deduce it from left hand side
