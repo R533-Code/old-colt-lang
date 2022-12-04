@@ -4,3 +4,6 @@
 [submodule "libraries/colt-structs"]
 	path = libraries/colt-structs
 	url = https://github.com/R533-Code/colt-structs.git
+[submodule "libraries/llvm-project"]
+	path = libraries/llvm-project
+	url = https://github.com/llvm/llvm-project.git
