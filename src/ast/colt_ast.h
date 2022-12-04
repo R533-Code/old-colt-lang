@@ -56,7 +56,7 @@ namespace colt::lang
     /************* MEMBERS ************/
 
     /// @brief The array of expressions
-    Vector<PTR<Expr>> expressions = {};
+    Vector<PTR<Expr>>& expressions;
     /// @brief The number of error that where generated
     u16 error_count = 0;
     /// @brief The number of warning that where generated
@@ -76,7 +76,7 @@ namespace colt::lang
     /// @brief The current function being parsed
     PTR<const FnDeclExpr> current_function = nullptr;
     /// @brief Map responsible of storing global state (functions, global variables)
-    Map<StringView, PTR<Expr>> global_map;
+    Map<StringView, PTR<Expr>>& global_map;
     /// @brief The context storing types and expressions
     COLTContext& ctx;
 
@@ -138,8 +138,10 @@ namespace colt::lang
   public:
     /// @brief Parses a StringView into an abstract syntax tree
     /// @param strv The StringView to parse (should be NUL-terminated)
+    /// @param expressions The vector onto which to push expressions
+    /// @param global_map The global map onto which to store functions and global variables
     /// @param ctx The COLTContext to use to store types and expressions
-    ASTMaker(StringView strv, COLTContext& ctx) noexcept;
+    ASTMaker(StringView strv, Vector<PTR<Expr>>& expressions, Map<StringView, PTR<Expr>>& global_map, COLTContext& ctx) noexcept;
     //No default move constructor
     ASTMaker(ASTMaker&&) = delete;
     //No default copy constructor
@@ -311,7 +313,34 @@ namespace colt::lang
     /// @param ...args The arguments to format
     void generate_any_current(panic_consume_t panic_c, fmt::format_string<Args...> fmt,
       Args&& ...args) noexcept;
-  };
+  };  
+  
+  /// @brief An abstract tree of a COLT program
+  struct AST
+  {
+    /// @brief The array of expressions
+    Vector<PTR<Expr>> expressions = {};
+    /// @brief The global function/variable table
+    Map<StringView, PTR<Expr>> global_map = {};
+    /// @brief The context storing type and expression informations
+    COLTContext& ctx;
+
+    /// @brief Creates an AST
+    /// @param exprs The vector of expressions
+    /// @param ctx The context storing the expressions
+    AST(COLTContext& ctx) noexcept
+      : ctx(ctx) {}
+   };
+
+  /// @brief Creates an Abstract Syntax Tree by parsing a StringView
+  /// @param from The StringView to parse
+  /// @param ctx The COLTContext where to store the expressions
+  /// @return Error count if errors where detected else the AST
+  Expected<AST, u32> CreateAST(StringView from, COLTContext& ctx) noexcept;
+
+  /************************************
+  * IMPLEMENTATIONS
+  ************************************/
 
   template<typename RetT, typename ...Args>
   RetT ASTMaker::parse_parenthesis(RetT(ASTMaker::* method_ptr)(Args...), Args&&... args) noexcept
@@ -319,7 +348,7 @@ namespace colt::lang
     auto info = lexer.get_line_info();
     //Construct source information from lexeme information
     SourceCodeExprInfo lexeme_info = { info.line_nb, info.line_nb, info.line_strv, lexer.get_current_lexeme() };
-    
+
     check_and_consume(TKN_LEFT_PAREN, "Expected a '('!");
     if constexpr (std::is_same_v<RetT, void>)
     {
@@ -354,7 +383,7 @@ namespace colt::lang
       return true;
     }
   }
-  
+
   template<typename ...Args>
   bool ASTMaker::check_and_consume(Token expected, panic_consume_t panic, fmt::format_string<Args...> fmt, Args && ...args) noexcept
   {
@@ -369,7 +398,7 @@ namespace colt::lang
       return true;
     }
   }
-  
+
   template<ASTMaker::report_as as, typename ...Args>
   void ASTMaker::generate_any(const SourceCodeExprInfo& src_info, panic_consume_t panic_c,
     fmt::format_string<Args...> fmt, Args&&... args) noexcept
@@ -381,10 +410,13 @@ namespace colt::lang
       ++error_count;
     }
     else if constexpr (as == report_as::WARNING)
+    {
       GenerateWarning(src_info, fmt, std::forward<Args>(args)...);
+      ++warn_count;
+    }
     else if constexpr (as == report_as::MESSAGE)
       GenerateMessage(src_info, fmt, std::forward<Args>(args)...);
-    
+
     if (panic_c != nullptr)
       (*this.*panic_c)(); //call the panic function
   }
@@ -394,8 +426,8 @@ namespace colt::lang
   {
     auto info = lexer.get_line_info();
     //Construct source information from lexeme information
-    SourceCodeExprInfo src_info = { info.line_nb, info.line_nb, info.line_strv, lexer.get_current_lexeme() };   
-    
+    SourceCodeExprInfo src_info = { info.line_nb, info.line_nb, info.line_strv, lexer.get_current_lexeme() };
+
     //Print using the right function
     if constexpr (as == report_as::ERROR)
     {
@@ -403,34 +435,16 @@ namespace colt::lang
       ++error_count;
     }
     else if constexpr (as == report_as::WARNING)
+    {
       GenerateWarning(src_info, fmt, std::forward<Args>(args)...);
+      ++warn_count;
+    }
     else if constexpr (as == report_as::MESSAGE)
       GenerateMessage(src_info, fmt, std::forward<Args>(args)...);
-    
+
     if (panic_c != nullptr)
       (*this.*panic_c)(); //call the panic function
   }
-  
-  /// @brief An abstract tree of a COLT program
-  struct AST
-  {
-    /// @brief The array of expressions
-    Vector<PTR<Expr>> expressions;
-    /// @brief The context storing type and expression informations
-    COLTContext& ctx;
-
-    /// @brief Creates an AST
-    /// @param exprs The vector of expressions
-    /// @param ctx The context storing the expressions
-    AST(Vector<PTR<Expr>>&& exprs, COLTContext& ctx) noexcept
-      : expressions(std::move(exprs)), ctx(ctx) {}
-   };
-
-  /// @brief Creates an Abstract Syntax Tree by parsing a StringView
-  /// @param from The StringView to parse
-  /// @param ctx The COLTContext where to store the expressions
-  /// @return Error count if errors where detected else the AST
-  Expected<AST, u32> CreateAST(StringView from, COLTContext& ctx) noexcept;
 }
 
 #endif //!HG_COLT_AST

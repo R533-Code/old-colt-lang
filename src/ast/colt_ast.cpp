@@ -15,11 +15,12 @@ namespace colt::lang
 {
   Expected<AST, u32> CreateAST(StringView from, COLTContext& ctx) noexcept
   {
-    ASTMaker ast = { from, ctx };
+    AST result = { ctx };
+    ASTMaker ast = { from, result.expressions, result.global_map, ctx };
     if (ast.is_empty() || ast.get_error_count() != 0)
       return { Error, ast.get_error_count() };
     else
-      return { InPlace, ast.steal_result(), ctx };
+      return { InPlace, std::move(result) };
   }
 
   u8 GetOpPrecedence(Token tkn) noexcept
@@ -95,8 +96,8 @@ namespace colt::lang
     return { scan_info.line_nb, scan_info.line_strv, lexer.get_current_lexeme() };
   }
 
-  ASTMaker::ASTMaker(StringView strv, COLTContext& ctx) noexcept
-    : lexer(strv), ctx(ctx)
+  ASTMaker::ASTMaker(StringView strv, Vector<PTR<Expr>>& expressions, Map<StringView, PTR<Expr>>& global_map, COLTContext& ctx) noexcept
+    : lexer(strv), expressions(expressions), global_map(global_map), ctx(ctx)
   {
     current_tkn = lexer.get_next_token();
     while (current_tkn != TKN_EOF)
