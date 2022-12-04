@@ -436,14 +436,20 @@ namespace colt::lang
           "Unclosed curly bracket delimiter!");
       else //consume '}'
         consume_current_tkn();
+      
+      return ScopeExpr::CreateExpr(std::move(statements),
+        line_state.to_src_info(), ctx);
     }
     else
+    {
       generate_any_current<report_as::ERROR>(nullptr, "Expected the beginning of a scope ('{{'{}", one_expr ? "or ':')!" : ")!");
-    return ErrorExpr::CreateExpr(ctx);
+      return ErrorExpr::CreateExpr(ctx);
+    }
   }
 
   PTR<Expr> ASTMaker::parse_statement() noexcept
   {
+    bool is_valid = true; //modified by continue/break handling
     PTR<Expr> to_ret;
     switch (current_tkn)
     {
@@ -466,13 +472,19 @@ namespace colt::lang
       to_ret = BreakContinueExpr::CreateExpr(false, get_expr_info().to_src_info(), ctx);
       consume_current_tkn();
       if (!is_parsing_loop)
+      {
         generate_any<report_as::ERROR>(to_ret->get_src_code(), nullptr, "Statement 'continue' can only appear inside a loop!");
+        is_valid = false;
+      }
     
     break; case TKN_KEYWORD_BREAK:
       to_ret = BreakContinueExpr::CreateExpr(true, get_expr_info().to_src_info(), ctx);
       consume_current_tkn();
       if (!is_parsing_loop)
+      {
         generate_any<report_as::ERROR>(to_ret->get_src_code(), nullptr, "Statement 'break' can only appear inside a loop!");
+        is_valid = false;
+      }
     
     break; default:
       to_ret = parse_binary();
@@ -480,7 +492,9 @@ namespace colt::lang
     //panic_consume_var_decl to consume the semicolon
     check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_var_decl,
       "Expected a ';'!");
-    return to_ret;
+    if (is_valid)
+      return to_ret;
+    return ErrorExpr::CreateExpr(ctx);
   }
 
   PTR<Expr> ASTMaker::parse_condition() noexcept
