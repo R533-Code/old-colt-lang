@@ -87,15 +87,15 @@ namespace colt::lang
 		if (src_info.is_single_line())
 		{
 			if (args::GlobalArguments.colored_output)
-				io::Print("{} | {}" CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET "{}", src_info.line_begin, begin_line, src_info.expression, end_line);
+				io::Print(" {} | {}" CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET "{}", src_info.line_begin, begin_line, src_info.expression, end_line);
 			else
-				io::Print("{} | {}{}{}", src_info.line_begin, begin_line, src_info.expression, end_line);
+				io::Print(" {} | {}{}{}", src_info.line_begin, begin_line, src_info.expression, end_line);
 		
 			auto sz = src_info.expression.get_size();
 			//So no overflow happens when the expression is empty
 			sz += as<size_t>(sz == 0);
 			sz -= 1;
-			io::Print("{: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
+			io::Print(" {: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
 		}
 		else
 		{
@@ -116,11 +116,11 @@ namespace colt::lang
 					break;
 				}
 
-				io::Print("{: >{}} | {}", current_line, line_nb_size,
+				io::Print(" {: >{}} | {}", current_line, line_nb_size,
 					StringView{ begin_line.get_data() + previous_offset, begin_line.get_data() + offset });
 				++current_line;
 			}
-			io::Print("{: >{}} | {}" CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
+			io::Print(" {: >{}} | {}" CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
 				StringView{ begin_line.get_data() + previous_offset, begin_line.end() },
 				StringView{ src_info.expression.get_data(), src_info.expression.get_data() + offset });
 			++current_line;
@@ -137,11 +137,11 @@ namespace colt::lang
 					break;
 				}
 
-				io::Print("{: >{}} | " CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
+				io::Print(" {: >{}} | " CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
 					StringView{ src_info.expression.get_data() + previous_offset, src_info.expression.get_data() + offset });
 				++current_line;
 			}
-			io::Print("{: >{}} | " CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET "{}", current_line, line_nb_size,
+			io::Print(" {: >{}} | " CONSOLE_FOREGROUND_CYAN "{}" CONSOLE_COLOR_RESET "{}", current_line, line_nb_size,
 				StringView{ src_info.expression.get_data() + previous_offset, src_info.expression.end() },
 				StringView{ end_line.get_data(), end_line.get_data() + offset });
 			++current_line;
@@ -154,13 +154,13 @@ namespace colt::lang
 				{
 					if (previous_offset < end_line.get_size())
 					{
-						io::Print("{: >{}} | {}", current_line, line_nb_size,
+						io::Print(" {: >{}} | {}", current_line, line_nb_size,
 							StringView{ end_line.get_data() + previous_offset, end_line.end() });
 					}
 					break;
 				}
 
-				io::Print("{: >{}} | {}", current_line, line_nb_size,
+				io::Print(" {: >{}} | {}", current_line, line_nb_size,
 					StringView{ end_line.get_data() + previous_offset, end_line.get_data() + offset });
 				++current_line;
 			}
@@ -195,15 +195,15 @@ namespace colt::lang
 		if (src_info.is_single_line())
 		{
 			if (args::GlobalArguments.colored_output)
-				io::Print("{} | {}" CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET "{}", src_info.line_begin, begin_line, src_info.expression, end_line);
+				io::Print(" {} | {}" CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET "{}", src_info.line_begin, begin_line, src_info.expression, end_line);
 			else
-				io::Print("{} | {}{}{}", src_info.line_begin, begin_line, src_info.expression, end_line);
+				io::Print(" {} | {}{}{}", src_info.line_begin, begin_line, src_info.expression, end_line);
 
 			auto sz = src_info.expression.get_size();
 			//So no overflow happens when the expression is empty
 			sz += as<size_t>(sz == 0);
 			sz -= 1;
-			io::Print("{: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
+			io::Print(" {: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
 		}
 		else
 		{
@@ -224,11 +224,11 @@ namespace colt::lang
 					break;
 				}
 
-				io::Print("{: >{}} | {}", current_line, line_nb_size,
+				io::Print(" {: >{}} | {}", current_line, line_nb_size,
 					StringView{ begin_line.get_data() + previous_offset, begin_line.get_data() + offset });
 				++current_line;
 			}
-			io::Print("{: >{}} | {}" CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
+			io::Print(" {: >{}} | {}" CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
 				StringView{ begin_line.get_data() + previous_offset, begin_line.end() },
 				StringView{ src_info.expression.get_data(), src_info.expression.get_data() + offset });
 			++current_line;
@@ -245,11 +245,11 @@ namespace colt::lang
 					break;
 				}
 
-				io::Print("{: >{}} | " CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
+				io::Print(" {: >{}} | " CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
 					StringView{ src_info.expression.get_data() + previous_offset, src_info.expression.get_data() + offset });
 				++current_line;
 			}
-			io::Print("{: >{}} | " CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET "{}", current_line, line_nb_size,
+			io::Print(" {: >{}} | " CONSOLE_FOREGROUND_YELLOW "{}" CONSOLE_COLOR_RESET "{}", current_line, line_nb_size,
 				StringView{ src_info.expression.get_data() + previous_offset, src_info.expression.end() },
 				StringView{ end_line.get_data(), end_line.get_data() + offset });
 			++current_line;
@@ -262,13 +262,13 @@ namespace colt::lang
 				{
 					if (previous_offset < end_line.get_size())
 					{
-						io::Print("{: >{}} | {}", current_line, line_nb_size,
+						io::Print(" {: >{}} | {}", current_line, line_nb_size,
 							StringView{ end_line.get_data() + previous_offset, end_line.end() });
 					}
 					break;
 				}
 
-				io::Print("{: >{}} | {}", current_line, line_nb_size,
+				io::Print(" {: >{}} | {}", current_line, line_nb_size,
 					StringView{ end_line.get_data() + previous_offset, end_line.get_data() + offset });
 				++current_line;
 			}
@@ -303,15 +303,15 @@ namespace colt::lang
 		if (src_info.is_single_line())
 		{
 			if (args::GlobalArguments.colored_output)
-				io::Print("{} | {}" CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET "{}", src_info.line_begin, begin_line, src_info.expression, end_line);
+				io::Print(" {} | {}" CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET "{}", src_info.line_begin, begin_line, src_info.expression, end_line);
 			else
-				io::Print("{} | {}{}{}", src_info.line_begin, begin_line, src_info.expression, end_line);
+				io::Print(" {} | {}{}{}", src_info.line_begin, begin_line, src_info.expression, end_line);
 
 			auto sz = src_info.expression.get_size();
 			//So no overflow happens when the expression is empty
 			sz += as<size_t>(sz == 0);
 			sz -= 1;
-			io::Print("{: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
+			io::Print(" {: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
 		}
 		else
 		{
@@ -332,11 +332,11 @@ namespace colt::lang
 					break;
 				}
 
-				io::Print("{: >{}} | {}", current_line, line_nb_size,
+				io::Print(" {: >{}} | {}", current_line, line_nb_size,
 					StringView{ begin_line.get_data() + previous_offset, begin_line.get_data() + offset });
 				++current_line;
 			}
-			io::Print("{: >{}} | {}" CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
+			io::Print(" {: >{}} | {}" CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
 				StringView{ begin_line.get_data() + previous_offset, begin_line.end() },
 				StringView{ src_info.expression.get_data(), src_info.expression.get_data() + offset });
 			++current_line;
@@ -353,11 +353,11 @@ namespace colt::lang
 					break;
 				}
 
-				io::Print("{: >{}} | " CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
+				io::Print(" {: >{}} | " CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET, current_line, line_nb_size,
 					StringView{ src_info.expression.get_data() + previous_offset, src_info.expression.get_data() + offset });
 				++current_line;
 			}
-			io::Print("{: >{}} | " CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET "{}", current_line, line_nb_size,
+			io::Print(" {: >{}} | " CONSOLE_BACKGROUND_BRIGHT_RED "{}" CONSOLE_COLOR_RESET "{}", current_line, line_nb_size,
 				StringView{ src_info.expression.get_data() + previous_offset, src_info.expression.end() },
 				StringView{ end_line.get_data(), end_line.get_data() + offset });
 			++current_line;
@@ -370,13 +370,13 @@ namespace colt::lang
 				{
 					if (previous_offset < end_line.get_size())
 					{
-						io::Print("{: >{}} | {}", current_line, line_nb_size,
+						io::Print(" {: >{}} | {}", current_line, line_nb_size,
 							StringView{ end_line.get_data() + previous_offset, end_line.end() });
 					}
 					break;
 				}
 
-				io::Print("{: >{}} | {}", current_line, line_nb_size,
+				io::Print(" {: >{}} | {}", current_line, line_nb_size,
 					StringView{ end_line.get_data() + previous_offset, end_line.get_data() + offset });
 				++current_line;
 			}
