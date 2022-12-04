@@ -489,8 +489,7 @@ namespace colt::lang
     break; default:
       to_ret = parse_binary();
     }
-    //panic_consume_var_decl to consume the semicolon
-    check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_var_decl,
+    check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_sttmnt,
       "Expected a ';'!");
     if (is_valid)
       return to_ret;
@@ -894,6 +893,15 @@ namespace colt::lang
   void ASTMaker::panic_consume_decl() noexcept
   {
     while (current_tkn != TKN_KEYWORD_VAR && current_tkn != TKN_KEYWORD_FN && current_tkn != TKN_EOF)
+      consume_current_tkn();
+  }
+
+  void ASTMaker::panic_consume_sttmnt() noexcept
+  {
+    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF 
+      && current_tkn != TKN_KEYWORD_IF && current_tkn != TKN_KEYWORD_WHILE && current_tkn != TKN_KEYWORD_VAR)
+      consume_current_tkn();
+    if (current_tkn == TKN_SEMICOLON)
       consume_current_tkn();
   }
 

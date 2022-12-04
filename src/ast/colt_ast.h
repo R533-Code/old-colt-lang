@@ -263,6 +263,8 @@ namespace colt::lang
     void panic_consume_semicolon() noexcept;
     /// @brief Consumes all tokens till a TKN_KEYWORD_VAR, TKN_KEYWORD_FN or TKN_EOF is hit
     void panic_consume_decl() noexcept;
+    /// @brief Consumes all tokens till a TKN_KEYWORD_VAR/IF/WHILE/SEMICOLON/EOF is hit, consuming the SEMICOLON
+    void panic_consume_sttmnt() noexcept;
     /// @brief Consumes all tokens till a TKN_SEMICOLON or TKN_EOF is hit and consumes the TKN_SEMICOLON
     void panic_consume_var_decl() noexcept;
     /// @brief Consumes all tokens till a TKN_SEMICOLON, TKN_EOF or a valid scope beginning is hit
