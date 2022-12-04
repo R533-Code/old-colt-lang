@@ -48,6 +48,14 @@ namespace colt::lang
   {
     return TKN_GREAT_GREAT < tkn && tkn < TKN_EQUAL;
   }
+
+  SourceCodeExprInfo ConcatInfo(const SourceCodeExprInfo& lhs, const SourceCodeExprInfo& rhs) noexcept
+  {
+    return SourceCodeExprInfo{ lhs.line_begin, rhs.line_end,
+      StringView{lhs.lines.begin(), rhs.lines.end()},
+      StringView{lhs.expression.begin(), rhs.expression.end()},
+    };
+  }
   
   SourceCodeExprInfo ASTMaker::SourceCodeLexemeInfo::to_src_info() const noexcept
   {
@@ -414,7 +422,14 @@ namespace colt::lang
       
       Vector<PTR<Expr>> statements = {};
       while (current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF)
-        statements.push_back(parse_statement());
+      {
+        auto stt = parse_statement();
+        statements.push_back(stt);
+
+        if ((is_a<BreakContinueExpr>(stt) || is_a<FnReturnExpr>(stt))
+          && current_tkn != TKN_RIGHT_CURLY)
+          handle_unreachable_code();
+      }
       
       if (current_tkn != TKN_RIGHT_CURLY)
         generate_any<report_as::ERROR>(lexeme_info.to_src_info(), nullptr,
@@ -843,6 +858,17 @@ namespace colt::lang
       }
     }
     return ret;
+  }
+
+  void ASTMaker::handle_unreachable_code() noexcept
+  {
+    PTR<const Expr> stt = parse_statement();
+    SourceCodeExprInfo stt_info = stt->get_src_code();
+    while (current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF)
+      stt = parse_statement();
+
+    generate_any<report_as::WARNING>(ConcatInfo(stt_info, stt->get_src_code()),
+      nullptr, "Unreachable code!");
   }
   
   void ASTMaker::panic_consume_semicolon() noexcept

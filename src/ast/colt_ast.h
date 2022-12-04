@@ -29,6 +29,12 @@ namespace colt::lang
   /// @return True if the Token is a comparison Token
   bool isComparisonToken(Token tkn) noexcept;
 
+  /// @brief Concatenate two adjacent SourceCodeExprInfo
+  /// @param lhs The left hand side
+  /// @param rhs The right hand side
+  /// @return Concatenated SourceCodeExprInfo
+  SourceCodeExprInfo ConcatInfo(const SourceCodeExprInfo& lhs, const SourceCodeExprInfo& rhs) noexcept;
+
   /// @brief Class responsible of producing an AST
   class ASTMaker
   {
@@ -238,6 +244,9 @@ namespace colt::lang
     /// @param info The function call source code information
     /// @return True if valid
     bool validate_fn_call(const SmallVector<PTR<Expr>, 4>& arguments, PTR<const FnDeclExpr> decl, StringView identifier, const SourceCodeExprInfo& info) noexcept;
+
+    /// @brief Consumes statement till a RIGHT_CURLY_BRACKET is hit and generates a warning
+    void handle_unreachable_code() noexcept;
 
     /************* PEEKING HELPERS ************/
 
