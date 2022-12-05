@@ -928,45 +928,28 @@ namespace colt::lang
       nullptr, "Unreachable code!");
   }
 
-  bool ASTMaker::validate_all_path_return(PTR<const Expr> expr) noexcept
+  void ASTMaker::validate_all_path_return(PTR<const Expr> expr) noexcept
   {
     switch (expr->classof())
     {
-    case Expr::EXPR_ERROR:
-      return true;
-    case Expr::EXPR_FN_RETURN:
-      return true;
     case Expr::EXPR_SCOPE:
-      return validate_all_path_return(as<PTR<const ScopeExpr>>(expr)->get_body_array().get_back());
+      validate_all_path_return(as<PTR<const ScopeExpr>>(expr)->get_body_array().get_back());
+      [[fallthrough]];
+    case Expr::EXPR_ERROR:
+    case Expr::EXPR_FN_RETURN:
+      return;
     case Expr::EXPR_CONDITION:
     {
-      bool to_ret = true;
       PTR<const ConditionExpr> cond = as<PTR<const ConditionExpr>>(expr);
-      if (!validate_all_path_return(cond->get_if_statement()))
-      {
-        generate_any<report_as::ERROR>(cond->get_if_statement()->get_src_code(), nullptr,
-          "Path does not return!");
-        to_ret = false;
-      }
-      else if (cond->get_else_statement() == nullptr)
-      {
-        generate_any<report_as::ERROR>(cond->get_src_code(), nullptr,
-          "Expected an 'else' statement with a return!");
-        to_ret = false;
-      }
-      else if (!validate_all_path_return(cond->get_else_statement()))
-      {
-        generate_any<report_as::ERROR>(cond->get_else_statement()->get_src_code(), nullptr,
-          "Path does not return!");
-        to_ret = false;
-      }
-      return to_ret;
+      //Validate both branches
+      validate_all_path_return(cond->get_if_statement());
+      if (cond->get_else_statement() != nullptr)
+        validate_all_path_return(cond->get_else_statement());
+      return;
     }
-
     default:
       generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
         "Expected a return!");
-      return false;
     }
   }
   
