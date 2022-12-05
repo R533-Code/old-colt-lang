@@ -1,4 +1,4 @@
-//Error: Expected a 'return' statement as path must return!
+//`Expected a 'return' statement, as path must return a value!
 fn a()->i64
 {
   if 10 == 10:

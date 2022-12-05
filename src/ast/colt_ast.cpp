@@ -631,6 +631,7 @@ namespace colt::lang
   PTR<Expr> ASTMaker::parse_assignment(PTR<Expr> lhs, const SavedExprInfo& line_state) noexcept
   {
     Token assignment_tkn = current_tkn;
+    consume_current_tkn(); //consume '='
     PTR<Expr> rhs = parse_binary();
 
     if (!is_a<VarReadExpr>(lhs))
@@ -949,7 +950,7 @@ namespace colt::lang
     }
     default:
       generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
-        "Expected a 'return' statement as path must return a value!");
+        "Expected a 'return' statement, as path must return a value!");
     }
   }
   
