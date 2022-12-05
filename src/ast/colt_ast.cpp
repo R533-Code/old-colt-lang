@@ -949,7 +949,7 @@ namespace colt::lang
     }
     default:
       generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
-        "Expected a return!");
+        "Expected a 'return' statement as path must return a value!");
     }
   }
   
