@@ -1,6 +1,6 @@
 //Error: Unclosed curly bracket delimiter!
 //1
-fn hello()->i32
+fn hello()->void
 {
   10 + 5;
   {

@@ -2,7 +2,7 @@
 //2
 fn hello(i64 a)->i32;
 
-fn main()->i32
+fn main()->void
 {
   hello(); //<- error
   hello(10u64); //<- error

@@ -1,3 +1,3 @@
 //Error: Expected a '.'!
 //1
-fn hello()->i32: 10 10 + 10 + 10 + 10;
+fn hello()->void: 10 10 + 10 + 10 + 10;

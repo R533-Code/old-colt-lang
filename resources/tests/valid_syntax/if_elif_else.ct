@@ -1,5 +1,5 @@
 //Compilation successful!
-fn a()->i32
+fn a()->void
 {
   if 10 == 10:
     10;

@@ -1,6 +1,6 @@
 //`Error: Dereference operator '*' can only be applied on variables!
 //2
-fn hello()->i32
+fn hello()->void
 {
   var hello : PTR<i64>;
   *hello; //no error

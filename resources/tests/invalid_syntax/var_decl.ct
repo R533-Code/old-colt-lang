@@ -1,6 +1,6 @@
 //Error: (Expected an identifier!)|(An uninitialized variable should specify its type!)|(Expected a '.'!)
 //4
-fn hello()->i32
+fn hello()->void
 {
   var fn = 10; //<- error
   var read += 11; // <- error

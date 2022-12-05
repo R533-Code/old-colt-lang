@@ -1,5 +1,5 @@
 //Compilation successful!
-fn hello()->i32
+fn hello()->void
 {
   var read = 10;
   var reada = 11;
