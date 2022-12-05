@@ -235,6 +235,8 @@ namespace colt::lang
     /// @return FnCallExpr, or ErrorExpr
     PTR<Expr> parse_function_call(StringView identifier, const SavedExprInfo& line_state) noexcept;
 
+    PTR<Expr> parse_return() noexcept;
+
     /// @brief Parses the function call's arguments
     /// @param arguments The argument vector in which to push the arguments
     void parse_function_call_arguments(SmallVector<PTR<Expr>, 4>& arguments) noexcept;

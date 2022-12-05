@@ -450,6 +450,8 @@ namespace colt::lang
 
   PTR<Expr> ASTMaker::parse_statement() noexcept
   {
+    assert_true(current_function, "Parse statement can only happen inside a function!");
+
     bool is_valid = true; //modified by continue/break handling
     PTR<Expr> to_ret;
     switch (current_tkn)
@@ -462,6 +464,9 @@ namespace colt::lang
       return parse_condition();
     case TKN_KEYWORD_WHILE:
       return parse_while();
+    break; case TKN_KEYWORD_RETURN:
+      return parse_return();
+    
     case TKN_SEMICOLON:
       generate_any_current<report_as::ERROR>(nullptr, "Expected a statement!");
       consume_current_tkn(); // ';'
@@ -485,7 +490,7 @@ namespace colt::lang
       {
         generate_any<report_as::ERROR>(to_ret->get_src_code(), nullptr, "Statement 'break' can only appear inside a loop!");
         is_valid = false;
-      }
+      }    
     
     break; default:
       to_ret = parse_binary();
@@ -850,6 +855,39 @@ namespace colt::lang
         break;
       arguments.push_back(parse_binary());
     }
+  }
+
+  PTR<Expr> colt::lang::ASTMaker::parse_return() noexcept
+  {
+    assert(current_tkn == TKN_KEYWORD_RETURN);
+    
+    SavedExprInfo line_state = { *this };
+    consume_current_tkn();    
+
+    if (current_function->get_return_type()->is_void())
+    {
+      if (current_tkn != TKN_SEMICOLON)
+      {
+        generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_sttmnt,
+          "Function '{}' of return type 'void' cannot return a value!", current_function->get_name());
+        return ErrorExpr::CreateExpr(ctx);
+      }
+      consume_current_tkn(); // consume ';'
+      return FnReturnExpr::CreateExpr(nullptr, line_state.to_src_info(), ctx);
+    }
+    PTR<Expr> ret_val = parse_binary();
+    if (!ret_val->get_type()->is_equal(current_function->get_return_type()))
+    {
+      generate_any<report_as::ERROR>(ret_val->get_src_code(), nullptr,
+        "Type of return value does not match function return type!");
+      ret_val = ErrorExpr::CreateExpr(ctx);
+    }
+    else
+      ret_val = FnReturnExpr::CreateExpr(ret_val, line_state.to_src_info(), ctx);
+    
+    check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_sttmnt,
+      "Expected a ';'!");
+    return ret_val;
   }
 
   bool ASTMaker::validate_fn_call(const SmallVector<PTR<Expr>, 4>& arguments, PTR<const FnDeclExpr> decl, StringView identifier, const SourceCodeExprInfo& info) noexcept
