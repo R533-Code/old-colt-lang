@@ -400,7 +400,6 @@ namespace colt::lang
     //And reset it on scope exit
     ON_EXIT{ current_function = nullptr; };
 
-
     if (is_valid_scope_begin())
     {
       auto body = parse_scope();
@@ -719,6 +718,7 @@ namespace colt::lang
       if (is_mut)
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "'void' typename cannot be marked as mutable!");
+      consume_current_tkn(); //void
       return VoidType::CreateType(ctx);
     }
     case TKN_KEYWORD_BOOL:
