@@ -1,0 +1,5 @@
+//Error: Function '.*' of return type 'void' cannot return a value!
+//2
+fn hello()->void: return 10; // <-error
+
+fn hi()->i64: return; // <-error

@@ -1,0 +1,14 @@
+//Compilation successful!
+fn a()->i64
+{
+  if 10 == 10:
+    return 10;
+  elif 10 == 11:
+    return 11;
+  else:
+    12;
+  {
+    var hello = 10;
+    hello = 10 + 12;
+  }
+}
