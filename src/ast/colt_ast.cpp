@@ -322,7 +322,7 @@ namespace colt::lang
     {
       auto expr = parse_fn_decl(); //Function
       if (is_a<FnDefExpr>(expr)) //add to the global table
-        global_map.insert(as<PTR<FnDefExpr>>(expr)->get_name(), expr);
+        global_map.insert_or_assign(as<PTR<FnDefExpr>>(expr)->get_name(), expr);
       return expr;
     }
     else if (current_tkn == TKN_KEYWORD_VAR)
@@ -402,7 +402,12 @@ namespace colt::lang
 
 
     if (is_valid_scope_begin())
-      return FnDefExpr::CreateExpr(declaration, parse_scope(), line_state.to_src_info(), ctx);
+    {
+      auto body = parse_scope();
+      if (!current_function->get_return_type()->is_void())
+        validate_all_path_return(body);
+      return FnDefExpr::CreateExpr(declaration, body, line_state.to_src_info(), ctx);
+    }
     check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
     return FnDefExpr::CreateExpr(declaration, line_state.to_src_info(), ctx);    
   }
@@ -921,6 +926,48 @@ namespace colt::lang
 
     generate_any<report_as::WARNING>(ConcatInfo(stt_info, stt->get_src_code()),
       nullptr, "Unreachable code!");
+  }
+
+  bool ASTMaker::validate_all_path_return(PTR<const Expr> expr) noexcept
+  {
+    switch (expr->classof())
+    {
+    case Expr::EXPR_ERROR:
+      return true;
+    case Expr::EXPR_FN_RETURN:
+      return true;
+    case Expr::EXPR_SCOPE:
+      return validate_all_path_return(as<PTR<const ScopeExpr>>(expr)->get_body_array().get_back());
+    case Expr::EXPR_CONDITION:
+    {
+      bool to_ret = true;
+      PTR<const ConditionExpr> cond = as<PTR<const ConditionExpr>>(expr);
+      if (!validate_all_path_return(cond->get_if_statement()))
+      {
+        generate_any<report_as::ERROR>(cond->get_if_statement()->get_src_code(), nullptr,
+          "Path does not return!");
+        to_ret = false;
+      }
+      else if (cond->get_else_statement() == nullptr)
+      {
+        generate_any<report_as::ERROR>(cond->get_src_code(), nullptr,
+          "Expected an 'else' statement with a return!");
+        to_ret = false;
+      }
+      else if (!validate_all_path_return(cond->get_else_statement()))
+      {
+        generate_any<report_as::ERROR>(cond->get_else_statement()->get_src_code(), nullptr,
+          "Path does not return!");
+        to_ret = false;
+      }
+      return to_ret;
+    }
+
+    default:
+      generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+        "Expected a return!");
+      return false;
+    }
   }
   
   void ASTMaker::panic_consume_semicolon() noexcept

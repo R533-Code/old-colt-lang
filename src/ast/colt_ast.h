@@ -249,6 +249,8 @@ namespace colt::lang
     /// @return True if valid
     bool validate_fn_call(const SmallVector<PTR<Expr>, 4>& arguments, PTR<const FnDeclExpr> decl, StringView identifier, const SourceCodeExprInfo& info) noexcept;
 
+    bool validate_all_path_return(PTR<const Expr> expr) noexcept;
+
     /// @brief Consumes statement till a RIGHT_CURLY_BRACKET is hit and generates a warning
     void handle_unreachable_code() noexcept;
 
