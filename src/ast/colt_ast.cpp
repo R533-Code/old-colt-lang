@@ -862,7 +862,7 @@ namespace colt::lang
     }
   }
 
-  PTR<Expr> colt::lang::ASTMaker::parse_return() noexcept
+  PTR<Expr> ASTMaker::parse_return() noexcept
   {
     assert(current_tkn == TKN_KEYWORD_RETURN);
     
