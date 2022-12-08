@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 project(Colt-Lang VERSION 0.0.3.0 LANGUAGES CXX)
 
+# Set default build type to Release
+set(CMAKE_BUILD_TYPE "Release")
+
 # Save all the files to compile
 file(GLOB_RECURSE ColtHeaders "src/*.h")
 file(GLOB_RECURSE ColtUnits "src/*.cpp")
@@ -31,16 +34,31 @@ target_compile_definitions(
   ${COLT_EXECUTABLE_NAME} PRIVATE $<$<CONFIG:DEBUG>:COLT_DEBUG_BUILD>
 )
 
-# Set default build type to Release
-set(CMAKE_BUILD_TYPE "Release")
 if (MSVC)
   # The executable is the startup project in Visual Studio
   set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${COLT_EXECUTABLE_NAME})
   target_compile_options(${COLT_EXECUTABLE_NAME} PUBLIC "/external:anglebrackets" "/external:W0")
 endif()
 
+message(STATUS "Setting up LLVM...")
+
+add_subdirectory(libraries/llvm-project/llvm)
+# Add includes of LLVM
+include_directories(${LLVM_INCLUDE_DIRS})
+separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
+add_definitions(${LLVM_DEFINITIONS_LIST})
+
+# Find the libraries that correspond to the LLVM components
+# that we wish to use
+llvm_map_components_to_libnames(llvm_libs support core irreader passes orcjit native)
+message(${llvm_libs})
+# Link against LLVM libraries
+target_link_libraries(${COLT_EXECUTABLE_NAME} PUBLIC ${llvm_libs})
+
+message(STATUS "Finished LLVM set up!")
+
 # include {fmt}
-message(STATUS "Linking with {fmt}")
+message(STATUS "Setting up {fmt}...")
 add_subdirectory("${CMAKE_SOURCE_DIR}/libraries/fmt")
 target_link_libraries(${COLT_EXECUTABLE_NAME} PUBLIC fmt::fmt)
 
@@ -50,6 +68,7 @@ target_include_directories(${COLT_EXECUTABLE_NAME} PUBLIC
   "${CMAKE_SOURCE_DIR}/libraries/colt-structs/include"
   SYSTEM # So no warning is shown
   "${CMAKE_SOURCE_DIR}/libraries/fmt/include"
+  "${CMAKE_SOURCE_DIR}/libraries/llvm-project/llvm/include"
 )
 
 message(STATUS "Searching for tests...")
