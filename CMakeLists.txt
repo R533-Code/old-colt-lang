@@ -40,22 +40,31 @@ if (MSVC)
   target_compile_options(${COLT_EXECUTABLE_NAME} PUBLIC "/external:anglebrackets" "/external:W0")
 endif()
 
-message(STATUS "Setting up LLVM...")
+# To avoid regenerating LLVM
+option(REGEN_LLVM "Regenerates LLVM..." TRUE)
 
-add_subdirectory(libraries/llvm-project/llvm)
-# Add includes of LLVM
-include_directories(${LLVM_INCLUDE_DIRS})
-separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
-add_definitions(${LLVM_DEFINITIONS_LIST})
+if (${REGEN_LLVM})
+  set(REGEN_LLVM FALSE CACHE BOOL "Regenerates LLVM..." FORCE)
 
-# Find the libraries that correspond to the LLVM components
-# that we wish to use
-llvm_map_components_to_libnames(llvm_libs support core irreader passes orcjit native)
-message(${llvm_libs})
-# Link against LLVM libraries
-target_link_libraries(${COLT_EXECUTABLE_NAME} PUBLIC ${llvm_libs})
+  message(STATUS "Setting up LLVM...")
+  
+  add_subdirectory(libraries/llvm-project/llvm)
+  # Add includes of LLVM
+  include_directories(${LLVM_INCLUDE_DIRS})
+  separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
+  add_definitions(${LLVM_DEFINITIONS_LIST})
 
-message(STATUS "Finished LLVM set up!")
+  # Find the libraries that correspond to the LLVM components
+  # that we wish to use
+  llvm_map_components_to_libnames(llvm_libs support core irreader passes orcjit native)
+  message(${llvm_libs})
+  # Link against LLVM libraries
+  target_link_libraries(${COLT_EXECUTABLE_NAME} PUBLIC ${llvm_libs})
+
+  message(STATUS "Finished LLVM set up!")
+else()
+  message(STATUS "Skipping LLVM CMake generation.")
+endif()
 
 # include {fmt}
 message(STATUS "Setting up {fmt}...")
