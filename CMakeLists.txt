@@ -40,31 +40,30 @@ if (MSVC)
   target_compile_options(${COLT_EXECUTABLE_NAME} PUBLIC "/external:anglebrackets" "/external:W0")
 endif()
 
-# To avoid regenerating LLVM
-option(REGEN_LLVM "Regenerates LLVM..." TRUE)
+#########################################
+# LLVM SETUP
+#########################################
 
-if (${REGEN_LLVM})
-  set(REGEN_LLVM FALSE CACHE BOOL "Regenerates LLVM..." FORCE)
-
-  message(STATUS "Setting up LLVM...")
+message(STATUS "Setting up LLVM...")
   
-  add_subdirectory(libraries/llvm-project/llvm)
-  # Add includes of LLVM
-  include_directories(${LLVM_INCLUDE_DIRS})
-  separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
-  add_definitions(${LLVM_DEFINITIONS_LIST})
+add_subdirectory(libraries/llvm-project/llvm)
+# Add includes of LLVM
+include_directories(${LLVM_INCLUDE_DIRS})
+separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
+add_definitions(${LLVM_DEFINITIONS_LIST})
 
-  # Find the libraries that correspond to the LLVM components
-  # that we wish to use
-  llvm_map_components_to_libnames(llvm_libs support core irreader passes orcjit native)
-  message(${llvm_libs})
-  # Link against LLVM libraries
-  target_link_libraries(${COLT_EXECUTABLE_NAME} PUBLIC ${llvm_libs})
+# Find the libraries that correspond to the LLVM components
+# that we wish to use
+llvm_map_components_to_libnames(llvm_libs support core irreader passes orcjit native)
+message(${llvm_libs})
+# Link against LLVM libraries
+target_link_libraries(${COLT_EXECUTABLE_NAME} PUBLIC ${llvm_libs})
 
-  message(STATUS "Finished LLVM set up!")
-else()
-  message(STATUS "Skipping LLVM CMake generation.")
-endif()
+message(STATUS "Finished LLVM set up!")
+
+#########################################
+# FMT SETUP
+#########################################
 
 # include {fmt}
 message(STATUS "Setting up {fmt}...")
@@ -79,6 +78,10 @@ target_include_directories(${COLT_EXECUTABLE_NAME} PUBLIC
   "${CMAKE_SOURCE_DIR}/libraries/fmt/include"
   "${CMAKE_SOURCE_DIR}/libraries/llvm-project/llvm/include"
 )
+
+#########################################
+# COLT TESTS
+#########################################
 
 message(STATUS "Searching for tests...")
 # Load tests
@@ -194,6 +197,10 @@ if (NOT ${testCount} EQUAL 0 AND ${ENUM_TESTS})
   message(STATUS "Finished enumerating tests!")
 endif()
 
+#########################################
+# DOXYGEN
+#########################################
+
 # DOXYGEN
 option(BUILD_DOC "Build documentation" ON)
 
@@ -218,6 +225,10 @@ if (DOXYGEN_FOUND)
 else (DOXYGEN_FOUND)
   message(WARNING "Doxygen was not found! Doxygen need to be installed to generate the documentation!")
 endif (DOXYGEN_FOUND)
+
+#########################################
+# COLT CONFIG
+#########################################
 
 message(STATUS "Configuring 'colt_config.h'...")
 
