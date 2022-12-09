@@ -45,8 +45,9 @@ endif()
 #########################################
 
 message(STATUS "Setting up LLVM...")
-  
+
 add_subdirectory(libraries/llvm-project/llvm)
+
 # Add includes of LLVM
 include_directories(${LLVM_INCLUDE_DIRS})
 separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
@@ -55,9 +56,9 @@ add_definitions(${LLVM_DEFINITIONS_LIST})
 # Find the libraries that correspond to the LLVM components
 # that we wish to use
 llvm_map_components_to_libnames(llvm_libs support core irreader passes orcjit native)
-message(${llvm_libs})
+
 # Link against LLVM libraries
-target_link_libraries(${COLT_EXECUTABLE_NAME} PUBLIC ${llvm_libs})
+target_link_libraries(${COLT_EXECUTABLE_NAME} PUBLIC "${llvm_libs}")
 
 message(STATUS "Finished LLVM set up!")
 
@@ -77,6 +78,7 @@ target_include_directories(${COLT_EXECUTABLE_NAME} PUBLIC
   SYSTEM # So no warning is shown
   "${CMAKE_SOURCE_DIR}/libraries/fmt/include"
   "${CMAKE_SOURCE_DIR}/libraries/llvm-project/llvm/include"
+  "${CMAKE_BINARY_DIR}/libraries/llvm-project/llvm/include"
 )
 
 #########################################
