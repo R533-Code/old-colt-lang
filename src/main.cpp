@@ -1,5 +1,5 @@
 #include <util/colt_pch.h>
-#include <ast/colt_ast.h>
+#include <code_gen/llvm_ir_gen.h>
 
 using namespace colt;
 using namespace colt::lang;
@@ -21,7 +21,10 @@ void compile(StringView str) noexcept
     std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - begin_time));
 
   if (AST.is_expected())
+  {
     io::PrintMessage("Compilation successful!");
+    gen::LLVMIRGenerator gen = { AST.get_value(), llvm::OptimizationLevel::O1};
+  }
   else
     io::PrintWarning("Compilation failed with {} error{}", AST.get_error(), AST.get_error() == 1 ? "!" : "s!");
 }
