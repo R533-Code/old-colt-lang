@@ -236,7 +236,8 @@ namespace colt::gen
       returned_value = builder.CreateIntCast(returned_value, type_to_llvm(expr_t), expr_t->is_signed_int());
     else if (child_t->is_floating())
       returned_value = builder.CreateFPCast(returned_value, type_to_llvm(expr_t));
-    colt_unreachable("Invalid conversion!");
+    else
+      colt_unreachable("Invalid conversion!");
   }
 
   void LLVMIRGenerator::gen_var_decl(PTR<const lang::VarDeclExpr> ptr) noexcept
@@ -416,6 +417,11 @@ namespace colt::gen
     default:
       colt_unreachable("Unimplemented type!");
     }
+  }
+
+  void LLVMIRGenerator::print_module() const noexcept
+  {
+    module->print(llvm::errs(), nullptr);
   }
 
   void LLVMIRGenerator::optimize(llvm::OptimizationLevel level) noexcept
