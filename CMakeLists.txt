@@ -38,6 +38,10 @@ if (MSVC)
   # The executable is the startup project in Visual Studio
   set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${COLT_EXECUTABLE_NAME})
   target_compile_options(${COLT_EXECUTABLE_NAME} PUBLIC "/external:anglebrackets" "/external:W0")
+  target_compile_options(${COLT_EXECUTABLE_NAME} PRIVATE "$<$<CONFIG:Release>:/Zi>")
+  target_link_options(${COLT_EXECUTABLE_NAME} PRIVATE "$<$<CONFIG:Release>:/DEBUG>")
+  target_link_options(${COLT_EXECUTABLE_NAME} PRIVATE "$<$<CONFIG:Release>:/OPT:REF>")
+  target_link_options(${COLT_EXECUTABLE_NAME} PRIVATE "$<$<CONFIG:Release>:/OPT:ICF>")
 endif()
 
 #########################################
@@ -169,13 +173,13 @@ foreach(testPath ${ColtTestsPath})
   set(testName "${testFolderName}_${testName}")
 
   # Create test
-  add_test(NAME "${testName}" COMMAND ${COLT_EXECUTABLE_NAME} -C ${testPath})
+  add_test(NAME "${testName}" COMMAND ${COLT_EXECUTABLE_NAME} -i -C ${testPath})
   set_property(TEST ${testName} PROPERTY PASS_REGULAR_EXPRESSION ${RegexTest})
   set_property(TEST ${testName} PROPERTY TIMEOUT 5) # 5s
   
   # Create test for error count
   if (${withErrorCount})
-    add_test(NAME "${testName}_ERRC" COMMAND ${COLT_EXECUTABLE_NAME} -C ${testPath})
+    add_test(NAME "${testName}_ERRC" COMMAND ${COLT_EXECUTABLE_NAME} -i -C ${testPath})
     if (${ErrorCount} EQUAL 0)
       set_property(TEST "${testName}_ERRC" PROPERTY PASS_REGULAR_EXPRESSION
           "Message: Compilation successful!")
