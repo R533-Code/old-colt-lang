@@ -769,6 +769,10 @@ namespace colt::lang
     /// @return The expression to converse
     ContiguousView<PTR<Expr>> get_body_array() const noexcept { return body_expr.to_view(); }
 
+    /// @brief Pushes an expression to the end of the scope
+    /// @param expr The expression to push
+    void push_back(PTR<Expr> expr) noexcept { body_expr.push_back(expr); }
+
     /// @brief Creates a ScopeExpr
     /// @param body The body of the ScopeExpr
     /// @param src_info The source code information
