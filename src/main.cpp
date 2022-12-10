@@ -23,7 +23,9 @@ void compile(StringView str) noexcept
   if (AST.is_expected())
   {
     io::PrintMessage("Compilation successful!");
-    gen::LLVMIRGenerator gen = { AST.get_value(), llvm::OptimizationLevel::O1};
+    gen::LLVMIRGenerator gen = { AST.get_value(), llvm::OptimizationLevel::O1 };
+    if (args::GlobalArguments.print_llvm_ir)
+      gen.print_module();
   }
   else
     io::PrintWarning("Compilation failed with {} error{}", AST.get_error(), AST.get_error() == 1 ? "!" : "s!");
