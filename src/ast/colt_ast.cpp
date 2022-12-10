@@ -405,6 +405,12 @@ namespace colt::lang
       auto body = parse_scope();
       if (!current_function->get_return_type()->is_void())
         validate_all_path_return(body);
+      //If a return is not present at the end of the void function,
+      //add one. As parse_scope can return ErrorExpr or ScopeExpr,
+      //do necessary check
+      else if (is_a<ScopeExpr>(body) && !is_return_expr(body))
+        as<PTR<ScopeExpr>>(body)->push_back(FnReturnExpr::CreateExpr(nullptr, {}, ctx));        
+      
       return FnDefExpr::CreateExpr(declaration, body, line_state.to_src_info(), ctx);
     }
     check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
@@ -417,7 +423,12 @@ namespace colt::lang
     if (current_tkn == TKN_COLON && one_expr)
     {
       consume_current_tkn(); // :
-      return parse_statement();
+      
+      Vector<PTR<Expr>> statements = {};
+      statements.push_back(parse_statement());
+      //We still want to return a ScopeExpr even for a single expression
+      return ScopeExpr::CreateExpr(std::move(statements),
+        line_state.to_src_info(), ctx);
     }
     else if (current_tkn == TKN_LEFT_CURLY)
     {
@@ -973,6 +984,30 @@ namespace colt::lang
       consume_current_tkn();
     if (current_tkn == TKN_SEMICOLON)
       consume_current_tkn();
+  }
+
+  bool colt::lang::ASTMaker::is_return_expr(PTR<const Expr> expr) const noexcept
+  {
+    switch (expr->classof())
+    {
+    case Expr::EXPR_SCOPE:
+      return is_return_expr(as<PTR<const ScopeExpr>>(expr)->get_body_array().get_back());
+    case Expr::EXPR_ERROR:
+    case Expr::EXPR_FN_RETURN:
+      return true;
+    case Expr::EXPR_CONDITION:
+    {
+      PTR<const ConditionExpr> cond = as<PTR<const ConditionExpr>>(expr);
+      bool to_ret = true;
+      //Validate both branches
+      to_ret &= is_return_expr(cond->get_if_statement());
+      if (cond->get_else_statement() != nullptr)
+        to_ret &= is_return_expr(cond->get_else_statement());
+      return to_ret;
+    }
+    default:
+      return false;
+    }
   }
 
   void ASTMaker::panic_consume_var_decl() noexcept
