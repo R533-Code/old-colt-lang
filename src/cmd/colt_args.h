@@ -28,6 +28,8 @@ namespace colt::args
 		const char* file_out = nullptr;
 		/// @brief If true, allows printing functions to use colored output
 		bool colored_output = true;
+		/// @brief Print resulting LLVM IR
+		bool print_llvm_ir = false;
 		/// @brief If true, allows messages to be printed
 		bool print_messages = true;
 		/// @brief If true, allows warnings to be printed
@@ -82,6 +84,11 @@ namespace colt::args
 		/// @param argv The argument values
 		/// @param current_arg The current argument number being parsed
 		void enum_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief Handles print IR
+		/// @param argc The argument count
+		/// @param argv The argument values
+		/// @param current_arg The current argument number being parsed
+		void print_ir_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 		/// @brief Handles no-color argument
 		/// @param argc The argument count
 		/// @param argv The argument values
@@ -118,7 +125,8 @@ namespace colt::args
 		{
 			Argument{ "version", "v", "Prints the version of the compiler.\nUse: --version/-v", 0, &version_callback},
 			Argument{ "help", "h", "Prints the documentation of a command.\nUse: --help/-h <COMMAND>", 1, &help_callback},
-			Argument{ "enum", "e", "Enumerates all possible commands.\nUse: --enum/-e <COMMAND>", 0, &enum_callback},
+			Argument{ "enum", "e", "Enumerates all possible commands.\nUse: --enum/-e", 0, &enum_callback},
+			Argument{ "print-ir", "i", "Prints generated LLVM IR.\nUse: --print-ir/-i", 0, &print_ir_callback},
 			Argument{ "no-color", "C", "Removes colored/highlighted outputs on the console.\nUse: --no-color/-C", 0, &no_color_callback},
 			Argument{ "no-error", "E", "Removes error outputs.\nUse: --no-error/-E", 0, &no_error_callback},
 			Argument{ "no-warn", "W", "Removes warning outputs.\nUse: --no-warn/-W", 0, &no_warning_callback},

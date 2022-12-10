@@ -68,6 +68,11 @@ namespace colt::args
       std::exit(0);
     }
 
+    void print_ir_callback(int argc, const char** argv, size_t& current_arg) noexcept
+    {
+      global_args.print_llvm_ir = true;
+    }
+
     void no_color_callback(int argc, const char** argv, size_t& current_arg) noexcept
     {
       global_args.colored_output = false;
