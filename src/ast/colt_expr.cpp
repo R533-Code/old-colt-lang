@@ -60,7 +60,7 @@ namespace colt::lang
   PTR<Expr> FnReturnExpr::CreateExpr(PTR<Expr> to_ret, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
     return ctx.add_expr(make_unique<FnReturnExpr>(
-      to_ret->get_type(), to_ret, src_info
+      to_ret ? to_ret->get_type() : VoidType::CreateType(ctx), to_ret, src_info
       ));
   }
   
@@ -97,28 +97,28 @@ namespace colt::lang
   PTR<Expr> ScopeExpr::CreateExpr(Vector<PTR<Expr>>&& body, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
     return ctx.add_expr(make_unique<ScopeExpr>(
-      ctx.add_type(make_unique<VoidType>()), std::move(body), src_info
+      VoidType::CreateType(ctx), std::move(body), src_info
       ));
   }
   
   PTR<Expr> ConditionExpr::CreateExpr(PTR<Expr> if_cond, PTR<Expr> if_stmt, PTR<Expr> else_stmt, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
     return ctx.add_expr(make_unique<ConditionExpr>(
-      ctx.add_type(make_unique<VoidType>()), if_cond, if_stmt, else_stmt, src_info
+      VoidType::CreateType(ctx), if_cond, if_stmt, else_stmt, src_info
       ));
   }
 
   PTR<Expr> WhileLoopExpr::CreateExpr(PTR<Expr> condition, PTR<Expr> body, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
     return ctx.add_expr(make_unique<WhileLoopExpr>(
-      ctx.add_type(make_unique<VoidType>()), condition, body, src_info
+      VoidType::CreateType(ctx), condition, body, src_info
       ));
   }
 
   PTR<Expr> BreakContinueExpr::CreateExpr(bool is_break, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
     return ctx.add_expr(make_unique<BreakContinueExpr>(
-      ctx.add_type(make_unique<VoidType>()), is_break, src_info
+      VoidType::CreateType(ctx), is_break, src_info
       ));
   }
   
