@@ -49,7 +49,7 @@ namespace colt::gen
 		LLVMIRGenerator(LLVMIRGenerator&&) = delete;
 
 		/// @brief Generate LLVM IR from expressions
-		/// @param exprs The expression to compile
+		/// @param ast The AST to compile to IR
 		/// @param level The optimization level
 		LLVMIRGenerator(const lang::AST& ast, llvm::OptimizationLevel level = llvm::OptimizationLevel::O3) noexcept
 		{
@@ -57,10 +57,11 @@ namespace colt::gen
 
 			for (size_t i = 0; i < ast.expressions.get_size(); i++)
 				gen_ir(ast.expressions[i]);
-
+			
 			optimize(level);
-			module->print(llvm::errs(), nullptr);
 		}
+		
+		void print_module() const noexcept;
 
 	private:
 		void gen_ir(PTR<const lang::Expr> ptr) noexcept;
