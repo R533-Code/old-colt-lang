@@ -46,6 +46,30 @@ namespace colt::lang
     return TKN_GREAT_GREAT < tkn && tkn < TKN_EQUAL;
   }
 
+  bool isTerminatedExpr(PTR<const Expr> expr) noexcept
+  {
+    switch (expr->classof())
+    {
+    case Expr::EXPR_SCOPE:
+      return isTerminatedExpr(as<PTR<const ScopeExpr>>(expr)->get_body_array().get_back());
+    case Expr::EXPR_ERROR:
+    case Expr::EXPR_FN_RETURN:
+      return true;
+    case Expr::EXPR_CONDITION:
+    {
+      PTR<const ConditionExpr> cond = as<PTR<const ConditionExpr>>(expr);
+      bool to_ret = true;
+      //Validate both branches
+      to_ret &= isTerminatedExpr(cond->get_if_statement());
+      if (cond->get_else_statement() != nullptr)
+        to_ret &= isTerminatedExpr(cond->get_else_statement());
+      return to_ret;
+    }
+    default:
+      return false;
+    }
+  }
+
   SourceCodeExprInfo ConcatInfo(const SourceCodeExprInfo& lhs, const SourceCodeExprInfo& rhs) noexcept
   {
     return SourceCodeExprInfo{ lhs.line_begin, rhs.line_end,
@@ -409,7 +433,7 @@ namespace colt::lang
       //If a return is not present at the end of the void function,
       //add one. As parse_scope can return ErrorExpr or ScopeExpr,
       //do necessary check
-      else if (is_a<ScopeExpr>(body) && !is_return_expr(body))
+      else if (is_a<ScopeExpr>(body) && !isTerminatedExpr(body))
         as<PTR<ScopeExpr>>(body)->push_back(FnReturnExpr::CreateExpr(nullptr, {}, ctx));        
       
       return FnDefExpr::CreateExpr(declaration, body, line_state.to_src_info(), ctx);
@@ -987,30 +1011,6 @@ namespace colt::lang
       consume_current_tkn();
     if (current_tkn == TKN_SEMICOLON)
       consume_current_tkn();
-  }
-
-  bool colt::lang::ASTMaker::is_return_expr(PTR<const Expr> expr) const noexcept
-  {
-    switch (expr->classof())
-    {
-    case Expr::EXPR_SCOPE:
-      return is_return_expr(as<PTR<const ScopeExpr>>(expr)->get_body_array().get_back());
-    case Expr::EXPR_ERROR:
-    case Expr::EXPR_FN_RETURN:
-      return true;
-    case Expr::EXPR_CONDITION:
-    {
-      PTR<const ConditionExpr> cond = as<PTR<const ConditionExpr>>(expr);
-      bool to_ret = true;
-      //Validate both branches
-      to_ret &= is_return_expr(cond->get_if_statement());
-      if (cond->get_else_statement() != nullptr)
-        to_ret &= is_return_expr(cond->get_else_statement());
-      return to_ret;
-    }
-    default:
-      return false;
-    }
   }
 
   void ASTMaker::panic_consume_var_decl() noexcept

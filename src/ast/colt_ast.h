@@ -29,6 +29,11 @@ namespace colt::lang
   /// @return True if the Token is a comparison Token
   bool isComparisonToken(Token tkn) noexcept;
 
+  /// @brief Check if 'expr' is a return expression
+  /// @param expr The expression to check for
+  /// @return True if represents a return expression
+  bool isTerminatedExpr(PTR<const Expr> expr) noexcept;
+
   /// @brief Concatenate two adjacent SourceCodeExprInfo
   /// @param lhs The left hand side
   /// @param rhs The right hand side
@@ -262,11 +267,7 @@ namespace colt::lang
     bool is_valid_scope_begin() const noexcept { return current_tkn == TKN_COLON || current_tkn == TKN_LEFT_CURLY; }
     /// @brief Check if the current token is a post-unary operator
     /// @return True if the current token is '++' or '--'
-    bool is_valid_post_unary() const noexcept { return current_tkn == TKN_PLUS_PLUS || current_tkn == TKN_MINUS_MINUS; }
-    /// @brief Check if 'expr' is a return expression
-    /// @param expr The expression to check for
-    /// @return True if represents a return expression
-    bool is_return_expr(PTR<const Expr> expr) const noexcept;
+    bool is_valid_post_unary() const noexcept { return current_tkn == TKN_PLUS_PLUS || current_tkn == TKN_MINUS_MINUS; }    
 
     /************* ERROR HANDLING HELPERS ************/
 
