@@ -59,7 +59,16 @@ add_definitions(${LLVM_DEFINITIONS_LIST})
 
 # Find the libraries that correspond to the LLVM components
 # that we wish to use
-llvm_map_components_to_libnames(llvm_libs support core irreader passes orcjit native)
+llvm_map_components_to_libnames(llvm_libs
+  support analysis core executionengine
+  irreader passes orcjit instcombine
+  object mc interpreter asmparser asmprinter
+  nativecodegen mcjit codegen native selectiondag
+  X86AsmParser X86CodeGen X86Desc X86Disassembler
+  X86Info X86TargetMCA
+)
+
+message("${llvm_libs}")
 
 # Link against LLVM libraries
 target_link_libraries(${COLT_EXECUTABLE_NAME} PUBLIC "${llvm_libs}")
