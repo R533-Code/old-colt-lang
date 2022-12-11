@@ -7,7 +7,9 @@
 
 namespace colt::gen
 {
-	/// @brief The level of optimization to apply
+	/// @brief The level of optimization to apply.
+	/// The value '0' is not used by any of the enums, simplifying
+	/// checks in 'colt_args.cpp'.
 	enum class OptimizationLevel
 	{
 		/// @brief Disable nearly all optimization
