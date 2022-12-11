@@ -100,11 +100,6 @@ namespace colt::args
         print_error_and_exit("Path '{}' is invalid!", file);
       global_args.file_out = file;
     }
-
-    void alloc_data_callback(int argc, const char** argv, size_t& current_arg) noexcept
-    {
-      global_args.print_allocation_data = true;
-    }
     
     void handle_arg(StringView arg_view, int argc, const char** argv, size_t& current_arg) noexcept
     {
