@@ -4,10 +4,6 @@
 
 #include "colt_ast.h"
 
-/// @brief If 'boolean' evaluates to true, goto label
-#define IF_TRUE_GOTO(boolean, label) if ((boolean)) goto label
-/// @brief If 'boolean' evaluates to false, goto label
-#define IF_FALSE_GOTO(boolean, label) if (!(boolean)) goto label
 /// @brief If 'boolean' evaluates to true, returns ErrorExpr::CreateExpr(ctx)
 #define IF_TRUE_RET_ERR(boolean) if ((boolean)) return ErrorExpr::CreateExpr(ctx)
 
@@ -402,6 +398,11 @@ namespace colt::lang
 
     if (is_valid_scope_begin())
     {
+      SavedLocalState local_state = { *this };
+      //Create arguments in local variables table
+      for (size_t i = 0; i < declaration->get_params_count(); i++)
+        local_var_table.push_back({ declaration->get_params_name()[i], declaration->get_params_type()[i]});
+
       auto body = parse_scope();
       if (!current_function->get_return_type()->is_void())
         validate_all_path_return(body);
@@ -828,14 +829,6 @@ namespace colt::lang
           return VarReadExpr::CreateExpr(local_var_table[i].second, identifier, i,
             line_state.to_src_info(), ctx);
       }
-      auto fn_param = current_function->get_params_name();
-      //Search in arguments of function
-      for (size_t i = 0; i < fn_param.get_size(); i++)
-      {
-        if (fn_param[i] == identifier)
-          return VarReadExpr::CreateExpr(current_function->get_params_type()[i], identifier,
-            line_state.to_src_info(), ctx);
-      }
     }
     generate_any<report_as::ERROR>(identifier_info, nullptr,
       "Variable of name '{}' does not exist!", identifier);
@@ -1041,4 +1034,4 @@ namespace colt::lang
   }
 }
 
-#undef IF_TRUE_GOTO
+#undef IF_TRUE_RET_ERR
