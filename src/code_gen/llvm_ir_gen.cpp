@@ -123,6 +123,7 @@ namespace colt::gen
     using namespace colt::lang;
 
     auto expr_t = as<PTR<const BuiltInType>>(ptr->get_type());
+    auto type_t = as<PTR<const BuiltInType>>(ptr->get_LHS()->get_type());
 
     switch (ptr->get_operation())
     {
@@ -172,42 +173,42 @@ namespace colt::gen
       /*********** BOOLEANS ***********/
 
     break; case BinaryOperator::OP_LESS:
-      if (expr_t->is_unsigned_int())
+      if (type_t->is_unsigned_int())
         returned_value = builder.CreateICmpULE(lhs, rhs);
-      else if (expr_t->is_signed_int())
+      else if (type_t->is_signed_int())
         returned_value = builder.CreateICmpSLE(lhs, rhs);
-      else if (expr_t->is_floating())
+      else if (type_t->is_floating())
         returned_value = builder.CreateFCmpOLE(lhs, rhs);
     break; case BinaryOperator::OP_LESS_EQUAL:
-      if (expr_t->is_unsigned_int())
+      if (type_t->is_unsigned_int())
         returned_value = builder.CreateICmpULE(lhs, rhs);
-      else if (expr_t->is_signed_int())
+      else if (type_t->is_signed_int())
         returned_value = builder.CreateICmpSLE(lhs, rhs);
-      else if (expr_t->is_floating())
+      else if (type_t->is_floating())
         returned_value = builder.CreateFCmpOLE(lhs, rhs);
     break; case BinaryOperator::OP_GREAT:
-      if (expr_t->is_unsigned_int())
+      if (type_t->is_unsigned_int())
         returned_value = builder.CreateICmpULE(lhs, rhs);
-      else if (expr_t->is_signed_int())
+      else if (type_t->is_signed_int())
         returned_value = builder.CreateICmpSLE(lhs, rhs);
-      else if (expr_t->is_floating())
+      else if (type_t->is_floating())
         returned_value = builder.CreateFCmpOLE(lhs, rhs);
     break; case BinaryOperator::OP_GREAT_EQUAL:
-      if (expr_t->is_unsigned_int())
+      if (type_t->is_unsigned_int())
         returned_value = builder.CreateICmpUGE(lhs, rhs);
-      else if (expr_t->is_signed_int())
+      else if (type_t->is_signed_int())
         returned_value = builder.CreateICmpSGE(lhs, rhs);
-      else if (expr_t->is_floating())
+      else if (type_t->is_floating())
         returned_value = builder.CreateFCmpOGE(lhs, rhs);
     break; case BinaryOperator::OP_EQUAL:
-      if (expr_t->is_integral())
+      if (type_t->is_integral())
         returned_value = builder.CreateICmpEQ(lhs, rhs);
-      else if (expr_t->is_floating())
+      else if (type_t->is_floating())
         returned_value = builder.CreateFCmpOEQ(lhs, rhs);
     break; case BinaryOperator::OP_NOT_EQUAL:
-      if (expr_t->is_integral())
+      if (type_t->is_integral())
         returned_value = builder.CreateICmpNE(lhs, rhs);
-      else if (expr_t->is_floating())
+      else if (type_t->is_floating())
         returned_value = builder.CreateFCmpONE(lhs, rhs);
 
     break; default:
@@ -344,27 +345,50 @@ namespace colt::gen
 
   void LLVMIRGenerator::gen_condition(PTR<const lang::ConditionExpr> ptr) noexcept
   {
-    auto entry_inserter = builder.GetInsertBlock();
-    //generate if condition
     gen_ir(ptr->get_if_condition());
-    auto if_cond = returned_value;
+    Value* CondV = returned_value;
 
-    auto if_blk = BasicBlock::Create(*context, "br_true", current_fn);
-    auto else_blk = BasicBlock::Create(*context, "br_false", current_fn);
-    auto then_blk = BasicBlock::Create(*context, "then", current_fn);
+    Function* TheFunction = builder.GetInsertBlock()->getParent();
 
-    builder.SetInsertPoint(if_blk);
+    // Create blocks for the then and else cases.  Insert the 'then' block at the
+    // end of the function.
+    BasicBlock* ThenBB = BasicBlock::Create(*context, "br_true", TheFunction);
+    BasicBlock* ElseBB = BasicBlock::Create(*context, "br_false");
+    BasicBlock* MergeBB = BasicBlock::Create(*context, "after_br");
+
+    builder.CreateCondBr(CondV, ThenBB, ElseBB);
+
+    // Emit then value.
+    builder.SetInsertPoint(ThenBB);
+    
     gen_ir(ptr->get_if_statement());
-    builder.CreateBr(then_blk);
+    if (!lang::isTerminatedExpr(ptr->get_if_statement()))
+      builder.CreateBr(MergeBB);
+    
+    // Codegen of 'Then' can change the current block, update ThenBB for the PHI.
+    ThenBB = builder.GetInsertBlock();
 
-    builder.SetInsertPoint(else_blk);
-    if (ptr->get_else_statement() != nullptr)
+    // Emit else block.
+    TheFunction->getBasicBlockList().push_back(ElseBB);
+    builder.SetInsertPoint(ElseBB);
+
+
+    if (ptr->get_else_statement())
+    {
       gen_ir(ptr->get_else_statement());
-    builder.CreateBr(then_blk);
+      if (!lang::isTerminatedExpr(ptr->get_else_statement()))
+        builder.CreateBr(MergeBB);
+    }
+    else
+      builder.CreateBr(MergeBB);
 
-    builder.SetInsertPoint(entry_inserter);
-    builder.CreateCondBr(if_cond, if_blk, else_blk);
-    builder.SetInsertPoint(then_blk);
+    // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
+    ElseBB = builder.GetInsertBlock();
+
+    // Emit merge block.
+    TheFunction->getBasicBlockList().push_back(MergeBB);
+    builder.SetInsertPoint(MergeBB);
+    print_module();
   }
 
   PTR<llvm::Type> LLVMIRGenerator::type_to_llvm(PTR<const lang::Type> type) noexcept

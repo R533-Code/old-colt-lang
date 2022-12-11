@@ -74,7 +74,9 @@ namespace colt::gen
 			for (size_t i = 0; i < ast.expressions.get_size(); i++)
 				gen_ir(ast.expressions[i]);
 
+			llvm::verifyModule(*module, &llvm::errs());
 			optimize(level);
+			llvm::verifyModule(*module, &llvm::errs());
 		}
 		
 		void print_module() const noexcept;
