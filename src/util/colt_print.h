@@ -7,6 +7,7 @@
 #ifndef HG_COLT_PRINT
 #define HG_COLT_PRINT
 
+#include <util/colt_config.h>
 #include <fmt/core.h>
 #include <cmd/colt_args.h>
 #include <util/console_colors.h>
@@ -14,6 +15,9 @@
 /// @brief Contains utilities for printing to console
 namespace colt::io
 {
+	/// @brief Prints 'Press any key to continue...' and waits for any key input.
+	void PressToContinue() noexcept;
+
 	template<bool active = true, typename... Args>
 	/// @brief Prints to the standard output
 	/// @tparam ...Args Pack of types to format
