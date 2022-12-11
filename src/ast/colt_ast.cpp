@@ -25,7 +25,7 @@ namespace colt::lang
     {
       10, 10, 11, 11, 11, // + - * / %
       6, 4, 5, 8, 8,  // & | ^ << >>
-      3, 2,  // && ||
+      3, 2,  // '&&' '||'
       9, 9, 9, 9, 10, 10, // < <= > >= != ==
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // = += -= *= /= %= &= |= ^= <<= >>=
       0, 0, 0, 0, 0, 0, 0, 0, 0 // , ; EOF ERROR ) ( : } {
@@ -121,9 +121,7 @@ namespace colt::lang
   {
     current_tkn = lexer.get_next_token();
     while (current_tkn != TKN_EOF)
-    {
       expressions.push_back(parse_global_declaration());
-    }
   }
   
   void ASTMaker::consume_current_tkn() noexcept
@@ -346,7 +344,16 @@ namespace colt::lang
       return expr;
     }
     else if (current_tkn == TKN_KEYWORD_VAR)
-      return parse_variable_decl(true); //Global Variable
+    {
+      //Global Variable
+      return parse_variable_decl(true);
+    }
+    else if (current_tkn == TKN_ERROR) //most likely invalid character
+    {
+      consume_current_tkn(); //consume TKN_ERROR
+      ++error_count;
+      return ErrorExpr::CreateExpr(ctx);
+    }
     else
     {
       generate_any<report_as::ERROR>(get_expr_info().to_src_info(),
