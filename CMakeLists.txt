@@ -115,6 +115,9 @@ if (NOT ${testCount} EQUAL 0 AND ${ENUM_TESTS})
   message(STATUS "Enumerating tests...")
 endif()
 
+# Contains the additional arguments to pass to the executable when testing
+set(COLT_ADDITIONAL_ARGS -i -C -NW)
+
 # TESTING:
 # Each file in resources/tests/ that ends with .ct
 # is a file to try to run.
@@ -182,13 +185,13 @@ foreach(testPath ${ColtTestsPath})
   set(testName "${testFolderName}_${testName}")
 
   # Create test
-  add_test(NAME "${testName}" COMMAND ${COLT_EXECUTABLE_NAME} -i -C -W ${testPath})
+  add_test(NAME "${testName}" COMMAND ${COLT_EXECUTABLE_NAME} ${COLT_ADDITIONAL_ARGS} ${testPath})
   set_property(TEST ${testName} PROPERTY PASS_REGULAR_EXPRESSION ${RegexTest})
   set_property(TEST ${testName} PROPERTY TIMEOUT 5) # 5s
   
   # Create test for error count
   if (${withErrorCount})
-    add_test(NAME "${testName}_ERRC" COMMAND ${COLT_EXECUTABLE_NAME} -i -C -W ${testPath})
+    add_test(NAME "${testName}_ERRC" COMMAND ${COLT_EXECUTABLE_NAME} ${COLT_ADDITIONAL_ARGS} ${testPath})
     if (${ErrorCount} EQUAL 0)
       set_property(TEST "${testName}_ERRC" PROPERTY PASS_REGULAR_EXPRESSION
           "Message: Compilation successful!")
