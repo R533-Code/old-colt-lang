@@ -11,4 +11,3 @@ Add analyzers (for use prior to initialization and return of function...)
 
 ## Testing Status:
 ![Testing Status](https://github.com/R533-Code/colt-lang-v2/actions/workflows/cmake.yml/badge.svg)
-![Security Vulnerabilities Status](https://github.com/R533-Code/colt-lang-v2/actions/workflows/codeql.yml/badge.svg)
