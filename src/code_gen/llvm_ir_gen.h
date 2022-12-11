@@ -14,6 +14,11 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/PassManager.h>
 #include <llvm/Passes/PassBuilder.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/MC/TargetRegistry.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Support/ToolOutputFile.h>
+#include <llvm/Target/TargetOptions.h>
 
 #include <util/colt_pch.h>
 #include <type/colt_type.h>
@@ -39,6 +44,7 @@ namespace colt::gen
 		PTR<llvm::Value> returned_value = nullptr;
 		/// @brief Contains the current function whose IR is being generated
 		PTR<llvm::Function> current_fn = nullptr;
+		PTR<llvm::TargetMachine> target_machine = nullptr;
 
 	public:
 		/// @brief No default constructor
@@ -53,7 +59,12 @@ namespace colt::gen
 		/// @param level The optimization level
 		LLVMIRGenerator(const lang::AST& ast, llvm::OptimizationLevel level = llvm::OptimizationLevel::O3) noexcept
 		{
+			std::string error;
+			auto Target = llvm::TargetRegistry::lookupTarget(LLVM_DEFAULT_TARGET_TRIPLE, error);
+			target_machine = Target->createTargetMachine(LLVM_DEFAULT_TARGET_TRIPLE, "generic", "", {}, {});
+
 			module->setTargetTriple(LLVM_DEFAULT_TARGET_TRIPLE);
+			module->setDataLayout(target_machine->createDataLayout());
 
 			for (size_t i = 0; i < ast.expressions.get_size(); i++)
 				gen_ir(ast.expressions[i]);
@@ -62,6 +73,8 @@ namespace colt::gen
 		}
 		
 		void print_module() const noexcept;
+
+		void to_object_file(const char* obj) const noexcept;
 
 	private:
 		void gen_ir(PTR<const lang::Expr> ptr) noexcept;

@@ -424,6 +424,25 @@ namespace colt::gen
     module->print(llvm::errs(), nullptr);
   }
 
+  void LLVMIRGenerator::to_object_file(const char* obj) const noexcept
+  {
+    std::error_code EC;
+    raw_fd_ostream dest(obj, EC);
+
+    if (EC) {
+      errs() << "Could not open file: " << EC.message();
+      return;
+    }
+
+    legacy::PassManager pass;
+
+    if (target_machine->addPassesToEmitFile(pass, dest, nullptr, CGFT_ObjectFile))
+      errs() << "Target machine cannot emit a file of this type!";
+
+    pass.run(*module);
+    dest.flush();
+  }
+
   void LLVMIRGenerator::optimize(llvm::OptimizationLevel level) noexcept
   {
     LoopAnalysisManager LAM;
