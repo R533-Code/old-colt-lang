@@ -105,9 +105,7 @@ namespace colt::lang
 		case EOF:
 			return TKN_EOF;
 		default:
-			gen_error(get_current_lexeme(), "Invalid character, aborting compilation!");
-			//Generate EOF error on next 'get_next_token' call
-			offset = to_scan.get_size();
+			gen_error(get_current_lexeme(), "Invalid character!");
 			current_char = get_next_char();
 			return TKN_ERROR;
 		}
