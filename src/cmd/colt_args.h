@@ -132,7 +132,7 @@ namespace colt::args
 			Argument{ "no-warn", "W", "Removes warning outputs.\nUse: --no-warn/-W", 0, &no_warning_callback},
 			Argument{ "no-message", "M", "Removes message outputs.\nUse: --no-message/-M", 0, &no_message_callback},
 			Argument{ "out", "o", "Specifies the output location.\nUse: --out/-o <PATH>", 1, &out_callback},
-			Argument{ "no-wait", "W", "Specifies that the compiler should exit without user input.\nUse: --no-wait/-W", 0, &out_callback}
+			Argument{ "no-wait", "W", "Specifies that the compiler should exit without user input.\nUse: --no-wait/-W", 0, &no_wait_callback}
 		};
 
 		/// @brief Handles an argument, searching for it and doing error handling
