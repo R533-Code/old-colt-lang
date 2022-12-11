@@ -182,13 +182,13 @@ foreach(testPath ${ColtTestsPath})
   set(testName "${testFolderName}_${testName}")
 
   # Create test
-  add_test(NAME "${testName}" COMMAND ${COLT_EXECUTABLE_NAME} -i -C ${testPath})
+  add_test(NAME "${testName}" COMMAND ${COLT_EXECUTABLE_NAME} -i -C -W ${testPath})
   set_property(TEST ${testName} PROPERTY PASS_REGULAR_EXPRESSION ${RegexTest})
   set_property(TEST ${testName} PROPERTY TIMEOUT 5) # 5s
   
   # Create test for error count
   if (${withErrorCount})
-    add_test(NAME "${testName}_ERRC" COMMAND ${COLT_EXECUTABLE_NAME} -i -C ${testPath})
+    add_test(NAME "${testName}_ERRC" COMMAND ${COLT_EXECUTABLE_NAME} -i -C -W ${testPath})
     if (${ErrorCount} EQUAL 0)
       set_property(TEST "${testName}_ERRC" PROPERTY PASS_REGULAR_EXPRESSION
           "Message: Compilation successful!")
