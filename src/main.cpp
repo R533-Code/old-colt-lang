@@ -24,17 +24,37 @@ void compile(StringView str) noexcept
   if (AST.is_expected())
   {
     io::PrintMessage("Compilation successful!");
-    gen::LLVMIRGenerator gen = { AST.get_value(), llvm::OptimizationLevel::O1 };
-    if (args::GlobalArguments.print_llvm_ir)
-      gen.print_module();
-    if (args::GlobalArguments.file_out)
-      gen.to_object_file(args::GlobalArguments.file_out);
+    compile_backend(AST.get_value());
   }
   else
     io::PrintWarning("Compilation failed with {} error{}", AST.get_error(), AST.get_error() == 1 ? "!" : "s!");
 }
 
-void CompileFile(const char* path)
+void compile_backend(const AST& ast) noexcept
+{
+  auto IR = gen::GenerateIR(ast);
+  if (IR.is_error())
+  {
+    io::PrintError("{}", IR.get_error());
+    return;
+  }
+  
+  //Optimize resulting IR
+  IR->optimize(args::GlobalArguments.opt_level);
+  
+  if (args::GlobalArguments.print_llvm_ir) //Print IR
+    IR->print_module(llvm::errs());
+  if (args::GlobalArguments.file_out) //Write object file
+  {
+    if (auto result = IR->to_object_file(args::GlobalArguments.file_out); result.is_error())
+      io::PrintError("{}", result.get_error());
+    else
+      io::PrintMessage("Successfully written object file '{}'", args::GlobalArguments.file_out);
+  }
+}
+
+
+void CompileFile(const char* path) noexcept
 {
   auto str = String::getFileContent(path);
   if (str.is_error())
