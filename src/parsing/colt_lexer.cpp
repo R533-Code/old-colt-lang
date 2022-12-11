@@ -105,7 +105,7 @@ namespace colt::lang
 		case EOF:
 			return TKN_EOF;
 		default:
-			gen_error(get_current_lexeme(), "Unexpected character!");
+			gen_error(get_current_lexeme(), "Invalid character!");
 			current_char = get_next_char();
 			return TKN_ERROR;
 		}
