@@ -39,6 +39,7 @@ void REPL() noexcept
   char buffer[2048];
   for (;;)
   {
+    fputs(CONSOLE_FOREGROUND_BRIGHT_CYAN "> " CONSOLE_COLOR_RESET, stdout);
     if (fgets(buffer, 2048, stdin) == nullptr)
       break;
 
@@ -71,4 +72,5 @@ int main(int argc, const char** argv)
   {
     REPL();
   }
+  io::PressToContinue();
 }
