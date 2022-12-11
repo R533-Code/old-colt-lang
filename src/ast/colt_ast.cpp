@@ -912,7 +912,12 @@ namespace colt::lang
     {
       if (current_tkn != TKN_SEMICOLON)
       {
-        generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_sttmnt,
+        //Save state after 'return' keyword
+        SavedExprInfo cnsm = { *this };
+        //Consume every token till a ';' is hit
+        panic_consume_sttmnt();
+        //We consumed before calling 'to_src_info' to obtain the correct highlighting
+        generate_any<report_as::ERROR>(cnsm.to_src_info(), nullptr,
           "Function '{}' of return type 'void' cannot return a value!", current_function->get_name());
         return ErrorExpr::CreateExpr(ctx);
       }
