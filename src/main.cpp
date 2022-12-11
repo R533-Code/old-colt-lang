@@ -73,5 +73,7 @@ int main(int argc, const char** argv)
     CompileFile(args::GlobalArguments.file_in);
   else
     REPL();
-  io::PressToContinue();
+
+  if (args::GlobalArguments.wait_for_user_input)
+    io::PressToContinue();
 }
