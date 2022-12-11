@@ -36,6 +36,8 @@ namespace colt::args
 		bool print_warnings = true;
 		/// @brief If true, allows errors to be printed
 		bool print_errors = true;
+		/// @brief If true, wait for user input before exiting
+		bool wait_for_user_input = true;
 	};
 
 	/// @brief Parses the command line arguments, and stores them globally.
@@ -112,6 +114,11 @@ namespace colt::args
 		/// @param argv The argument values
 		/// @param current_arg The current argument number being parsed
 		void out_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief Handles no-wait argument
+		/// @param argc The argument count
+		/// @param argv The argument values
+		/// @param current_arg The current argument number being parsed
+		void no_wait_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 
 		/// @brief Contains all predefined valid arguments
 		constexpr std::array PredefinedArguments
@@ -124,7 +131,8 @@ namespace colt::args
 			Argument{ "no-error", "E", "Removes error outputs.\nUse: --no-error/-E", 0, &no_error_callback},
 			Argument{ "no-warn", "W", "Removes warning outputs.\nUse: --no-warn/-W", 0, &no_warning_callback},
 			Argument{ "no-message", "M", "Removes message outputs.\nUse: --no-message/-M", 0, &no_message_callback},
-			Argument{ "out", "o", "Specifies the output location.\nUse: --out/-o <PATH>", 1, &out_callback}
+			Argument{ "out", "o", "Specifies the output location.\nUse: --out/-o <PATH>", 1, &out_callback},
+			Argument{ "no-wait", "W", "Specifies that the compiler should exit without user input.\nUse: --no-wait/-W", 0, &out_callback}
 		};
 
 		/// @brief Handles an argument, searching for it and doing error handling
