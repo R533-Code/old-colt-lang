@@ -388,7 +388,6 @@ namespace colt::gen
     // Emit merge block.
     TheFunction->getBasicBlockList().push_back(MergeBB);
     builder.SetInsertPoint(MergeBB);
-    print_module();
   }
 
   PTR<llvm::Type> LLVMIRGenerator::type_to_llvm(PTR<const lang::Type> type) noexcept
