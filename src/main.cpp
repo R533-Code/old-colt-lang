@@ -5,6 +5,29 @@
 using namespace colt;
 using namespace colt::lang;
 
+void compile_backend(const AST& ast) noexcept
+{
+  auto IR = gen::GenerateIR(ast);
+  if (IR.is_error())
+  {
+    io::PrintError("{}", IR.get_error());
+    return;
+  }
+
+  //Optimize resulting IR
+  IR->optimize(args::GlobalArguments.opt_level);
+
+  if (args::GlobalArguments.print_llvm_ir) //Print IR
+    IR->print_module(llvm::errs());
+  if (args::GlobalArguments.file_out) //Write object file
+  {
+    if (auto result = IR->to_object_file(args::GlobalArguments.file_out); result.is_error())
+      io::PrintError("{}", result.get_error());
+    else
+      io::PrintMessage("Successfully written object file '{}'!", args::GlobalArguments.file_out);
+  }
+}
+
 void compile(StringView str) noexcept
 {
   if (str.is_empty())
@@ -29,30 +52,6 @@ void compile(StringView str) noexcept
   else
     io::PrintWarning("Compilation failed with {} error{}", AST.get_error(), AST.get_error() == 1 ? "!" : "s!");
 }
-
-void compile_backend(const AST& ast) noexcept
-{
-  auto IR = gen::GenerateIR(ast);
-  if (IR.is_error())
-  {
-    io::PrintError("{}", IR.get_error());
-    return;
-  }
-  
-  //Optimize resulting IR
-  IR->optimize(args::GlobalArguments.opt_level);
-  
-  if (args::GlobalArguments.print_llvm_ir) //Print IR
-    IR->print_module(llvm::errs());
-  if (args::GlobalArguments.file_out) //Write object file
-  {
-    if (auto result = IR->to_object_file(args::GlobalArguments.file_out); result.is_error())
-      io::PrintError("{}", result.get_error());
-    else
-      io::PrintMessage("Successfully written object file '{}'", args::GlobalArguments.file_out);
-  }
-}
-
 
 void CompileFile(const char* path) noexcept
 {
