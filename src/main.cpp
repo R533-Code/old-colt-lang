@@ -1,4 +1,5 @@
 #include <util/colt_pch.h>
+#include <llvm/Support/TargetSelect.h>
 #include <code_gen/llvm_ir_gen.h>
 
 using namespace colt;
@@ -26,6 +27,8 @@ void compile(StringView str) noexcept
     gen::LLVMIRGenerator gen = { AST.get_value(), llvm::OptimizationLevel::O1 };
     if (args::GlobalArguments.print_llvm_ir)
       gen.print_module();
+    if (args::GlobalArguments.file_out)
+      gen.to_object_file(args::GlobalArguments.file_out);
   }
   else
     io::PrintWarning("Compilation failed with {} error{}", AST.get_error(), AST.get_error() == 1 ? "!" : "s!");
@@ -47,6 +50,11 @@ int main(int argc, const char** argv)
 {
   //Populates GlobalArguments
   args::ParseArguments(argc, argv);
+  //Initialize LLVM specific functions
+  llvm::InitializeNativeTarget();
+  llvm::InitializeNativeTargetAsmParser();
+  llvm::InitializeNativeTargetAsmPrinter();
+  llvm::InitializeNativeTargetDisassembler();
 
   if (args::GlobalArguments.file_in != nullptr)
   {
