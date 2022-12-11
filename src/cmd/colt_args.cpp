@@ -28,10 +28,16 @@ namespace colt::args
 
       details::handle_arg(arg_view, argc, argv, current_arg);
     }
+    if (details::global_args.opt_level == static_cast<gen::OptimizationLevel>(0))
+      details::global_args.opt_level = gen::OptimizationLevel::O1;
   }
 
   namespace details
   {
+    /*************************************
+    * ARGUMENT CALLBACKS
+    *************************************/
+
     void version_callback(int argc, const char** argv, size_t& current_arg) noexcept
     {
       if (current_arg != 1)
@@ -105,6 +111,52 @@ namespace colt::args
     {
       global_args.wait_for_user_input = false;
     }
+
+    void o0_callback(int argc, const char** argv, size_t& current_arg) noexcept
+    {
+      if (global_args.opt_level != static_cast<gen::OptimizationLevel>(0))
+        print_error_and_exit("Optimization level was already set!");
+      global_args.opt_level = gen::OptimizationLevel::O0;
+    }
+
+    void o1_callback(int argc, const char** argv, size_t& current_arg) noexcept
+    {
+      if (global_args.opt_level != static_cast<gen::OptimizationLevel>(0))
+        print_error_and_exit("Optimization level was already set!");
+      global_args.opt_level = gen::OptimizationLevel::O1;
+    }
+
+    void o2_callback(int argc, const char** argv, size_t& current_arg) noexcept
+    {
+      if (global_args.opt_level != static_cast<gen::OptimizationLevel>(0))
+        print_error_and_exit("Optimization level was already set!");
+      global_args.opt_level = gen::OptimizationLevel::O2;
+    }
+
+    void o3_callback(int argc, const char** argv, size_t& current_arg) noexcept
+    {
+      if (global_args.opt_level != static_cast<gen::OptimizationLevel>(0))
+        print_error_and_exit("Optimization level was already set!");
+      global_args.opt_level = gen::OptimizationLevel::O3;
+    }
+
+    void os_callback(int argc, const char** argv, size_t& current_arg) noexcept
+    {
+      if (global_args.opt_level != static_cast<gen::OptimizationLevel>(0))
+        print_error_and_exit("Optimization level was already set!");
+      global_args.opt_level = gen::OptimizationLevel::Os;
+    }
+
+    void oz_callback(int argc, const char** argv, size_t& current_arg) noexcept
+    {
+      if (global_args.opt_level != static_cast<gen::OptimizationLevel>(0))
+        print_error_and_exit("Optimization level was already set!");
+      global_args.opt_level = gen::OptimizationLevel::Oz;
+    }
+
+    /*************************************
+    * ARGUMENT HANDLING
+    *************************************/
     
     void handle_arg(StringView arg_view, int argc, const char** argv, size_t& current_arg) noexcept
     {

@@ -2,7 +2,7 @@
 * Contains Command Line argument parsing helpers.
 * To parse the arguments, call `ParseArguments(argc, argv)`.
 * This will populate the global argument holder.
-* The colt::args namespace holds the GlobalArguments pointer which points to the parsed
+* The colt::args namespace holds the GlobalArguments reference which points to the parsed
 * arguments. In case ParseArguments was not called, it contained the defaulted values of
 * arguments.
 */
@@ -15,6 +15,7 @@
 #include <filesystem>
 
 #include <colt/String.h>
+#include <code_gen/opt_level.h>
 
 /// @brief Contains utilities for parsing command line arguments
 namespace colt::args
@@ -38,6 +39,8 @@ namespace colt::args
 		bool print_errors = true;
 		/// @brief If true, wait for user input before exiting
 		bool wait_for_user_input = true;
+		/// @brief Optimization level
+		gen::OptimizationLevel opt_level = static_cast<gen::OptimizationLevel>(0);
 	};
 
 	/// @brief Parses the command line arguments, and stores them globally.
@@ -69,56 +72,22 @@ namespace colt::args
 			ARG_CALLBACK callback;
 		};
 
-		/// @brief Handles version argument
-		/// @param argc The argument count
-		/// @param argv The argument values
-		/// @param current_arg The current argument number being parsed
 		void version_callback(int argc, const char** argv, size_t& current_arg) noexcept;
-		/// @brief Handles help argument
-		/// @param argc The argument count
-		/// @param argv The argument values
-		/// @param current_arg The current argument number being parsed
 		void help_callback(int argc, const char** argv, size_t& current_arg) noexcept;
-		/// @brief Handles enum argument
-		/// @param argc The argument count
-		/// @param argv The argument values
-		/// @param current_arg The current argument number being parsed
 		void enum_callback(int argc, const char** argv, size_t& current_arg) noexcept;
-		/// @brief Handles print IR
-		/// @param argc The argument count
-		/// @param argv The argument values
-		/// @param current_arg The current argument number being parsed
 		void print_ir_callback(int argc, const char** argv, size_t& current_arg) noexcept;
-		/// @brief Handles no-color argument
-		/// @param argc The argument count
-		/// @param argv The argument values
-		/// @param current_arg The current argument number being parsed
 		void no_color_callback(int argc, const char** argv, size_t& current_arg) noexcept;
-		/// @brief Handles no-error argument
-		/// @param argc The argument count
-		/// @param argv The argument values
-		/// @param current_arg The current argument number being parsed
 		void no_error_callback(int argc, const char** argv, size_t& current_arg) noexcept;
-		/// @brief Handles no-warn argument
-		/// @param argc The argument count
-		/// @param argv The argument values
-		/// @param current_arg The current argument number being parsed
 		void no_warning_callback(int argc, const char** argv, size_t& current_arg) noexcept;
-		/// @brief Handles no-message argument
-		/// @param argc The argument count
-		/// @param argv The argument values
-		/// @param current_arg The current argument number being parsed
 		void no_message_callback(int argc, const char** argv, size_t& current_arg) noexcept;
-		/// @brief Handles out argument
-		/// @param argc The argument count
-		/// @param argv The argument values
-		/// @param current_arg The current argument number being parsed
 		void out_callback(int argc, const char** argv, size_t& current_arg) noexcept;
-		/// @brief Handles no-wait argument
-		/// @param argc The argument count
-		/// @param argv The argument values
-		/// @param current_arg The current argument number being parsed
 		void no_wait_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		void o0_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		void o1_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		void o2_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		void o3_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		void os_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		void oz_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 
 		/// @brief Contains all predefined valid arguments
 		constexpr std::array PredefinedArguments
@@ -132,7 +101,13 @@ namespace colt::args
 			Argument{ "no-warn", "W", "Removes warning outputs.\nUse: --no-warn/-W", 0, &no_warning_callback},
 			Argument{ "no-message", "M", "Removes message outputs.\nUse: --no-message/-M", 0, &no_message_callback},
 			Argument{ "out", "o", "Specifies the output location.\nUse: --out/-o <PATH>", 1, &out_callback},
-			Argument{ "no-wait", "NW", "Specifies that the compiler should exit without user input.\nUse: --no-wait/-W", 0, &no_wait_callback}
+			Argument{ "no-wait", "NW", "Specifies that the compiler should exit without user input.\nUse: --no-wait/-W", 0, &no_wait_callback},
+			Argument{ "opt-0", "O0", "Disable most optimizations.\nUse: --opt-0/-O0", 0, &o0_callback},
+			Argument{ "opt-1", "O1", "Optimize quickly without hindering debuggability.\nUse: --opt-1/-O1", 0, &o1_callback},
+			Argument{ "opt-2", "O2", "Optimize for fast execution as much as possible without significantly increasing compile times.\nUse: --opt-2/-O2", 0, &o2_callback},
+			Argument{ "opt-3", "O3", "Optimize for fast execution as much as possible.\nUse: --opt-3/-O3", 0, &o3_callback},
+			Argument{ "opt-s", "Os", "Optimize for small code size instead of fast execution.\nUse: --opt-s/-Os", 0, &os_callback},
+			Argument{ "opt-z", "Oz", "Optimize for small code size at all cost.\nUse: --opt-z/-Oz", 0, &oz_callback},
 		};
 
 		/// @brief Handles an argument, searching for it and doing error handling
