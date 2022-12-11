@@ -47,6 +47,8 @@ namespace colt::gen
 
     pass.run(*module);
     dest.flush();
+    //No errors
+    return true;
   }
 
   void GeneratedIR::optimize(colt::gen::OptimizationLevel level) noexcept
