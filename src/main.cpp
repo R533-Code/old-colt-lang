@@ -34,6 +34,18 @@ void compile(StringView str) noexcept
     io::PrintWarning("Compilation failed with {} error{}", AST.get_error(), AST.get_error() == 1 ? "!" : "s!");
 }
 
+void CompileFile(const char* path)
+{
+  auto str = String::getFileContent(path);
+  if (str.is_error())
+    io::PrintError("Error reading file at path '{}'.", path);
+  else
+  {
+    str.get_value().c_str(); //Appends a NUL terminator if needed
+    compile(str.get_value());
+  }
+}
+
 void REPL() noexcept
 {
   char buffer[2048];
@@ -58,19 +70,8 @@ int main(int argc, const char** argv)
   llvm::InitializeNativeTargetDisassembler();
 
   if (args::GlobalArguments.file_in != nullptr)
-  {
-    auto str = String::getFileContent(args::GlobalArguments.file_in);
-    if (str.is_error())
-      io::PrintError("Error reading file at path '{}'.", args::GlobalArguments.file_in);
-    else
-    {
-      str.get_value().c_str(); //Appends a NUL terminator if needed
-      compile(str.get_value());
-    }
-  }
+    CompileFile(args::GlobalArguments.file_in);
   else
-  {
     REPL();
-  }
   io::PressToContinue();
 }
