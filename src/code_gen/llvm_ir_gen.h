@@ -27,6 +27,11 @@
 /// @brief Contains classes responsible of producing code from the Colt AST
 namespace colt::gen
 {
+	/// @brief Converts a StringView to a StringRef
+	/// @param view The StringView to convert
+	/// @return The converted StringRef
+	llvm::StringRef ToStringRef(colt::StringView view) noexcept;
+
 	/// @brief Class responsible of generating LLVM IR
 	class LLVMIRGenerator
 	{
@@ -68,7 +73,7 @@ namespace colt::gen
 
 			for (size_t i = 0; i < ast.expressions.get_size(); i++)
 				gen_ir(ast.expressions[i]);
-			
+
 			optimize(level);
 		}
 		

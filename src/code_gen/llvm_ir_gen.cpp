@@ -6,6 +6,11 @@ namespace colt::gen
 {
   using namespace llvm;
 
+  StringRef ToStringRef(colt::StringView view) noexcept
+  {
+    return StringRef(view.get_data(), view.get_size());
+  }
+
   void LLVMIRGenerator::gen_ir(PTR<const lang::Expr> ptr) noexcept
   {
     using namespace lang;
@@ -245,7 +250,7 @@ namespace colt::gen
     //Create an allocation on the stack and store it
     local_vars.push_back(
       builder.CreateAlloca(type_to_llvm(ptr->get_type()), nullptr,
-        StringRef{ ptr->get_name().get_data(), ptr->get_name().get_size() })
+        ToStringRef(ptr->get_name()))
     );
     
     //If initialized
@@ -284,7 +289,7 @@ namespace colt::gen
     PTR<Function> fn = Function::Create(
       cast<FunctionType>(type_to_llvm(ptr->get_type())),
       GlobalValue::ExternalLinkage,
-      StringRef{ ptr->get_name().get_data(), ptr->get_name().get_size() },
+      ToStringRef(ptr->get_name()),
       module.get());
     
     current_fn = fn;
@@ -297,10 +302,11 @@ namespace colt::gen
     size_t i = 0;
     for (auto& arg : fn->args())
     {
+      arg.setName(ToStringRef(ptr->get_params_name()[i]));
       //Create an allocation on the stack and store it
       local_vars.push_back(
         builder.CreateAlloca(arg.getType(), nullptr,
-          StringRef{ ptr->get_params_name()[i].get_data(), ptr->get_params_name()[i].get_size() })
+          ToStringRef(ptr->get_params_name()[i]) + "_arg")
       );
       builder.CreateStore(&arg, local_vars.get_back());
       ++i;
