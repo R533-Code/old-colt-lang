@@ -36,7 +36,7 @@ namespace colt::gen
 	{
 		UniquePtr<llvm::LLVMContext> context = make_unique<llvm::LLVMContext>();
 		UniquePtr<llvm::Module> module = make_unique<llvm::Module>("Colt", *context);
-		PTR<TargetMachine> target_machine;
+		PTR<llvm::TargetMachine> target_machine;
 
 		void print_module(llvm::raw_ostream& os) const noexcept;
 
