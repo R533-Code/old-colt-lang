@@ -599,12 +599,15 @@ namespace colt::lang
     /// @return The name of the variable
     StringView get_name() const noexcept { return name; }
 
+    /// @brief Returns the count of parameter the function accepts
+    /// @return The parameter count of the function
+    size_t get_params_count() const noexcept { return arguments_name.get_size(); }
     /// @brief Returns the parameter names
     /// @return View over the parameter names
     ContiguousView<StringView> get_params_name() const noexcept { return arguments_name.to_view(); }
     /// @brief Returns the parameter types
     /// @return View over the parameter types
-    ContiguousView<PTR<const Type>> get_params_type() const noexcept { return static_cast<const FnType*>(get_type())->get_params_type(); }
+    ContiguousView<PTR<const Type>> get_params_type() const noexcept { return as<PTR<const FnType>>(get_type())->get_params_type(); }
     /// @brief Returns the return type of the function
     /// @return The return type of the function
     PTR<const Type> get_return_type() const noexcept { return static_cast<const FnType*>(get_type())->get_return_type(); }
