@@ -11,6 +11,83 @@ namespace colt::gen
     return StringRef(view.get_data(), view.get_size());
   }
 
+  Expected<GeneratedIR, std::string> GenerateIR(const lang::AST& ast, const std::string& target_triple) noexcept
+  {
+    GeneratedIR ir;
+    std::string error;
+    auto Target = llvm::TargetRegistry::lookupTarget(target_triple, error);
+    if (!Target)
+      return { Error, error };
+    ir.target_machine = Target->createTargetMachine(target_triple, "generic", "", {}, {});
+    ir.module->setTargetTriple(target_triple);
+    ir.module->setDataLayout(ir.target_machine->createDataLayout());
+
+    //Generate and store the IR in 'ir'
+    LLVMIRGenerator ir_gen = { ast, *ir.context, *ir.module };
+    return ir;
+  }
+
+  void GeneratedIR::print_module(llvm::raw_ostream& os) const noexcept
+  {
+    module->print(os, nullptr);
+  }
+
+  Expected<bool, const char*> GeneratedIR::to_object_file(const char* path) noexcept
+  {
+    std::error_code EC;
+    raw_fd_ostream dest(path, EC);
+
+    if (EC) {
+      return "Could not open file!";
+    }
+
+    legacy::PassManager pass;
+    if (target_machine->addPassesToEmitFile(pass, dest, nullptr, CGFT_ObjectFile))
+      return "Target does not support emitting object file!";
+
+    pass.run(*module);
+    dest.flush();
+  }
+
+  void GeneratedIR::optimize(colt::gen::OptimizationLevel level) noexcept
+  {
+    if (level == colt::gen::OptimizationLevel::O0)
+      return;
+
+    LoopAnalysisManager LAM;
+    FunctionAnalysisManager FAM;
+    CGSCCAnalysisManager CGAM;
+    ModuleAnalysisManager MAM;
+
+    PassBuilder PB;
+
+    PB.registerModuleAnalyses(MAM);
+    PB.registerCGSCCAnalyses(CGAM);
+    PB.registerFunctionAnalyses(FAM);
+    PB.registerLoopAnalyses(LAM);
+    PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
+
+    llvm::OptimizationLevel opt;
+    switch (level)
+    {
+    break; case colt::gen::OptimizationLevel::O1:
+      opt = llvm::OptimizationLevel::O1;
+    break; case colt::gen::OptimizationLevel::O2:
+      opt = llvm::OptimizationLevel::O2;
+    break; case colt::gen::OptimizationLevel::O3:
+      opt = llvm::OptimizationLevel::O3;
+    break; case colt::gen::OptimizationLevel::Os:
+      opt = llvm::OptimizationLevel::Os;
+    break; case colt::gen::OptimizationLevel::Oz:
+      opt = llvm::OptimizationLevel::Os;
+    break; default:
+      colt_unreachable("Invalid optimization level");
+    }
+
+    ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(opt);
+    MPM.run(*module, MAM);
+  }
+
   void LLVMIRGenerator::gen_ir(PTR<const lang::Expr> ptr) noexcept
   {
     using namespace lang;
@@ -56,31 +133,31 @@ namespace colt::gen
     switch (as<PTR<const lang::BuiltInType>>(ptr->get_type())->get_builtin_id())
     {
     break; case BuiltInType::U8:
-      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(*context), ptr->get_value().u8_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().u8_v);
     break; case BuiltInType::U16:
-      returned_value = ConstantInt::get(llvm::Type::getInt16Ty(*context), ptr->get_value().u16_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().u16_v);
     break; case BuiltInType::U32:
-      returned_value = ConstantInt::get(llvm::Type::getInt32Ty(*context), ptr->get_value().u32_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().u32_v);
     break; case BuiltInType::U64:
-      returned_value = ConstantInt::get(llvm::Type::getInt64Ty(*context), ptr->get_value().u64_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().u64_v);
     break; case BuiltInType::U128:
-      returned_value = ConstantInt::get(llvm::Type::getInt128Ty(*context), ptr->get_value().u64_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().u64_v);
     break; case BuiltInType::I8:
-      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(*context), ptr->get_value().i8_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().i8_v);
     break; case BuiltInType::I16:
-      returned_value = ConstantInt::get(llvm::Type::getInt16Ty(*context), ptr->get_value().i16_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().i16_v);
     break; case BuiltInType::I32:
-      returned_value = ConstantInt::get(llvm::Type::getInt32Ty(*context), ptr->get_value().i32_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().i32_v);
     break; case BuiltInType::I64:
-      returned_value = ConstantInt::get(llvm::Type::getInt64Ty(*context), ptr->get_value().i64_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().i64_v);
     break; case BuiltInType::I128:
-      returned_value = ConstantInt::get(llvm::Type::getInt128Ty(*context), ptr->get_value().i64_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().i64_v);
     break; case BuiltInType::F32:
-      returned_value = ConstantFP::get(llvm::Type::getFloatTy(*context), ptr->get_value().float_v);
+      returned_value = ConstantFP::get(llvm::Type::getFloatTy(context), ptr->get_value().float_v);
     break; case BuiltInType::F64:
-      returned_value = ConstantFP::get(llvm::Type::getDoubleTy(*context), ptr->get_value().double_v);
+      returned_value = ConstantFP::get(llvm::Type::getDoubleTy(context), ptr->get_value().double_v);
     break; case BuiltInType::BOOL:
-      returned_value = ConstantInt::get(llvm::Type::getInt1Ty(*context), ptr->get_value().bool_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt1Ty(context), ptr->get_value().bool_v);
     break; default:
       colt_unreachable("Invalid literal expr!");
     }
@@ -289,15 +366,13 @@ namespace colt::gen
 
     PTR<Function> fn = Function::Create(
       cast<FunctionType>(type_to_llvm(ptr->get_type())),
-      GlobalValue::ExternalLinkage,
-      ToStringRef(ptr->get_name()),
-      module.get());
+      GlobalValue::ExternalLinkage, ToStringRef(ptr->get_name()), module);
     
     current_fn = fn;
     //Reset current_fn to nullptr
     ON_EXIT{ current_fn = nullptr; };
 
-    PTR<llvm::BasicBlock> BB = BasicBlock::Create(*context, "entry", fn);
+    PTR<llvm::BasicBlock> BB = BasicBlock::Create(context, "entry", fn);
     builder.SetInsertPoint(BB);
 
     size_t i = 0;
@@ -352,9 +427,9 @@ namespace colt::gen
 
     // Create blocks for the then and else cases.  Insert the 'then' block at the
     // end of the function.
-    BasicBlock* ThenBB = BasicBlock::Create(*context, "br_true", TheFunction);
-    BasicBlock* ElseBB = BasicBlock::Create(*context, "br_false");
-    BasicBlock* MergeBB = BasicBlock::Create(*context, "after_br");
+    BasicBlock* ThenBB = BasicBlock::Create(context, "br_true", TheFunction);
+    BasicBlock* ElseBB = BasicBlock::Create(context, "br_false");
+    BasicBlock* MergeBB = BasicBlock::Create(context, "after_br");
 
     builder.CreateCondBr(CondV, ThenBB, ElseBB);
 
@@ -397,7 +472,7 @@ namespace colt::gen
     switch (type->classof())
     {
     case lang::Type::TYPE_VOID:
-      return llvm::Type::getVoidTy(*context);
+      return llvm::Type::getVoidTy(context);
     case lang::Type::TYPE_BUILTIN:
     {
       auto ptr = as<PTR<const BuiltInType>>(type);
@@ -405,25 +480,25 @@ namespace colt::gen
       {
       case BuiltInType::U8:
       case BuiltInType::I8:
-        return llvm::Type::getInt8Ty(*context);
+        return llvm::Type::getInt8Ty(context);
       case BuiltInType::U16:
       case BuiltInType::I16:
-        return llvm::Type::getInt16Ty(*context);
+        return llvm::Type::getInt16Ty(context);
       case BuiltInType::U32:
       case BuiltInType::I32:
-        return llvm::Type::getInt32Ty(*context);
+        return llvm::Type::getInt32Ty(context);
       case BuiltInType::U64:
       case BuiltInType::I64:
-        return llvm::Type::getInt64Ty(*context);
+        return llvm::Type::getInt64Ty(context);
       case BuiltInType::U128:
       case BuiltInType::I128:
-        return llvm::Type::getInt128Ty(*context);
+        return llvm::Type::getInt128Ty(context);
       case BuiltInType::F32:
-        return llvm::Type::getFloatTy(*context);
+        return llvm::Type::getFloatTy(context);
       case BuiltInType::F64:
-        return llvm::Type::getDoubleTy(*context);
+        return llvm::Type::getDoubleTy(context);
       case BuiltInType::BOOL:
-        return llvm::Type::getInt1Ty(*context);
+        return llvm::Type::getInt1Ty(context);
       default:
         colt_unreachable("Invalid ID!");
       }
@@ -446,48 +521,5 @@ namespace colt::gen
     default:
       colt_unreachable("Unimplemented type!");
     }
-  }
-
-  void LLVMIRGenerator::print_module() const noexcept
-  {
-    module->print(llvm::errs(), nullptr);
-  }
-
-  void LLVMIRGenerator::to_object_file(const char* obj) const noexcept
-  {
-    std::error_code EC;
-    raw_fd_ostream dest(obj, EC);
-
-    if (EC) {
-      errs() << "Could not open file: " << EC.message();
-      return;
-    }
-
-    legacy::PassManager pass;
-
-    if (target_machine->addPassesToEmitFile(pass, dest, nullptr, CGFT_ObjectFile))
-      errs() << "Target machine cannot emit a file of this type!";
-
-    pass.run(*module);
-    dest.flush();
-  }
-
-  void LLVMIRGenerator::optimize(llvm::OptimizationLevel level) noexcept
-  {
-    LoopAnalysisManager LAM;
-    FunctionAnalysisManager FAM;
-    CGSCCAnalysisManager CGAM;
-    ModuleAnalysisManager MAM;
-
-    PassBuilder PB;
-
-    PB.registerModuleAnalyses(MAM);
-    PB.registerCGSCCAnalyses(CGAM);
-    PB.registerFunctionAnalyses(FAM);
-    PB.registerLoopAnalyses(LAM);
-    PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
-
-    ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(level);
-    MPM.run(*module, MAM);
   }
 }

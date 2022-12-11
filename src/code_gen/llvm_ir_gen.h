@@ -32,15 +32,31 @@ namespace colt::gen
 	/// @return The converted StringRef
 	llvm::StringRef ToStringRef(colt::StringView view) noexcept;
 
+	struct GeneratedIR
+	{
+		UniquePtr<llvm::LLVMContext> context = make_unique<llvm::LLVMContext>();
+		UniquePtr<llvm::Module> module = make_unique<llvm::Module>("Colt", *context);
+		PTR<TargetMachine> target_machine;
+
+		void print_module(llvm::raw_ostream& os) const noexcept;
+
+		Expected<bool, const char*> to_object_file(const char* path) noexcept;
+
+		void optimize(colt::gen::OptimizationLevel level) noexcept;
+	};
+
+	Expected<GeneratedIR, std::string> GenerateIR(const lang::AST& ast, const std::string& target_triple = LLVM_DEFAULT_TARGET_TRIPLE) noexcept;
+
 	/// @brief Class responsible of generating LLVM IR
 	class LLVMIRGenerator
 	{
 		/// @brief The LLVM context
-		std::unique_ptr<llvm::LLVMContext> context = std::make_unique<llvm::LLVMContext>();
+		llvm::LLVMContext& context;
+		/// @brief The LLVM Module
+		llvm::Module& module;
 		/// @brief The helper for generating IR
-		llvm::IRBuilder<> builder = llvm::IRBuilder<>(*context);
+		llvm::IRBuilder<> builder;
 		/// @brief The LLVM module used in the current context
-		std::unique_ptr<llvm::Module> module = std::make_unique<llvm::Module>("Colt", *context);
 		/// @brief Contains all global variables
 		Vector<llvm::GlobalVariable> global_vars;
 		/// @brief Contains all local variables
@@ -49,7 +65,6 @@ namespace colt::gen
 		PTR<llvm::Value> returned_value = nullptr;
 		/// @brief Contains the current function whose IR is being generated
 		PTR<llvm::Function> current_fn = nullptr;
-		PTR<llvm::TargetMachine> target_machine = nullptr;
 
 	public:
 		/// @brief No default constructor
@@ -62,26 +77,12 @@ namespace colt::gen
 		/// @brief Generate LLVM IR from expressions
 		/// @param ast The AST to compile to IR
 		/// @param level The optimization level
-		LLVMIRGenerator(const lang::AST& ast, llvm::OptimizationLevel level = llvm::OptimizationLevel::O3) noexcept
-		{
-			std::string error;
-			auto Target = llvm::TargetRegistry::lookupTarget(LLVM_DEFAULT_TARGET_TRIPLE, error);
-			target_machine = Target->createTargetMachine(LLVM_DEFAULT_TARGET_TRIPLE, "generic", "", {}, {});
-
-			module->setTargetTriple(LLVM_DEFAULT_TARGET_TRIPLE);
-			module->setDataLayout(target_machine->createDataLayout());
-
+		LLVMIRGenerator(const lang::AST& ast, llvm::LLVMContext& ctx, llvm::Module& mod) noexcept
+			: context(ctx), module(mod), builder(ctx)
+		{		
 			for (size_t i = 0; i < ast.expressions.get_size(); i++)
 				gen_ir(ast.expressions[i]);
-
-			llvm::verifyModule(*module, &llvm::errs());
-			optimize(level);
-			llvm::verifyModule(*module, &llvm::errs());
 		}
-		
-		void print_module() const noexcept;
-
-		void to_object_file(const char* obj) const noexcept;
 
 	private:
 		void gen_ir(PTR<const lang::Expr> ptr) noexcept;
@@ -111,10 +112,6 @@ namespace colt::gen
 		void gen_condition(PTR<const lang::ConditionExpr> ptr) noexcept;
 
 		PTR<llvm::Type> type_to_llvm(PTR<const lang::Type> type) noexcept;
-
-		/// @brief Optimizes the module's IR
-		/// @param level The optimization level
-		void optimize(llvm::OptimizationLevel level) noexcept;
 	};
 }
 
