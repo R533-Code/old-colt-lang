@@ -18,28 +18,28 @@ namespace colt::io
 	/// @brief Prints 'Press any key to continue...' and waits for any key input.
 	void PressToContinue() noexcept;
 
-	template<bool active = true, typename... Args>
+	template<bool new_line = true, typename... Args>
 	/// @brief Prints to the standard output
 	/// @tparam ...Args Pack of types to format
 	/// @param fmt The format string, using {fmt} syntax
 	/// @param ...args The arguments to format
 	constexpr void Print(fmt::format_string<Args...> fmt, Args&&... args);
 
-	template<bool active = true, typename... Args>
+	template<bool new_line = true, typename... Args>
 	/// @brief Prints to the standard output
 	/// @tparam ...Args Pack of types to format
 	/// @param fmt The format string, using {fmt} syntax
 	/// @param ...args The arguments to format
 	constexpr void PrintMessage(fmt::format_string<Args...> fmt, Args&&... args);
 
-	template<bool active = true, typename... Args>
+	template<bool new_line = true, typename... Args>
 	/// @brief Prints to the standard output
 	/// @tparam ...Args Pack of types to format
 	/// @param fmt The format string, using {fmt} syntax
 	/// @param ...args The arguments to format
 	constexpr void PrintWarning(fmt::format_string<Args...> fmt, Args&&... args);
 
-	template<bool active = true, typename... Args>
+	template<bool new_line = true, typename... Args>
 	/// @brief Prints to the standard output
 	/// @tparam ...Args Pack of types to format
 	/// @param fmt The format string, using {fmt} syntax
@@ -54,59 +54,51 @@ namespace colt::io
 		char chr;
 	};
 
-	template<bool active, typename... Args>
+	template<bool new_line, typename... Args>
 	constexpr void Print(fmt::format_string<Args...> fmt, Args && ...args)
 	{
-		if constexpr (active)
-		{
-			fmt::print(fmt, std::forward<Args>(args)...);
+		fmt::print(fmt, std::forward<Args>(args)...);
+		if constexpr (new_line)
 			std::fputc('\n', stdout);
-		}
 	}
 
-	template<bool active, typename... Args>
+	template<bool new_line, typename... Args>
 	constexpr void PrintMessage(fmt::format_string<Args...> fmt, Args && ...args)
 	{
-		if constexpr (active)
-		{
-			if (args::GlobalArguments.colored_output)
-				fmt::print(fg(fmt::color::cornflower_blue) | fmt::emphasis::bold, "Message: ");
-			else
-				fmt::print("Message: ");
+		if (args::GlobalArguments.colored_output)
+			fmt::print(fg(fmt::color::cornflower_blue) | fmt::emphasis::bold, "Message: ");
+		else
+			fmt::print("Message: ");
 
-			fmt::print(fmt, std::forward<Args>(args)...);
+		fmt::print(fmt, std::forward<Args>(args)...);
+		if constexpr (new_line)
 			std::fputc('\n', stdout);
-		}
 	}
 
-	template<bool active, typename... Args>
+	template<bool new_line, typename... Args>
 	constexpr void PrintWarning(fmt::format_string<Args...> fmt, Args && ...args)
 	{
-		if constexpr (active)
-		{
-			if (args::GlobalArguments.colored_output)
-				fmt::print(fg(fmt::color::yellow) | fmt::emphasis::bold, "Warning: ");
-			else
-				fmt::print("Warning: ");
+		if (args::GlobalArguments.colored_output)
+			fmt::print(fg(fmt::color::yellow) | fmt::emphasis::bold, "Warning: ");
+		else
+			fmt::print("Warning: ");
 			
-			fmt::print(fmt, std::forward<Args>(args)...);
+		fmt::print(fmt, std::forward<Args>(args)...);
+		if constexpr (new_line)
 			std::fputc('\n', stdout);
-		}
 	}
 
-	template<bool active, typename... Args>
+	template<bool new_line, typename... Args>
 	constexpr void PrintError(fmt::format_string<Args...> fmt, Args && ...args)
 	{
-		if constexpr (active)
-		{
-			if (args::GlobalArguments.colored_output)
-				fmt::print(fg(fmt::color::red) | fmt::emphasis::bold, "Error: ");
-			else
-				fmt::print("Error: ");
+		if (args::GlobalArguments.colored_output)
+			fmt::print(fg(fmt::color::red) | fmt::emphasis::bold, "Error: ");
+		else
+			fmt::print("Error: ");
 			
-			fmt::print(fmt, std::forward<Args>(args)...);
+		fmt::print(fmt, std::forward<Args>(args)...);
+		if constexpr (new_line)
 			std::fputc('\n', stdout);
-		}
 	}
 }
 
