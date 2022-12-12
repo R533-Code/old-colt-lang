@@ -13,7 +13,7 @@
 FOREGROUND COLORS FOR CONSOLE
 ******************************************************/
 
-const char* CONSOLE_COLORS[] =
+static const char* CONSOLE_COLORS[] =
 {
   "", //EMPTY
   "\x1B[30m",//CONSOLE_FOREGROUND_BLACK
@@ -115,6 +115,11 @@ template<>
 /// @brief {fmt} specialization of BinaryOperator
 struct fmt::formatter<colt::io::color_t>
 {
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& ctx) {
+    return ctx.begin();
+  }
+
   template<typename FormatContext>
   /// @brief fmt overload
   /// @tparam FormatContext The context to write 
