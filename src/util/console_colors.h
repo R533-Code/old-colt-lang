@@ -1,153 +1,132 @@
 /** @file console_colors.h
 * Defines constant macros representing strings which allows to modify the font and background colors of consoles.
-* This constants are strings that should be concatenated to the string to output to stdin/stderr.
-* ```c
-* //Example:
-* printf(CONSOLE_FOREGROUND_BRIGHT_RED "Error: Couldn't allocate memory!" CONSOLE_COLOR_RESET);
-* ```
-* To remove every colored output, define `COLTI_NO_COLORED_OUTPUT` before including the file.
 */
 
 #ifndef HG_COLT_CONSOLE_COLORS
 #define HG_COLT_CONSOLE_COLORS
 
-#ifndef COLT_NO_COLORED_OUTPUT
+#include <fmt/core.h>
+#include <cmd/colt_args.h>
 
 /******************************************************
 FOREGROUND COLORS FOR CONSOLE
 ******************************************************/
 
-/// @brief Sets the console font color to black
-#define CONSOLE_FOREGROUND_BLACK			"\x1B[30m"
-/// @brief Sets the console font color to red
-#define CONSOLE_FOREGROUND_RED				"\x1B[31m"
-/// @brief Sets the console font color to green
-#define CONSOLE_FOREGROUND_GREEN			"\x1B[32m"
-/// @brief Sets the console font color to yellow
-#define CONSOLE_FOREGROUND_YELLOW			"\x1B[33m"
-/// @brief Sets the console font color to blue
-#define CONSOLE_FOREGROUND_BLUE				"\x1B[34m"
-/// @brief Sets the console font color to magenta
-#define CONSOLE_FOREGROUND_MAGENTA			"\x1B[35m"
-/// @brief Sets the console font color to cyan
-#define CONSOLE_FOREGROUND_CYAN				"\x1B[36m"
-/// @brief Sets the console font color to white
-#define CONSOLE_FOREGROUND_WHITE			"\x1B[37m"
+const char* CONSOLE_COLORS[] =
+{
+  "", //EMPTY
+  "\x1B[30m",//CONSOLE_FOREGROUND_BLACK
+  "\x1B[31m",//CONSOLE_FOREGROUND_RED
+  "\x1B[32m",//CONSOLE_FOREGROUND_GREEN
+  "\x1B[33m",//CONSOLE_FOREGROUND_YELLOW
+  "\x1B[34m",//CONSOLE_FOREGROUND_BLUE
+  "\x1B[35m",//CONSOLE_FOREGROUND_MAGENTA
+  "\x1B[36m",//CONSOLE_FOREGROUND_CYAN
+  "\x1B[37m",//CONSOLE_FOREGROUND_WHITE
 
-/// @brief Sets the console font color to bright black
-#define CONSOLE_FOREGROUND_BRIGHT_BLACK		"\x1B[90m"
-/// @brief Sets the console font color to bright red
-#define CONSOLE_FOREGROUND_BRIGHT_RED		"\x1B[91m"
-/// @brief Sets the console font color to bright green
-#define CONSOLE_FOREGROUND_BRIGHT_GREEN		"\x1B[92m"
-/// @brief Sets the console font color to bright yellow
-#define CONSOLE_FOREGROUND_BRIGHT_YELLOW	"\x1B[93m"
-/// @brief Sets the console font color to bright blue
-#define CONSOLE_FOREGROUND_BRIGHT_BLUE		"\x1B[94m"
-/// @brief Sets the console font color to bright magenta
-#define CONSOLE_FOREGROUND_BRIGHT_MAGENTA	"\x1B[95m"
-/// @brief Sets the console font color to bright cyan
-#define CONSOLE_FOREGROUND_BRIGHT_CYAN		"\x1B[96m"
-/// @brief Sets the console font color to bright white
-#define CONSOLE_FOREGROUND_BRIGHT_WHITE		"\x1B[97m"
+  "\x1B[90m",//CONSOLE_FOREGROUND_BRIGHT_BLACK
+  "\x1B[91m",//CONSOLE_FOREGROUND_BRIGHT_RED
+  "\x1B[92m",//CONSOLE_FOREGROUND_BRIGHT_GREEN
+  "\x1B[93m",//CONSOLE_FOREGROUND_BRIGHT_YELLOW
+  "\x1B[94m",//CONSOLE_FOREGROUND_BRIGHT_BLUE
+  "\x1B[95m",//CONSOLE_FOREGROUND_BRIGHT_MAGENTA
+  "\x1B[96m",//CONSOLE_FOREGROUND_BRIGHT_CYAN
+  "\x1B[97m",//CONSOLE_FOREGROUND_BRIGHT_WHITE
 
-/******************************************************
-BACKGROUND COLORS FOR CONSOLE
-******************************************************/
+  "\x1B[40m",//CONSOLE_BACKGROUND_BLACK
+  "\x1B[41m",//CONSOLE_BACKGROUND_RED
+  "\x1B[42m",//CONSOLE_BACKGROUND_GREEN
+  "\x1B[43m",//CONSOLE_BACKGROUND_YELLOW
+  "\x1B[44m",//CONSOLE_BACKGROUND_BLUE
+  "\x1B[45m",//CONSOLE_BACKGROUND_MAGENTA
+  "\x1B[46m",//CONSOLE_BACKGROUND_CYAN
+  "\x1B[47m",//CONSOLE_BACKGROUND_WHITE
 
-/// @brief Sets the console background color to black
-#define CONSOLE_BACKGROUND_BLACK			"\x1B[40m"
-/// @brief Sets the console background color to red
-#define CONSOLE_BACKGROUND_RED				"\x1B[41m"
-/// @brief Sets the console background color to green
-#define CONSOLE_BACKGROUND_GREEN			"\x1B[42m"
-/// @brief Sets the console background color to yellow
-#define CONSOLE_BACKGROUND_YELLOW			"\x1B[43m"
-/// @brief Sets the console background color to blue
-#define CONSOLE_BACKGROUND_BLUE				"\x1B[44m"
-/// @brief Sets the console background color to magenta
-#define CONSOLE_BACKGROUND_MAGENTA			"\x1B[45m"
-/// @brief Sets the console background color to cyan
-#define CONSOLE_BACKGROUND_CYAN				"\x1B[46m"
-/// @brief Sets the console background color to white
-#define CONSOLE_BACKGROUND_WHITE			"\x1B[47m"
-/// @brief Sets the console background color to bright black
-#define CONSOLE_BACKGROUND_BRIGHT_BLACK		"\x1B[100m"
-/// @brief Sets the console background color to bright red
-#define CONSOLE_BACKGROUND_BRIGHT_RED		"\x1B[101m"
-/// @brief Sets the console background color to bright green
-#define CONSOLE_BACKGROUND_BRIGHT_GREEN		"\x1B[102m"
-/// @brief Sets the console background color to bright yellow
-#define CONSOLE_BACKGROUND_BRIGHT_YELLOW	"\x1B[103m"
-/// @brief Sets the console background color to bright blue
-#define CONSOLE_BACKGROUND_BRIGHT_BLUE		"\x1B[104m"
-/// @brief Sets the console background color to bright magenta
-#define CONSOLE_BACKGROUND_BRIGHT_MAGENTA	"\x1B[105m"
-/// @brief Sets the console background color to bright cyan
-#define CONSOLE_BACKGROUND_BRIGHT_CYAN		"\x1B[106m"
-/// @brief Sets the console background color to bright white
-#define CONSOLE_BACKGROUND_BRIGHT_WHITE		"\x1B[107m"
+  "\x1B[100m",//CONSOLE_BACKGROUND_BRIGHT_BLACK
+  "\x1B[101m",//CONSOLE_BACKGROUND_BRIGHT_RED
+  "\x1B[102m",//CONSOLE_BACKGROUND_BRIGHT_GREEN
+  "\x1B[103m",//CONSOLE_BACKGROUND_BRIGHT_YELLOW
+  "\x1B[104m",//CONSOLE_BACKGROUND_BRIGHT_BLUE
+  "\x1B[105m",//CONSOLE_BACKGROUND_BRIGHT_MAGENTA
+  "\x1B[106m",//CONSOLE_BACKGROUND_BRIGHT_CYAN
+  "\x1B[107m",//CONSOLE_BACKGROUND_BRIGHT_WHITE
 
-/******************************************************
-OTHER MODIFIERS FOR CONSOLE
-******************************************************/
+  "\x1B[0m",//CONSOLE_COLOR_RESET
+  "\x1B[2m",//CONSOLE_FONT_BOLD
+  "\x1B[4m",//CONSOLE_FONT_UNDERLINE
+  "\x1B[5m",//CONSOLE_FONT_FLICKER
+  "\x1B[7m",//CONSOLE_COLOR_REVERSE
+};
 
-/// @brief Resets the font and background color to its default
-#define CONSOLE_COLOR_RESET					"\x1B[0m"
-/// @brief Reverses the font and background color
-#define CONSOLE_COLOR_REVERSE				"\x1B[7m"
-/// @brief Sets the font to bold
-#define CONSOLE_FONT_BOLD					"\x1B[2m"
-/// @brief Sets the font to underline
-#define CONSOLE_FONT_UNDERLINE				"\x1B[4m"
-/// @brief Makes the font flicker
-#define CONSOLE_FONT_FLICKER				"\x1B[5m"
+namespace colt::io
+{
+  struct color_t
+  {
+    u64 index;
+  };
 
-// 3 italic on Windows
-// 5 animates on Windows
-// 8 inverts color?
-// 9 strike-through
-#else
+  static constexpr color_t BlackF = color_t{ 1 };
+  static constexpr color_t RedF = color_t{ 2 };
+  static constexpr color_t GreenF = color_t{ 3 };
+  static constexpr color_t YellowF = color_t{ 4 };
+  static constexpr color_t BlueF = color_t{ 5 };
+  static constexpr color_t MagentaF = color_t{ 6 };
+  static constexpr color_t CyanF = color_t{ 7 };
+  static constexpr color_t WhiteF = color_t{ 8 };
+    
+  static constexpr color_t BrightBlackF = color_t{ 9 };
+  static constexpr color_t BrightRedF = color_t{ 10 };
+  static constexpr color_t BrightGreenF = color_t{ 11 };
+  static constexpr color_t BrightYellowF = color_t{ 12 };
+  static constexpr color_t BrightBlueF = color_t{ 13 };
+  static constexpr color_t BrightMagentaF = color_t{ 14 };
+  static constexpr color_t BrightCyanF = color_t{ 15 };
+  static constexpr color_t BrightWhiteF = color_t{ 16 };
 
-//Define the macros that are replaced by nothing
-#define CONSOLE_FOREGROUND_BLACK
-#define CONSOLE_FOREGROUND_RED
-#define CONSOLE_FOREGROUND_GREEN
-#define CONSOLE_FOREGROUND_YELLOW
-#define CONSOLE_FOREGROUND_BLUE
-#define CONSOLE_FOREGROUND_MAGENTA
-#define CONSOLE_FOREGROUND_CYAN
-#define CONSOLE_FOREGROUND_WHITE
-#define CONSOLE_FOREGROUND_BRIGHT_BLACK
-#define CONSOLE_FOREGROUND_BRIGHT_RED
-#define CONSOLE_FOREGROUND_BRIGHT_GREEN
-#define CONSOLE_FOREGROUND_BRIGHT_YELLOW
-#define CONSOLE_FOREGROUND_BRIGHT_BLUE
-#define CONSOLE_FOREGROUND_BRIGHT_MAGENTA
-#define CONSOLE_FOREGROUND_BRIGHT_CYAN
-#define CONSOLE_FOREGROUND_BRIGHT_WHITE
-#define CONSOLE_BACKGROUND_BLACK
-#define CONSOLE_BACKGROUND_RED
-#define CONSOLE_BACKGROUND_GREEN
-#define CONSOLE_BACKGROUND_YELLOW
-#define CONSOLE_BACKGROUND_BLUE
-#define CONSOLE_BACKGROUND_MAGENTA
-#define CONSOLE_BACKGROUND_CYAN
-#define CONSOLE_BACKGROUND_WHITE
-#define CONSOLE_BACKGROUND_BRIGHT_BLACK
-#define CONSOLE_BACKGROUND_BRIGHT_RED
-#define CONSOLE_BACKGROUND_BRIGHT_GREEN
-#define CONSOLE_BACKGROUND_BRIGHT_YELLOW
-#define CONSOLE_BACKGROUND_BRIGHT_BLUE
-#define CONSOLE_BACKGROUND_BRIGHT_MAGENTA
-#define CONSOLE_BACKGROUND_BRIGHT_CYAN
-#define CONSOLE_BACKGROUND_BRIGHT_WHITE
-#define CONSOLE_COLOR_RESET
-#define CONSOLE_COLOR_REVERSE
-#define CONSOLE_FONT_BOLD
-#define CONSOLE_FONT_UNDERLINE
-#define CONSOLE_FONT_FLICKER
+  static constexpr color_t BlackB = color_t{ 17 };
+  static constexpr color_t RedB = color_t{ 18 };
+  static constexpr color_t GreenB = color_t{ 19 };
+  static constexpr color_t YellowB = color_t{ 20 };
+  static constexpr color_t BlueB = color_t{ 21 };
+  static constexpr color_t MagentaB = color_t{ 22 };
+  static constexpr color_t CyanB = color_t{ 23 };
+  static constexpr color_t WhiteB = color_t{ 24 };
 
-#endif
+  static constexpr color_t BrightBlackB = color_t{ 25 };
+  static constexpr color_t BrightRedB = color_t{ 26 };
+  static constexpr color_t BrightGreenB = color_t{ 27 };
+  static constexpr color_t BrightYellowB = color_t{ 28 };
+  static constexpr color_t BrightBlueB = color_t{ 29 };
+  static constexpr color_t BrightMagentaB = color_t{ 30 };
+  static constexpr color_t BrightCyanB = color_t{ 31 };
+  static constexpr color_t BrightWhiteB = color_t{ 32 };
+
+  static constexpr color_t Reset = color_t{ 33 };
+  static constexpr color_t Bold = color_t{ 34 };
+  static constexpr color_t Underline = color_t{ 35 };
+  static constexpr color_t Flicker = color_t{ 36 };
+  static constexpr color_t SwitchFB = color_t{ 37 };
+}
+
+#ifdef COLT_USE_FMT
+
+template<>
+/// @brief {fmt} specialization of BinaryOperator
+struct fmt::formatter<colt::io::color_t>
+{
+  template<typename FormatContext>
+  /// @brief fmt overload
+  /// @tparam FormatContext The context to write 
+  /// @param op The BinaryOperator to write
+  /// @param ctx The context
+  /// @return context
+  auto format(const colt::io::color_t& op, FormatContext& ctx)
+  {
+    return fmt::format_to(ctx.out(), "{}",
+      CONSOLE_COLORS[op.index * static_cast<colt::u64>(colt::args::GlobalArguments.colored_output)]);
+  }
+};
+
+#endif //COLT_USE_FMT
 
 #endif //!HG_CONSOLE_COLORS
