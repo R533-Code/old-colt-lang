@@ -29,7 +29,9 @@ namespace colt::lang
   /// @return True if the Token is a comparison Token
   bool isComparisonToken(Token tkn) noexcept;
 
-  /// @brief Check if 'expr' is a return expression
+  /// @brief Check if 'expr' is a terminating expression.
+  /// A terminating expression is a 'return', a scope whose last
+  /// expression is a 'return', or an if/else whose branches are terminated expressions.
   /// @param expr The expression to check for
   /// @return True if represents a return expression
   bool isTerminatedExpr(PTR<const Expr> expr) noexcept;
@@ -171,9 +173,15 @@ namespace colt::lang
     bool is_empty() const noexcept { return expressions.get_size() == 0; }
 
   private:
+    /// @brief Enum used to specify output type (for 'generate_any')
     enum class report_as
     {
-      ERROR, WARNING, MESSAGE
+      /// @brief Generates an error
+      ERROR,
+      /// @brief Generates a warning
+      WARNING,
+      /// @brief Generates a message
+      MESSAGE
     };
 
     /// @brief Updates 'current_tkn' to the next token
@@ -181,33 +189,55 @@ namespace colt::lang
 
     /************* EXPRESSION PARSING ************/
 
-    template<typename RetT, typename... Args>
-    /// @brief Parses any Expr enclosed in parenthesis.
-    /// Usage Example: parse_parenthesis(&AST::parse_unary)
-    /// @param method_ptr The method pointer to parse inside the parenthesis
+    template<typename RetT, typename... Args> 
     RetT parse_parenthesis(RetT(ASTMaker::* method_ptr)(Args...), Args&&... args) noexcept;
 
     /// @brief Parses a LiteralExpr, VarReadExpr, FnCallExpr, or a UnaryExpr.
+    /// @return Resulting expression or ErrorExpr on errors
     PTR<Expr> parse_primary() noexcept;
 
     /// @brief Parses a BinaryExpr, or a 'primary_expr'.
-    /// Expects a primary_expr.
+    /// @return Resulting expression or ErrorExpr on errors
     PTR<Expr> parse_binary(u8 precedence = 0) noexcept;
 
     /// @brief Parses a UnaryExpr.
-    /// Precondition: current_tkn contains a UnaryOperator
+    /// Precondition: current_tkn contains a UnaryOperator.
+    /// @return Resulting expression or ErrorExpr on errors
     PTR<Expr> parse_unary() noexcept;
 
+    /// @brief Parses a global declaration (FnDefExpr or VarDeclExpr).
+    /// This function will return a FnDefExpr even if the parsed expression
+    /// is a declaration without body.
+    /// @return Resulting expression or ErrorExpr on errors
     PTR<Expr> parse_global_declaration() noexcept;
 
+    /// @brief Parses a function declaration/definition (FnDefExpr).    
+    /// Precondition: current_tkn == TKN_KEYWORD_FN
+    /// This function will return a FnDefExpr even if the parsed expression
+    /// is a declaration without body.
+    /// @return Resulting expression or ErrorExpr on errors
     PTR<Expr> parse_fn_decl() noexcept;
 
+    /// @brief Parses a scope.
+    /// If 'one_expr' is true, accepts a single statement scope
+    /// (starting with ':', not '{').
+    /// Even only one statement is contained inside the scope, the returned
+    /// expression will be a ScopeExpr.
+    /// @return ScopeExpr or ErrorExpr
     PTR<Expr> parse_scope(bool one_expr = true) noexcept;
 
+    /// @brief Parses a statement.
+    /// @return Resulting expression or ErrorExpr
     PTR<Expr> parse_statement() noexcept;
 
+    /// @brief Parses a conditional expression.
+    /// Precondition: current_tkn == TKN_KEYWORD_IF
+    /// @return ConditionExpr or ErrorExpr
     PTR<Expr> parse_condition() noexcept;
 
+    /// @brief Parses a 'while' expression.
+    /// Precondition: current_tkn == TKN_KEYWORD_WHILE
+    /// @return WhileExpr or ErrorExpr
     PTR<Expr> parse_while() noexcept;
 
     /// @brief Parses a variable declaration (global or local)
@@ -240,6 +270,10 @@ namespace colt::lang
     /// @return FnCallExpr, or ErrorExpr
     PTR<Expr> parse_function_call(StringView identifier, const SavedExprInfo& line_state) noexcept;
 
+    /// @brief Parses a 'return' statement.
+    /// Precondition: current_tkn == TKN_KEYWORD_RETURN.
+    /// Does type checking with return type of current function.
+    /// FnReturnExpr or ErrorExpr
     PTR<Expr> parse_return() noexcept;
 
     /// @brief Parses the function call's arguments
