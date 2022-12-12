@@ -1,5 +1,4 @@
 #include <util/colt_pch.h>
-#include <llvm/Support/TargetSelect.h>
 #include <code_gen/llvm_ir_gen.h>
 
 using namespace colt;
