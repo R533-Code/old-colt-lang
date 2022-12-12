@@ -77,7 +77,7 @@ namespace colt::lang
       StringView{lhs.expression.begin(), rhs.expression.end()},
     };
   }
-  
+
   SourceCodeExprInfo ASTMaker::SourceCodeLexemeInfo::to_src_info() const noexcept
   {
     return { as<u32>(line_nb), as<u32>(line_nb), line_strv, expression };
@@ -88,7 +88,7 @@ namespace colt::lang
   {
     ast.current_lexeme_info = ast.get_expr_info();
   }
-  
+
   ASTMaker::SavedExprInfo::~SavedExprInfo() noexcept
   {
     ast.current_lexeme_info = infos;
@@ -101,15 +101,15 @@ namespace colt::lang
       StringView{ast.current_lexeme_info.expression.begin(), ast.last_lexeme_info.expression.end()},
     };
   }
-  
+
   ASTMaker::SavedLocalState::SavedLocalState(ASTMaker& ast) noexcept
     : ast(ast), old_sz(ast.local_var_table.get_size()) {}
-  
+
   ASTMaker::SavedLocalState::~SavedLocalState() noexcept
   {
     ast.local_var_table.pop_back_n(ast.local_var_table.get_size() - old_sz);
   }
-  
+
   ASTMaker::SourceCodeLexemeInfo ASTMaker::get_expr_info() const noexcept
   {
     auto scan_info = lexer.get_line_info();
@@ -123,7 +123,7 @@ namespace colt::lang
     while (current_tkn != TKN_EOF)
       expressions.push_back(parse_global_declaration());
   }
-  
+
   void ASTMaker::consume_current_tkn() noexcept
   {
     last_lexeme_info = get_expr_info();
@@ -199,8 +199,8 @@ namespace colt::lang
     case TKN_BANG:         // !(any) <- bool only
     case TKN_MINUS:        // -(any)
     case TKN_PLUS:         // +(any) <- error
-      to_ret = parse_unary();    
-    
+      to_ret = parse_unary();
+
     break; case TKN_IDENTIFIER:
       to_ret = parse_identifier(line_state);
 
@@ -208,7 +208,7 @@ namespace colt::lang
       consume_current_tkn();
       ++error_count;
       to_ret = ErrorExpr::CreateExpr(ctx);
-      
+
     break; case TKN_LEFT_PAREN:
       to_ret = parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0));
 
@@ -291,7 +291,7 @@ namespace colt::lang
     //Save the operator
     Token op = current_tkn;
     consume_current_tkn(); //consume the unary operator
-    
+
     if (op == TKN_PLUS)
     {
       generate_any<report_as::ERROR>(line_state.to_src_info(), &ASTMaker::panic_consume_semicolon,
@@ -301,7 +301,7 @@ namespace colt::lang
 
     if (op == TKN_PLUS_PLUS || op == TKN_MINUS_MINUS)
       return parse_primary();
-    
+
     //Dereference operator
     if (op == TKN_STAR)
     {
@@ -369,16 +369,16 @@ namespace colt::lang
     assert(current_tkn == TKN_KEYWORD_FN);
     consume_current_tkn();
     auto fn_name = lexer.get_parsed_identifier();
-    
+
     IF_TRUE_RET_ERR(
-      check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_fn_decl, 
+      check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_fn_decl,
         "Expected an identifier, not '{}'!", lexer.get_current_lexeme())
     );
     IF_TRUE_RET_ERR(
       check_and_consume(TKN_LEFT_PAREN, &ASTMaker::panic_consume_fn_decl,
         "Expected a '('!")
     );
-    
+
     SmallVector<PTR<const Type>, 4> args_type;
     SmallVector<StringView, 4> args_name;
     while (current_tkn != TKN_EOF && current_tkn != TKN_RIGHT_PAREN)
@@ -392,7 +392,7 @@ namespace colt::lang
         panic_consume_rparen();
         break;
       }
-      
+
       if (args_name.to_view().contains(arg_name))
       {
         generate_any<report_as::ERROR>(line_state_arg.to_src_info(), &ASTMaker::panic_consume_rparen,
@@ -408,7 +408,7 @@ namespace colt::lang
     }
 
     IF_TRUE_RET_ERR(
-      check_and_consume(TKN_RIGHT_PAREN, &ASTMaker::panic_consume_fn_decl, 
+      check_and_consume(TKN_RIGHT_PAREN, &ASTMaker::panic_consume_fn_decl,
         "Expected a ')'!")
     );
     IF_TRUE_RET_ERR(
@@ -432,7 +432,7 @@ namespace colt::lang
       SavedLocalState local_state = { *this };
       //Create arguments in local variables table
       for (size_t i = 0; i < declaration->get_params_count(); i++)
-        local_var_table.push_back({ declaration->get_params_name()[i], declaration->get_params_type()[i]});
+        local_var_table.push_back({ declaration->get_params_name()[i], declaration->get_params_type()[i] });
 
       auto body = parse_scope();
       if (!current_function->get_return_type()->is_void())
@@ -441,12 +441,12 @@ namespace colt::lang
       //add one. As parse_scope can return ErrorExpr or ScopeExpr,
       //do necessary check
       else if (is_a<ScopeExpr>(body) && !isTerminatedExpr(body))
-        as<PTR<ScopeExpr>>(body)->push_back(FnReturnExpr::CreateExpr(nullptr, {}, ctx));        
-      
+        as<PTR<ScopeExpr>>(body)->push_back(FnReturnExpr::CreateExpr(nullptr, {}, ctx));
+
       return FnDefExpr::CreateExpr(declaration, body, line_state.to_src_info(), ctx);
     }
     check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
-    return FnDefExpr::CreateExpr(declaration, line_state.to_src_info(), ctx);    
+    return FnDefExpr::CreateExpr(declaration, line_state.to_src_info(), ctx);
   }
 
   PTR<Expr> ASTMaker::parse_scope(bool one_expr) noexcept
@@ -455,7 +455,7 @@ namespace colt::lang
     if (current_tkn == TKN_COLON && one_expr)
     {
       consume_current_tkn(); // :
-      
+
       Vector<PTR<Expr>> statements = {};
       statements.push_back(parse_statement());
       //We still want to return a ScopeExpr even for a single expression
@@ -467,7 +467,7 @@ namespace colt::lang
       //Save '{' informations
       auto lexeme_info = get_expr_info();
       consume_current_tkn(); // {
-      
+
       Vector<PTR<Expr>> statements = {};
       while (current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF)
       {
@@ -478,13 +478,13 @@ namespace colt::lang
           && current_tkn != TKN_RIGHT_CURLY)
           handle_unreachable_code();
       }
-      
+
       if (current_tkn != TKN_RIGHT_CURLY)
         generate_any<report_as::ERROR>(lexeme_info.to_src_info(), nullptr,
           "Unclosed curly bracket delimiter!");
       else //consume '}'
         consume_current_tkn();
-      
+
       return ScopeExpr::CreateExpr(std::move(statements),
         line_state.to_src_info(), ctx);
     }
@@ -513,12 +513,12 @@ namespace colt::lang
       return parse_while();
     break; case TKN_KEYWORD_RETURN:
       return parse_return();
-    
+
     case TKN_SEMICOLON:
       generate_any_current<report_as::ERROR>(nullptr, "Expected a statement!");
       consume_current_tkn(); // ';'
       return ErrorExpr::CreateExpr(ctx);
-    
+
       // EXPECTS ';'
 
     case TKN_KEYWORD_CONTINUE:
@@ -529,7 +529,7 @@ namespace colt::lang
         generate_any<report_as::ERROR>(to_ret->get_src_code(), nullptr, "Statement 'continue' can only appear inside a loop!");
         is_valid = false;
       }
-    
+
     break; case TKN_KEYWORD_BREAK:
       to_ret = BreakContinueExpr::CreateExpr(true, get_expr_info().to_src_info(), ctx);
       consume_current_tkn();
@@ -537,8 +537,8 @@ namespace colt::lang
       {
         generate_any<report_as::ERROR>(to_ret->get_src_code(), nullptr, "Statement 'break' can only appear inside a loop!");
         is_valid = false;
-      }    
-    
+      }
+
     break; default:
       to_ret = parse_binary();
     }
@@ -551,16 +551,16 @@ namespace colt::lang
 
   PTR<Expr> ASTMaker::parse_condition() noexcept
   {
-    assert(current_tkn == TKN_KEYWORD_IF);    
+    assert(current_tkn == TKN_KEYWORD_IF);
     SavedExprInfo line_state = { *this };
 
     consume_current_tkn(); //consume if
-    
+
     PTR<Expr> if_cond = parse_binary(); //if condition
     if (!if_cond->get_type()->is_equal(BuiltInType::CreateBool(false, ctx)))
       generate_any<report_as::ERROR>(if_cond->get_src_code(), nullptr,
         "Expression should be of type 'bool'!");
-    
+
     PTR<Expr> if_body = parse_scope(); //if body
 
     if (current_tkn == TKN_KEYWORD_ELIF)
@@ -577,7 +577,7 @@ namespace colt::lang
       else_body = parse_scope(); // else body
     }
     return ConditionExpr::CreateExpr(if_cond, if_body, else_body,
-        line_state.to_src_info(), ctx);
+      line_state.to_src_info(), ctx);
   }
 
   PTR<Expr> ASTMaker::parse_while() noexcept
@@ -590,14 +590,14 @@ namespace colt::lang
     SavedExprInfo line_state = { *this };
 
     consume_current_tkn(); //consume while
-    
+
     PTR<Expr> condition = parse_binary();
     if (!condition->get_type()->is_equal(BuiltInType::CreateBool(false, ctx)))
       generate_any<report_as::ERROR>(condition->get_src_code(), nullptr,
         "Expression should be of type 'bool'!");
 
     PTR<Expr> body = parse_scope();
-    
+
     //Restore loop state
     is_parsing_loop = old_is_loop;
 
@@ -624,7 +624,7 @@ namespace colt::lang
       consume_current_tkn();
       var_type = parse_typename();
     }
-    
+
     PTR<Expr> var_init = nullptr;
     if (current_tkn != TKN_SEMICOLON)
     {
@@ -652,7 +652,7 @@ namespace colt::lang
     else
       var_init = ConvertExpr::CreateExpr(var_type, var_init,
         line_state.to_src_info(), ctx);
-    
+
     IF_TRUE_RET_ERR(
       check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_var_decl, "Expected a ';'!")
     );
@@ -665,8 +665,8 @@ namespace colt::lang
       global_map.insert(var_name, var_expr);
       return var_expr;
     }
-    
-    local_var_table.push_back({ var_name, var_type });    
+
+    local_var_table.push_back({ var_name, var_type });
     return VarDeclExpr::CreateExpr(var_type, var_name, var_init, false,
       line_state.to_src_info(), ctx);
   }
@@ -690,7 +690,7 @@ namespace colt::lang
 
     //Expands VAR += VALUE as VAR = VAR + VALUE
     switch (assignment_tkn)
-    {    
+    {
     case colt::lang::TKN_PLUS_EQUAL:
       return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
         BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_PLUS, rhs, line_state.to_src_info(), ctx),
@@ -757,7 +757,7 @@ namespace colt::lang
       consume_current_tkn();
       return parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0))->get_type();
     }
-    
+
     bool is_mut = false;
     if (current_tkn == TKN_KEYWORD_MUT) // mut TYPE
     {
@@ -842,7 +842,7 @@ namespace colt::lang
   PTR<Expr> ASTMaker::parse_identifier(const SavedExprInfo& line_state) noexcept
   {
     assert(current_tkn == TKN_IDENTIFIER);
-    
+
     StringView identifier = lexer.get_parsed_identifier();
     consume_current_tkn(); // consume identifier
     //The source code information of the identifier, done AFTER consuming
@@ -884,7 +884,7 @@ namespace colt::lang
         if (!validate_fn_call(arguments, decl, identifier, identifier_location))
           return ErrorExpr::CreateExpr(ctx);
         return FnCallExpr::CreateExpr(decl, std::move(arguments),
-            line_state.to_src_info(), ctx);
+          line_state.to_src_info(), ctx);
       }
       else // and return an ErrorExpr
         generate_any<report_as::ERROR>(identifier_location, nullptr,
@@ -911,9 +911,9 @@ namespace colt::lang
   PTR<Expr> ASTMaker::parse_return() noexcept
   {
     assert(current_tkn == TKN_KEYWORD_RETURN);
-    
+
     SavedExprInfo line_state = { *this };
-    consume_current_tkn();    
+    consume_current_tkn();
 
     if (current_function->get_return_type()->is_void())
     {
@@ -940,7 +940,7 @@ namespace colt::lang
     }
     else
       ret_val = FnReturnExpr::CreateExpr(ret_val, line_state.to_src_info(), ctx);
-    
+
     check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_sttmnt,
       "Expected a ';'!");
     return ret_val;
@@ -1003,7 +1003,7 @@ namespace colt::lang
         "Expected a 'return' statement, as path must return a value!");
     }
   }
-  
+
   void ASTMaker::panic_consume_semicolon() noexcept
   {
     while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF)
@@ -1018,7 +1018,7 @@ namespace colt::lang
 
   void ASTMaker::panic_consume_sttmnt() noexcept
   {
-    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF 
+    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF
       && current_tkn != TKN_KEYWORD_IF && current_tkn != TKN_KEYWORD_WHILE && current_tkn != TKN_KEYWORD_VAR)
       consume_current_tkn();
     if (current_tkn == TKN_SEMICOLON)
@@ -1032,13 +1032,13 @@ namespace colt::lang
     if (current_tkn == TKN_SEMICOLON)
       consume_current_tkn();
   }
-  
+
   void ASTMaker::panic_consume_fn_decl() noexcept
   {
     while (current_tkn != TKN_KEYWORD_FN && current_tkn != TKN_KEYWORD_VAR && current_tkn != TKN_EOF)
       consume_current_tkn();
   }
-  
+
   void ASTMaker::panic_consume_rparen() noexcept
   {
     while (current_tkn != TKN_SEMICOLON && is_valid_scope_begin() && current_tkn != TKN_EOF)
