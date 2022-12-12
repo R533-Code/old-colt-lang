@@ -61,59 +61,98 @@ static const char* CONSOLE_COLORS[] =
 
 namespace colt::io
 {
-  struct color_t
+  /// @brief Represents a Console Color
+  struct Color
   {
+    /// @brief Index in CONSOLE_COLOR array
     u64 index;
   };
 
-  static constexpr color_t BlackF = color_t{ 1 };
-  static constexpr color_t RedF = color_t{ 2 };
-  static constexpr color_t GreenF = color_t{ 3 };
-  static constexpr color_t YellowF = color_t{ 4 };
-  static constexpr color_t BlueF = color_t{ 5 };
-  static constexpr color_t MagentaF = color_t{ 6 };
-  static constexpr color_t CyanF = color_t{ 7 };
-  static constexpr color_t WhiteF = color_t{ 8 };
-    
-  static constexpr color_t BrightBlackF = color_t{ 9 };
-  static constexpr color_t BrightRedF = color_t{ 10 };
-  static constexpr color_t BrightGreenF = color_t{ 11 };
-  static constexpr color_t BrightYellowF = color_t{ 12 };
-  static constexpr color_t BrightBlueF = color_t{ 13 };
-  static constexpr color_t BrightMagentaF = color_t{ 14 };
-  static constexpr color_t BrightCyanF = color_t{ 15 };
-  static constexpr color_t BrightWhiteF = color_t{ 16 };
+  /// @brief Black foreground
+  static constexpr Color BlackF = Color{ 1 };
+  /// @brief Red foreground
+  static constexpr Color RedF = Color{ 2 };
+  /// @brief Green foreground
+  static constexpr Color GreenF = Color{ 3 };
+  /// @brief Yellow foreground
+  static constexpr Color YellowF = Color{ 4 };
+  /// @brief Blue foreground
+  static constexpr Color BlueF = Color{ 5 };
+  /// @brief Magenta foreground
+  static constexpr Color MagentaF = Color{ 6 };
+  /// @brief Cyan foreground
+  static constexpr Color CyanF = Color{ 7 };
+  /// @brief White foreground (usually the default)
+  static constexpr Color WhiteF = Color{ 8 };
+  
+  /// @brief Bright Black foreground
+  static constexpr Color BrightBlackF = Color{ 9 };
+  /// @brief Bright Red foreground
+  static constexpr Color BrightRedF = Color{ 10 };
+  /// @brief Bright Green foreground
+  static constexpr Color BrightGreenF = Color{ 11 };
+  /// @brief Bright Yellow foreground
+  static constexpr Color BrightYellowF = Color{ 12 };
+  /// @brief Bright Blue foreground
+  static constexpr Color BrightBlueF = Color{ 13 };
+  /// @brief Bright Magenta foreground
+  static constexpr Color BrightMagentaF = Color{ 14 };
+  /// @brief Bright Cyan foreground
+  static constexpr Color BrightCyanF = Color{ 15 };
+  /// @brief Bright White foreground
+  static constexpr Color BrightWhiteF = Color{ 16 };
 
-  static constexpr color_t BlackB = color_t{ 17 };
-  static constexpr color_t RedB = color_t{ 18 };
-  static constexpr color_t GreenB = color_t{ 19 };
-  static constexpr color_t YellowB = color_t{ 20 };
-  static constexpr color_t BlueB = color_t{ 21 };
-  static constexpr color_t MagentaB = color_t{ 22 };
-  static constexpr color_t CyanB = color_t{ 23 };
-  static constexpr color_t WhiteB = color_t{ 24 };
+  /// @brief Black background
+  static constexpr Color BlackB = Color{ 17 };
+  /// @brief Red background
+  static constexpr Color RedB = Color{ 18 };
+  /// @brief Green background
+  static constexpr Color GreenB = Color{ 19 };
+  /// @brief Yellow background
+  static constexpr Color YellowB = Color{ 20 };
+  /// @brief Blue background
+  static constexpr Color BlueB = Color{ 21 };
+  /// @brief Magenta background
+  static constexpr Color MagentaB = Color{ 22 };
+  /// @brief Cyan background
+  static constexpr Color CyanB = Color{ 23 };
+  /// @brief White background
+  static constexpr Color WhiteB = Color{ 24 };
 
-  static constexpr color_t BrightBlackB = color_t{ 25 };
-  static constexpr color_t BrightRedB = color_t{ 26 };
-  static constexpr color_t BrightGreenB = color_t{ 27 };
-  static constexpr color_t BrightYellowB = color_t{ 28 };
-  static constexpr color_t BrightBlueB = color_t{ 29 };
-  static constexpr color_t BrightMagentaB = color_t{ 30 };
-  static constexpr color_t BrightCyanB = color_t{ 31 };
-  static constexpr color_t BrightWhiteB = color_t{ 32 };
+  /// @brief Bright Black background
+  static constexpr Color BrightBlackB = Color{ 25 };
+  /// @brief Bright Red background
+  static constexpr Color BrightRedB = Color{ 26 };
+  /// @brief Bright Green background
+  static constexpr Color BrightGreenB = Color{ 27 };
+  /// @brief Bright Yellow background
+  static constexpr Color BrightYellowB = Color{ 28 };
+  /// @brief Bright Blue background
+  static constexpr Color BrightBlueB = Color{ 29 };
+  /// @brief Bright Magenta background
+  static constexpr Color BrightMagentaB = Color{ 30 };
+  /// @brief Bright Cyan background
+  static constexpr Color BrightCyanB = Color{ 31 };
+  /// @brief Bright White background
+  static constexpr Color BrightWhiteB = Color{ 32 };
 
-  static constexpr color_t Reset = color_t{ 33 };
-  static constexpr color_t Bold = color_t{ 34 };
-  static constexpr color_t Underline = color_t{ 35 };
-  static constexpr color_t Flicker = color_t{ 36 };
-  static constexpr color_t SwitchFB = color_t{ 37 };
+  /// @brief Reset foreground and background color to default
+  static constexpr Color Reset = Color{ 33 };
+  /// @brief Bold font
+  static constexpr Color Bold = Color{ 34 };
+  /// @brief Underline
+  static constexpr Color Underline = Color{ 35 };
+  /// @brief Flicker
+  static constexpr Color Flicker = Color{ 36 };
+  /// @brief Switch foreground and background color
+  static constexpr Color SwitchFB = Color{ 37 };
 }
 
 #ifdef COLT_USE_FMT
 
 template<>
 /// @brief {fmt} specialization of BinaryOperator
-struct fmt::formatter<colt::io::color_t>
+struct fmt::formatter<colt::io::Color>
 {
   template<typename ParseContext>
   constexpr auto parse(ParseContext& ctx) {
@@ -126,8 +165,9 @@ struct fmt::formatter<colt::io::color_t>
   /// @param op The BinaryOperator to write
   /// @param ctx The context
   /// @return context
-  auto format(const colt::io::color_t& op, FormatContext& ctx)
+  auto format(const colt::io::Color& op, FormatContext& ctx)
   {
+    //If -C option was passed, format "" (CONSOLE_COLORS[0])
     return fmt::format_to(ctx.out(), "{}",
       CONSOLE_COLORS[op.index * static_cast<colt::u64>(colt::args::GlobalArguments.colored_output)]);
   }

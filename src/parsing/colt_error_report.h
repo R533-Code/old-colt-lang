@@ -61,7 +61,7 @@ namespace colt::lang
 	
 	namespace
 	{
-		void print_single_line(io::color_t highlight, const SourceCodeExprInfo& src_info, StringView begin_line, StringView end_line, size_t line_nb_size) noexcept
+		void print_single_line(io::Color highlight, const SourceCodeExprInfo& src_info, StringView begin_line, StringView end_line, size_t line_nb_size) noexcept
 		{
 			io::Print(" {} | {}{}{}{}{}", src_info.line_begin, begin_line,
 				highlight, src_info.expression, io::Reset, end_line);
@@ -73,7 +73,7 @@ namespace colt::lang
 			io::Print(" {: <{}} | {: <{}}{:~<{}}^", "", line_nb_size, "", begin_line.get_size(), "", sz);
 		}
 
-		void print_multiple_lines(io::color_t highlight, const SourceCodeExprInfo& src_info, StringView begin_line, StringView end_line, size_t line_nb_size) noexcept
+		void print_multiple_lines(io::Color highlight, const SourceCodeExprInfo& src_info, StringView begin_line, StringView end_line, size_t line_nb_size) noexcept
 		{
 			size_t offset = StringView::npos; //will overflow on first add
 			size_t previous_offset = 0;
