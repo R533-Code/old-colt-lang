@@ -24,6 +24,9 @@ namespace colt::gen
 
     //Generate and store the IR in 'ir'
     LLVMIRGenerator ir_gen = { ast, *ir.context, *ir.module };
+    //Verify module
+    if (llvm::verifyModule(*ir.module, &llvm::errs()))
+      return { Error, "Generated IR is invalid!" };
     return ir;
   }
 
@@ -423,48 +426,47 @@ namespace colt::gen
   void LLVMIRGenerator::gen_condition(PTR<const lang::ConditionExpr> ptr) noexcept
   {
     gen_ir(ptr->get_if_condition());
-    Value* CondV = returned_value;
+    Value* cond = returned_value;
 
-    Function* TheFunction = builder.GetInsertBlock()->getParent();
+    Function* function = builder.GetInsertBlock()->getParent();
 
     // Create blocks for the then and else cases.  Insert the 'then' block at the
     // end of the function.
-    BasicBlock* ThenBB = BasicBlock::Create(context, "br_true", TheFunction);
-    BasicBlock* ElseBB = BasicBlock::Create(context, "br_false");
-    BasicBlock* MergeBB = BasicBlock::Create(context, "after_br");
+    BasicBlock* if_st = BasicBlock::Create(context, "br_true", function);
+    BasicBlock* else_st = BasicBlock::Create(context, "br_false");
+    BasicBlock* after_st = BasicBlock::Create(context, "after_br");
 
-    builder.CreateCondBr(CondV, ThenBB, ElseBB);
+    //If both if and else branches are terminated,
+    //then no 'after_st' branches should be emitted
+    bool are_both_branches_term = true;
+
+    builder.CreateCondBr(cond, if_st, else_st);
 
     // Emit then value.
-    builder.SetInsertPoint(ThenBB);
+    builder.SetInsertPoint(if_st);
     
     gen_ir(ptr->get_if_statement());
-    if (!lang::isTerminatedExpr(ptr->get_if_statement()))
-      builder.CreateBr(MergeBB);
+    if (!(are_both_branches_term &= lang::isTerminatedExpr(ptr->get_if_statement())))
+      builder.CreateBr(after_st);
     
-    // Codegen of 'Then' can change the current block, update ThenBB for the PHI.
-    ThenBB = builder.GetInsertBlock();
-
     // Emit else block.
-    TheFunction->getBasicBlockList().push_back(ElseBB);
-    builder.SetInsertPoint(ElseBB);
-
+    function->getBasicBlockList().push_back(else_st);
+    builder.SetInsertPoint(else_st);
 
     if (ptr->get_else_statement())
     {
       gen_ir(ptr->get_else_statement());
-      if (!lang::isTerminatedExpr(ptr->get_else_statement()))
-        builder.CreateBr(MergeBB);
+      if (!(are_both_branches_term &= lang::isTerminatedExpr(ptr->get_else_statement())))
+        builder.CreateBr(after_st);
     }
     else
-      builder.CreateBr(MergeBB);
+      builder.CreateBr(after_st);
 
-    // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
-    ElseBB = builder.GetInsertBlock();
-
-    // Emit merge block.
-    TheFunction->getBasicBlockList().push_back(MergeBB);
-    builder.SetInsertPoint(MergeBB);
+    if (!are_both_branches_term)
+    {
+      function->getBasicBlockList().push_back(after_st);
+      builder.SetInsertPoint(after_st);
+    }
   }
 
   PTR<llvm::Type> LLVMIRGenerator::type_to_llvm(PTR<const lang::Type> type) noexcept
