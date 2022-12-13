@@ -240,6 +240,8 @@ namespace colt::lang
     PTR<Expr> lhs = parse_primary();
     //Save the current binary operators
     Token binary_op = current_tkn;
+    //Source code informations of the operator
+    auto binary_op_info = get_expr_info();
 
     //As assignment operators are right associative, they are handled
     //in a different function
@@ -265,8 +267,18 @@ namespace colt::lang
       PTR<Expr> rhs = parse_binary(GetOpPrecedence(binary_op));
 
       if (!rhs->get_type()->is_equal(lhs->get_type()))
-        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+      {
+        generate_any<report_as::ERROR>(line_state.to_src_info(), &ASTMaker::panic_consume_semicolon,
           "Operands should be of same type!");
+        return ErrorExpr::CreateExpr(ctx);
+      }
+      else if (is_a<BuiltInType>(rhs->get_type())
+        && !as<PTR<const BuiltInType>>(rhs->get_type())->supports(TokenToBinaryOperator(binary_op)))
+      {
+        generate_any<report_as::ERROR>(line_state.to_src_info(), &ASTMaker::panic_consume_semicolon,
+          "Type does not support operator '{}'!", binary_op_info.expression);
+        return ErrorExpr::CreateExpr(ctx);
+      }
 
       //Pratt's parsing, which allows operators priority
       lhs = BinaryExpr::CreateExpr(
