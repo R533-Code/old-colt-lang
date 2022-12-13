@@ -1,5 +1,6 @@
 #include <util/colt_pch.h>
 #include <code_gen/llvm_ir_gen.h>
+#include <interpreter/colt_JIT.h>
 
 using namespace colt;
 using namespace colt::lang;
@@ -24,6 +25,28 @@ void compile_backend(const AST& ast) noexcept
       io::PrintError("{}", result.get_error());
     else
       io::PrintMessage("Successfully written object file '{}'!", args::GlobalArguments.file_out);
+  }
+  
+  if (args::GlobalArguments.jit_run_main)
+    run_main(std::move(*IR));
+}
+
+void run_main(gen::GeneratedIR&& IR) noexcept
+{
+  if (auto JITError = gen::ColtJIT::Create(); !JITError)
+    io::PrintError("Could not create JIT compiler!");
+  else
+  {
+    auto ColtJIT = JITError->get();
+    if (ColtJIT->addModule(std::move(IR)))
+      io::PrintError("Could not add module!");
+    if (auto main = ColtJIT->lookup("main"))
+    {
+      auto main_fn = reinterpret_cast<i64(*)()>(main->getValue());
+      io::PrintMessage("Main function returned '{}'!", main_fn());
+    }
+    else
+      io::PrintWarning("Main function was not found!");
   }
 }
 
