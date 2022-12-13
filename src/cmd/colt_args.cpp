@@ -152,6 +152,11 @@ namespace colt::args
       global_args.opt_level = gen::OptimizationLevel::Oz;
     }
 
+    void run_main_callback(int argc, const char** argv, size_t& current_arg) noexcept
+    {
+      global_args.jit_run_main = true;
+    }
+
     /*************************************
     * ARGUMENT HANDLING
     *************************************/

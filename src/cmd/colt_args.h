@@ -39,6 +39,8 @@ namespace colt::args
 		bool print_errors = true;
 		/// @brief If true, wait for user input before exiting
 		bool wait_for_user_input = true;
+		/// @brief If true, the compiler will attempt to run the 'main' function if it exists
+		bool jit_run_main = false;
 		/// @brief Optimization level
 		gen::OptimizationLevel opt_level = static_cast<gen::OptimizationLevel>(0);
 	};
@@ -88,6 +90,7 @@ namespace colt::args
 		void o3_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 		void os_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 		void oz_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		void run_main_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 
 		/// @brief Contains all predefined valid arguments
 		constexpr std::array PredefinedArguments
@@ -108,6 +111,7 @@ namespace colt::args
 			Argument{ "opt-3", "O3", "Optimize for fast execution as much as possible.\nUse: --opt-3/-O3", 0, &o3_callback},
 			Argument{ "opt-s", "Os", "Optimize for small code size instead of fast execution.\nUse: --opt-s/-Os", 0, &os_callback},
 			Argument{ "opt-z", "Oz", "Optimize for small code size at all cost.\nUse: --opt-z/-Oz", 0, &oz_callback},
+			Argument{ "run-main", "r", "Run 'main' function inside the compiler if it exists.\nUse: --run-main/-r", 0, &run_main_callback},
 		};
 
 		/// @brief Handles an argument, searching for it and doing error handling
