@@ -438,7 +438,7 @@ namespace colt::gen
 
     //If both if and else branches are terminated,
     //then no 'after_st' branches should be emitted
-    bool are_both_branches_term = true;
+    bool are_both_branches_non_term = true;
 
     builder.CreateCondBr(cond, if_st, else_st);
 
@@ -446,7 +446,7 @@ namespace colt::gen
     builder.SetInsertPoint(if_st);
     
     gen_ir(ptr->get_if_statement());
-    if (!(are_both_branches_term &= lang::isTerminatedExpr(ptr->get_if_statement())))
+    if (!(are_both_branches_non_term &= lang::isTerminatedExpr(ptr->get_if_statement())))
       builder.CreateBr(after_st);
     
     // Emit else block.
@@ -456,13 +456,13 @@ namespace colt::gen
     if (ptr->get_else_statement())
     {
       gen_ir(ptr->get_else_statement());
-      if (!(are_both_branches_term &= lang::isTerminatedExpr(ptr->get_else_statement())))
+      if (!(are_both_branches_non_term &= lang::isTerminatedExpr(ptr->get_else_statement())))
         builder.CreateBr(after_st);
     }
     else
       builder.CreateBr(after_st);
 
-    if (!are_both_branches_term)
+    if (are_both_branches_non_term)
     {
       function->getBasicBlockList().push_back(after_st);
       builder.SetInsertPoint(after_st);

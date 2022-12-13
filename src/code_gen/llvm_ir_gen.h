@@ -35,8 +35,8 @@ namespace colt::gen
 
 	struct GeneratedIR
 	{
-		UniquePtr<llvm::LLVMContext> context = make_unique<llvm::LLVMContext>();
-		UniquePtr<llvm::Module> module = make_unique<llvm::Module>("Colt", *context);
+		std::unique_ptr<llvm::LLVMContext> context = std::make_unique<llvm::LLVMContext>();
+		std::unique_ptr<llvm::Module> module = std::make_unique<llvm::Module>("Colt", *context);
 		PTR<llvm::TargetMachine> target_machine;
 
 		void print_module(llvm::raw_ostream& os) const noexcept;
