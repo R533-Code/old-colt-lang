@@ -572,6 +572,12 @@ namespace colt::lang
     if (!if_cond->get_type()->is_equal(BuiltInType::CreateBool(false, ctx)))
       generate_any<report_as::ERROR>(if_cond->get_src_code(), nullptr,
         "Expression should be of type 'bool'!");
+    //If the expression is not a comparison, but is of type bool
+    //(read from boolean variable, ...), transform it
+    //into a comparison with 'true'
+    else if (!is_a<BinaryExpr>(if_cond))
+      if_cond = BinaryExpr::CreateExpr(if_cond->get_type(), if_cond, TKN_EQUAL_EQUAL,
+        LiteralExpr::CreateExpr(QWORD{ true }, if_cond->get_type(), if_cond->get_src_code(), ctx), if_cond->get_src_code(), ctx);
 
     PTR<Expr> if_body = parse_scope(); //if body
 
@@ -607,6 +613,12 @@ namespace colt::lang
     if (!condition->get_type()->is_equal(BuiltInType::CreateBool(false, ctx)))
       generate_any<report_as::ERROR>(condition->get_src_code(), nullptr,
         "Expression should be of type 'bool'!");
+    //If the expression is not a comparison, but is of type bool
+    //(read from boolean variable, ...), transform it
+    //into a comparison with 'true'
+    else if (!is_a<BinaryExpr>(condition))
+      condition = BinaryExpr::CreateExpr(condition->get_type(), condition, TKN_EQUAL_EQUAL,
+        LiteralExpr::CreateExpr(QWORD{ true }, condition->get_type(), condition->get_src_code(), ctx), condition->get_src_code(), ctx);
 
     PTR<Expr> body = parse_scope();
 
