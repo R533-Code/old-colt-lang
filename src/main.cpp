@@ -5,6 +5,25 @@
 using namespace colt;
 using namespace colt::lang;
 
+void run_main(gen::GeneratedIR&& IR) noexcept
+{
+  if (auto JITError = gen::ColtJIT::Create(); !JITError)
+    io::PrintError("Could not create JIT compiler!");
+  else
+  {
+    auto ColtJIT = JITError->get();
+    if (auto AddError = ColtJIT->addModule(std::move(IR)); AddError)
+      io::PrintError("Could not add module!");
+    else if (auto main = ColtJIT->lookup("main"))
+    {
+      auto main_fn = reinterpret_cast<i64(*)()>(main->getValue());
+      io::PrintMessage("Main function returned '{}'!", main_fn());
+    }
+    else
+      io::PrintWarning("Main function was not found!");
+  }
+}
+
 void compile_backend(const AST& ast) noexcept
 {
   auto IR = gen::GenerateIR(ast);
@@ -29,25 +48,6 @@ void compile_backend(const AST& ast) noexcept
   
   if (args::GlobalArguments.jit_run_main)
     run_main(std::move(*IR));
-}
-
-void run_main(gen::GeneratedIR&& IR) noexcept
-{
-  if (auto JITError = gen::ColtJIT::Create(); !JITError)
-    io::PrintError("Could not create JIT compiler!");
-  else
-  {
-    auto ColtJIT = JITError->get();
-    if (ColtJIT->addModule(std::move(IR)))
-      io::PrintError("Could not add module!");
-    if (auto main = ColtJIT->lookup("main"))
-    {
-      auto main_fn = reinterpret_cast<i64(*)()>(main->getValue());
-      io::PrintMessage("Main function returned '{}'!", main_fn());
-    }
-    else
-      io::PrintWarning("Main function was not found!");
-  }
 }
 
 void compile(StringView str) noexcept
