@@ -84,7 +84,7 @@ namespace colt::lang
     return ctx.add_type(make_unique<VoidType>());
   }
   
-  constexpr bool BuiltInType::supports(BinaryOperator op) const noexcept
+  bool BuiltInType::supports(BinaryOperator op) const noexcept
   {
     for (size_t i = 0; i < valid_op.get_size(); i++)
     {

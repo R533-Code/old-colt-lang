@@ -265,7 +265,7 @@ namespace colt::lang
     /// @brief Check if the current type supports 'op' BinaryOperator
     /// @param op The operator to check for
     /// @return True if the current type supports 'op'
-    constexpr bool supports(BinaryOperator op) const noexcept;
+    bool supports(BinaryOperator op) const noexcept;
 
     /// @brief Creates a U8 type
     /// @param is_mut True if mutable
