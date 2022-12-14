@@ -24,7 +24,6 @@ namespace colt::gen
 
     //Generate and store the IR in 'ir'
     LLVMIRGenerator ir_gen = { ast, *ir.context, *ir.module };
-    ir.print_module(llvm::errs());
     //Verify module
     if (llvm::verifyModule(*ir.module, &llvm::errs()))
       return { Error, "Generated IR is invalid!" };
