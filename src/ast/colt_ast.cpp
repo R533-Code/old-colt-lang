@@ -467,7 +467,7 @@ namespace colt::lang
         //If function is not main, (and returns void) add 'return void'
         as<PTR<ScopeExpr>>(body)->push_back(FnReturnExpr::CreateExpr(
           declaration->get_name() != "main" ? nullptr :
-          FnReturnExpr::CreateExpr(LiteralExpr::CreateExpr(QWORD{ 0ULL }, BuiltInType::CreateI64(false, ctx), {}, ctx), {}, ctx), {}, ctx)
+          LiteralExpr::CreateExpr(QWORD{ 0ULL }, BuiltInType::CreateI64(false, ctx), {}, ctx), {}, ctx)
         );
       }
 
@@ -513,6 +513,10 @@ namespace colt::lang
       else //consume '}'
         consume_current_tkn();
 
+      //If empty scope, push a no-op
+      if (statements.is_empty())
+        statements.push_back(NoOpExpr::CreateExpr(line_state.to_src_info(), ctx));
+
       return ScopeExpr::CreateExpr(std::move(statements),
         line_state.to_src_info(), ctx);
     }
@@ -526,6 +530,8 @@ namespace colt::lang
   PTR<Expr> ASTMaker::parse_statement() noexcept
   {
     assert_true(current_function, "Parse statement can only happen inside a function!");
+
+    SavedExprInfo line_state = { *this };
 
     bool is_valid = true; //modified by continue/break handling
     PTR<Expr> to_ret;
@@ -568,7 +574,13 @@ namespace colt::lang
       }
 
     break; default:
-      to_ret = parse_binary();
+      if (lexer.get_current_lexeme() == "pass")
+      {
+        consume_current_tkn();
+        to_ret = NoOpExpr::CreateExpr(line_state.to_src_info(), ctx);
+      }
+      else
+        to_ret = parse_binary();
     }
     check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_sttmnt,
       "Expected a ';'!");
