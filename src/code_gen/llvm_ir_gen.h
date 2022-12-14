@@ -57,7 +57,8 @@ namespace colt::gen
 		llvm::Module& module;
 		/// @brief The helper for generating IR
 		llvm::IRBuilder<> builder;
-		/// @brief The LLVM module used in the current context
+		/// @brief Function map
+		Map<PTR<const lang::FnDeclExpr>, PTR<llvm::Function>> function_map;
 		/// @brief Contains all global variables
 		Vector<llvm::GlobalVariable> global_vars;
 		/// @brief Contains all local variables

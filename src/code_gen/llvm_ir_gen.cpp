@@ -369,11 +369,14 @@ namespace colt::gen
 
   void LLVMIRGenerator::gen_fn_def(PTR<const lang::FnDefExpr> ptr) noexcept
   {
-    assert_true(ptr->get_body(), "Body should not be empty!");
-
     PTR<Function> fn = Function::Create(
       cast<FunctionType>(type_to_llvm(ptr->get_type())),
       GlobalValue::ExternalLinkage, ToStringRef(ptr->get_name()), module);
+    function_map.insert(ptr->get_fn_decl(), fn);
+    if (ptr->get_fn_decl()->is_extern())
+      return;
+    
+    assert_true(ptr->get_body(), "Body should not be empty!");
     
     current_fn = fn;
     //Reset current_fn to nullptr
@@ -411,6 +414,18 @@ namespace colt::gen
 
   void LLVMIRGenerator::gen_fn_call(PTR<const lang::FnCallExpr> ptr) noexcept
   {
+    auto fn = function_map.find(ptr->get_fn_decl());
+    assert(fn);
+
+    llvm::SmallVector<PTR<Value>> args;
+    auto call_args = ptr->get_arguments();
+    for (size_t i = 0; i < call_args.get_size(); i++)
+    {
+      gen_ir(call_args[i]);
+      args.push_back(returned_value);
+    }
+    returned_value = builder.CreateCall(fn->second, args,
+      ptr->get_type()->is_void() ? "" : "call_ret");
   }
 
   void LLVMIRGenerator::gen_scope(PTR<const lang::ScopeExpr> ptr) noexcept
