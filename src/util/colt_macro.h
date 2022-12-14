@@ -92,4 +92,12 @@ namespace
 /// ```
 #define ON_EXIT auto COLT_CONCAT(SCOPE_EXIT_HELPER, __LINE__) = ScopeGuardOnExit() + [&]() 
 
+#ifdef _WIN32
+  /// @brief Makes a function available for JIT
+	#define COLT_EXPORT __declspec(dllexport)
+#else
+	/// @brief Makes a function available for JIT
+	#define COLT_EXPORT
+#endif
+
 #endif //!HG_COLT_MACRO
