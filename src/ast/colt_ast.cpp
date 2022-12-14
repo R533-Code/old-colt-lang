@@ -348,7 +348,7 @@ namespace colt::lang
 
   PTR<Expr> ASTMaker::parse_global_declaration() noexcept
   {
-    if (current_tkn == TKN_KEYWORD_FN)
+    if (current_tkn == TKN_KEYWORD_FN || current_tkn == TKN_KEYWORD_EXTERN)
     {
       auto expr = parse_fn_decl(); //Function
       if (is_a<FnDefExpr>(expr)) //add to the global table
@@ -378,7 +378,15 @@ namespace colt::lang
   {
     SavedExprInfo line_state = { *this };
 
-    assert(current_tkn == TKN_KEYWORD_FN);
+    assert(current_tkn == TKN_KEYWORD_FN || current_tkn == TKN_KEYWORD_EXTERN);
+
+    bool is_extern = false;
+    if (current_tkn == TKN_KEYWORD_EXTERN)
+    {
+      is_extern = true;
+      consume_current_tkn();
+    }
+
     consume_current_tkn();
     auto fn_name = lexer.get_parsed_identifier();
 
@@ -432,7 +440,7 @@ namespace colt::lang
     PTR<const Type> return_t = parse_typename();
 
     PTR<const Type> fn_ptr_t = FnType::CreateFn(return_t, std::move(args_type), ctx);
-    PTR<FnDeclExpr> declaration = as<PTR<FnDeclExpr>>(FnDeclExpr::CreateExpr(fn_ptr_t, fn_name, std::move(args_name), line_state.to_src_info(), ctx));
+    PTR<FnDeclExpr> declaration = as<PTR<FnDeclExpr>>(FnDeclExpr::CreateExpr(fn_ptr_t, fn_name, std::move(args_name), is_extern, line_state.to_src_info(), ctx));
 
     //Set the current function being parsed
     current_function = declaration;
@@ -448,7 +456,7 @@ namespace colt::lang
       return ErrorExpr::CreateExpr(ctx);
     }
 
-    if (is_valid_scope_begin())
+    if (is_valid_scope_begin() && !is_extern)
     {
       SavedLocalState local_state = { *this };
       //Create arguments in local variables table
