@@ -116,7 +116,7 @@ if (NOT ${testCount} EQUAL 0 AND ${ENUM_TESTS})
 endif()
 
 # Contains the additional arguments to pass to the executable when testing
-set(COLT_ADDITIONAL_ARGS -i -C -NW)
+set(COLT_ADDITIONAL_ARGS -i -C -NW -r)
 
 # TESTING:
 # Each file in resources/tests/ that ends with .ct
