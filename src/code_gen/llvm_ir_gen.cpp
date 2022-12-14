@@ -24,6 +24,7 @@ namespace colt::gen
 
     //Generate and store the IR in 'ir'
     LLVMIRGenerator ir_gen = { ast, *ir.context, *ir.module };
+    ir.print_module(llvm::errs());
     //Verify module
     if (llvm::verifyModule(*ir.module, &llvm::errs()))
       return { Error, "Generated IR is invalid!" };
@@ -256,42 +257,42 @@ namespace colt::gen
 
     break; case BinaryOperator::OP_LESS:
       if (type_t->is_unsigned_int())
-        returned_value = builder.CreateICmpULE(lhs, rhs);
+        returned_value = builder.CreateICmpULE(lhs, rhs, "ui_le");
       else if (type_t->is_signed_int())
-        returned_value = builder.CreateICmpSLE(lhs, rhs);
+        returned_value = builder.CreateICmpSLE(lhs, rhs, "si_le");
       else if (type_t->is_floating())
-        returned_value = builder.CreateFCmpOLE(lhs, rhs);
+        returned_value = builder.CreateFCmpOLE(lhs, rhs, "fp_le");
     break; case BinaryOperator::OP_LESS_EQUAL:
       if (type_t->is_unsigned_int())
-        returned_value = builder.CreateICmpULE(lhs, rhs);
+        returned_value = builder.CreateICmpULE(lhs, rhs, "ui_leq");
       else if (type_t->is_signed_int())
-        returned_value = builder.CreateICmpSLE(lhs, rhs);
+        returned_value = builder.CreateICmpSLE(lhs, rhs, "si_leq");
       else if (type_t->is_floating())
-        returned_value = builder.CreateFCmpOLE(lhs, rhs);
+        returned_value = builder.CreateFCmpOLE(lhs, rhs, "fp_leq");
     break; case BinaryOperator::OP_GREAT:
       if (type_t->is_unsigned_int())
-        returned_value = builder.CreateICmpULE(lhs, rhs);
+        returned_value = builder.CreateICmpULE(lhs, rhs, "ui_ge");
       else if (type_t->is_signed_int())
-        returned_value = builder.CreateICmpSLE(lhs, rhs);
+        returned_value = builder.CreateICmpSLE(lhs, rhs, "si_ge");
       else if (type_t->is_floating())
-        returned_value = builder.CreateFCmpOLE(lhs, rhs);
+        returned_value = builder.CreateFCmpOLE(lhs, rhs, "fp_ge");
     break; case BinaryOperator::OP_GREAT_EQUAL:
       if (type_t->is_unsigned_int())
-        returned_value = builder.CreateICmpUGE(lhs, rhs);
+        returned_value = builder.CreateICmpUGE(lhs, rhs, "ui_geq");
       else if (type_t->is_signed_int())
-        returned_value = builder.CreateICmpSGE(lhs, rhs);
+        returned_value = builder.CreateICmpSGE(lhs, rhs, "si_geq");
       else if (type_t->is_floating())
-        returned_value = builder.CreateFCmpOGE(lhs, rhs);
+        returned_value = builder.CreateFCmpOGE(lhs, rhs, "fp_geq");
     break; case BinaryOperator::OP_EQUAL:
       if (type_t->is_integral())
-        returned_value = builder.CreateICmpEQ(lhs, rhs);
+        returned_value = builder.CreateICmpEQ(lhs, rhs, "i_eq");
       else if (type_t->is_floating())
-        returned_value = builder.CreateFCmpOEQ(lhs, rhs);
+        returned_value = builder.CreateFCmpOEQ(lhs, rhs, "fp_eq");
     break; case BinaryOperator::OP_NOT_EQUAL:
       if (type_t->is_integral())
-        returned_value = builder.CreateICmpNE(lhs, rhs);
+        returned_value = builder.CreateICmpNE(lhs, rhs, "i_neq");
       else if (type_t->is_floating())
-        returned_value = builder.CreateFCmpONE(lhs, rhs);
+        returned_value = builder.CreateFCmpONE(lhs, rhs, "fp_neq");
 
     break; default:
       colt_unreachable("Invalid operation!");
@@ -310,20 +311,20 @@ namespace colt::gen
     auto child_t = as<PTR<const BuiltInType>>(ptr->get_child()->get_type());
 
     if (expr_t->get_builtin_id() == BuiltInType::BOOL)
-      returned_value = builder.CreateIsNotNull(returned_value);
+      returned_value = builder.CreateIsNotNull(returned_value, "to_bool");
     if (child_t->is_floating() && expr_t->is_signed_int())
-      returned_value = builder.CreateFPToSI(returned_value, type_to_llvm(expr_t));
+      returned_value = builder.CreateFPToSI(returned_value, type_to_llvm(expr_t), "fp_to_si");
     else if (child_t->is_floating() && expr_t->is_unsigned_int())
-      returned_value = builder.CreateFPToUI(returned_value, type_to_llvm(expr_t));
+      returned_value = builder.CreateFPToUI(returned_value, type_to_llvm(expr_t), "fp_to_ui");
     else if (child_t->is_unsigned_int() && expr_t->is_floating())
-      returned_value = builder.CreateUIToFP(returned_value, type_to_llvm(expr_t));
+      returned_value = builder.CreateUIToFP(returned_value, type_to_llvm(expr_t), "ui_to_fp");
     else if (child_t->is_signed_int() && expr_t->is_floating())
-      returned_value = builder.CreateSIToFP(returned_value, type_to_llvm(expr_t));
+      returned_value = builder.CreateSIToFP(returned_value, type_to_llvm(expr_t), "si_to_fp");
     //Same types conversions
     else if (child_t->is_integral())
-      returned_value = builder.CreateIntCast(returned_value, type_to_llvm(expr_t), expr_t->is_signed_int());
+      returned_value = builder.CreateIntCast(returned_value, type_to_llvm(expr_t), expr_t->is_signed_int(), "i_to_i");
     else if (child_t->is_floating())
-      returned_value = builder.CreateFPCast(returned_value, type_to_llvm(expr_t));
+      returned_value = builder.CreateFPCast(returned_value, type_to_llvm(expr_t), "fp_to_fp");
     else
       colt_unreachable("Invalid conversion!");
   }
@@ -438,7 +439,7 @@ namespace colt::gen
 
     //If both if and else branches are terminated,
     //then no 'after_st' branches should be emitted
-    bool are_both_branches_non_term = true;
+    bool are_both_branches_term;
 
     builder.CreateCondBr(cond, if_st, else_st);
 
@@ -446,7 +447,7 @@ namespace colt::gen
     builder.SetInsertPoint(if_st);
     
     gen_ir(ptr->get_if_statement());
-    if (!(are_both_branches_non_term &= lang::isTerminatedExpr(ptr->get_if_statement())))
+    if (!(are_both_branches_term = lang::isTerminatedExpr(ptr->get_if_statement())))
       builder.CreateBr(after_st);
     
     // Emit else block.
@@ -456,13 +457,13 @@ namespace colt::gen
     if (ptr->get_else_statement())
     {
       gen_ir(ptr->get_else_statement());
-      if (!(are_both_branches_non_term &= lang::isTerminatedExpr(ptr->get_else_statement())))
+      if (!(are_both_branches_term &= lang::isTerminatedExpr(ptr->get_else_statement())))
         builder.CreateBr(after_st);
     }
     else
       builder.CreateBr(after_st);
 
-    if (are_both_branches_non_term)
+    if (!are_both_branches_term)
     {
       function->getBasicBlockList().push_back(after_st);
       builder.SetInsertPoint(after_st);
