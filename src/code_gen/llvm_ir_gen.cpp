@@ -123,6 +123,8 @@ namespace colt::gen
       gen_scope(as<PTR<const ScopeExpr>>(ptr));
     break; case Expr::EXPR_CONDITION:
       gen_condition(as<PTR<const ConditionExpr>>(ptr));
+    break; case Expr::EXPR_NOP:
+      returned_value = builder.CreateIntrinsic(llvm::Intrinsic::donothing, {}, {}, nullptr);
     break; case Expr::EXPR_FOR_LOOP:
     break; case Expr::EXPR_WHILE_LOOP:
     break; case Expr::EXPR_BREAK_CONTINUE:    
