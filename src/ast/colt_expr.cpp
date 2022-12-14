@@ -128,4 +128,11 @@ namespace colt::lang
       ctx.add_type(make_unique<ErrorType>())
       ));
   }  
+  
+  PTR<Expr> NoOpExpr::CreateExpr(const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
+  {
+    return ctx.add_expr(make_unique<NoOpExpr>(
+      ctx.add_type(make_unique<VoidType>()), src_info
+      ));
+  }
 }

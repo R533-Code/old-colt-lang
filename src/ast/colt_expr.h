@@ -60,7 +60,9 @@ namespace colt::lang
       /// @brief WhileLoopExpr
       EXPR_WHILE_LOOP,
       /// @brief BreakContinueExpr
-      EXPR_BREAK_CONTINUE
+      EXPR_BREAK_CONTINUE,
+      /// @brief NoOpExpr
+      EXPR_NOP
     };
 
     /// @brief Helper for dyn_cast and is_a
@@ -923,6 +925,33 @@ namespace colt::lang
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(bool is_break, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+  };
+
+  /// @brief Represents a while loop
+  class NoOpExpr
+    final : public Expr
+  {
+  public:
+    /// @brief Helper for dyn_cast and is_a
+    static constexpr ExprID classof_v = EXPR_NOP;
+
+    //No default copy constructor 
+    NoOpExpr(const NoOpExpr&) = delete;
+    //No default constructor
+    NoOpExpr() = delete;
+    /// @brief Destructor
+    ~NoOpExpr() noexcept override = default;
+    /// @brief Constructs a while loop expression
+    /// @param type The type of the resulting expression
+    /// @param src_info The source code information
+    NoOpExpr(PTR<const Type> type, const SourceCodeExprInfo& src_info) noexcept
+      : Expr(EXPR_NOP, type, src_info) {}
+
+    /// @brief Constructs a while loop expression
+    /// @param src_info The source code information
+    /// @param ctx The COLTContext to store the resulting expression
+    /// @return Pointer to the created expression
+    static PTR<Expr> CreateExpr(const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 }
 
