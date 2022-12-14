@@ -439,6 +439,15 @@ namespace colt::lang
     //And reset it on scope exit
     ON_EXIT{ current_function = nullptr; };
 
+    //If 'main' function, check declaration
+    if (declaration->get_name() == "main"
+      && !fn_ptr_t->is_equal(FnType::CreateFn(BuiltInType::CreateI64(false, ctx), {}, ctx)))
+    {
+      generate_any<report_as::ERROR>(declaration->get_src_code(), &ASTMaker::panic_consume_fn_decl,
+        "Function 'main' should be declared as 'fn main()->i64'!");
+      return ErrorExpr::CreateExpr(ctx);
+    }
+
     if (is_valid_scope_begin())
     {
       SavedLocalState local_state = { *this };
@@ -447,13 +456,20 @@ namespace colt::lang
         local_var_table.push_back({ declaration->get_params_name()[i], declaration->get_params_type()[i] });
 
       auto body = parse_scope();
-      if (!current_function->get_return_type()->is_void())
+      if (!current_function->get_return_type()->is_void() && declaration->get_name() != "main")
         validate_all_path_return(body);
       //If a return is not present at the end of the void function,
       //add one. As parse_scope can return ErrorExpr or ScopeExpr,
       //do necessary check
       else if (is_a<ScopeExpr>(body) && !isTerminatedExpr(body))
-        as<PTR<ScopeExpr>>(body)->push_back(FnReturnExpr::CreateExpr(nullptr, {}, ctx));
+      {
+        //If main has no return, add 'return 0'
+        //If function is not main, (and returns void) add 'return void'
+        as<PTR<ScopeExpr>>(body)->push_back(FnReturnExpr::CreateExpr(
+          declaration->get_name() != "main" ? nullptr :
+          FnReturnExpr::CreateExpr(LiteralExpr::CreateExpr(QWORD{ 0ULL }, BuiltInType::CreateI64(false, ctx), {}, ctx), {}, ctx), {}, ctx)
+        );
+      }
 
       return FnDefExpr::CreateExpr(declaration, body, line_state.to_src_info(), ctx);
     }
