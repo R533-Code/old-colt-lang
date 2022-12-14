@@ -1,10 +1,10 @@
-//Compilation successful!
-fn hello()->void
+//`'0'
+fn main()->i64
 {
   var read = 10;
   {
     var hel = 10;
     read + hel;
   }
-  read - 10;
+  return read - 10;
 }

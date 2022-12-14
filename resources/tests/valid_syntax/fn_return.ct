@@ -1,4 +1,4 @@
-//Compilation successful!
-fn hello()->i64 {
+//`'10'
+fn main()->i64 {
   return 10u64 as i64;
 }

@@ -1,2 +1,2 @@
-//Compilation successful!
-fn hello()->void: 10u64 + 19i64 as u64;
+//`'29'
+fn main()->i64: return 10i64 + 19u64 as i64;
