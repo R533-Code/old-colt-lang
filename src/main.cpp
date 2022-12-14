@@ -1,9 +1,23 @@
 #include <util/colt_pch.h>
+#include <random>
 #include <code_gen/llvm_ir_gen.h>
 #include <interpreter/colt_JIT.h>
 
 using namespace colt;
 using namespace colt::lang;
+
+COLT_EXPORT i64 _ColtRand(i64 a, i64 b)
+{
+  static std::mt19937 generator(std::random_device{}());
+  return (generator() % (b - a)) - a;
+}
+
+COLT_EXPORT void _ColtPrinti64(i64 a)
+{
+  io::Print("{}", a);
+}
+
+
 
 void run_main(gen::GeneratedIR&& IR) noexcept
 {
