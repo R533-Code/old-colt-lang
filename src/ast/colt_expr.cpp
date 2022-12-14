@@ -64,10 +64,10 @@ namespace colt::lang
       ));
   }
   
-  PTR<Expr> FnDeclExpr::CreateExpr(PTR<const Type> type, StringView name, SmallVector<StringView, 4>&& arguments_name, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
+  PTR<Expr> FnDeclExpr::CreateExpr(PTR<const Type> type, StringView name, SmallVector<StringView, 4>&& arguments_name, bool is_extern, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
     return ctx.add_expr(make_unique<FnDeclExpr>(
-      type, name, std::move(arguments_name), src_info
+      type, name, std::move(arguments_name), is_extern, src_info
       ));
   }
 

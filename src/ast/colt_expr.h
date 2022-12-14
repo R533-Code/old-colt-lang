@@ -565,7 +565,7 @@ namespace colt::lang
     static PTR<Expr> CreateExpr(PTR<Expr> to_ret, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
-  /// @brief Represents a function definition
+  /// @brief Represents a function declaration
   class FnDeclExpr
     final : public Expr
   {
@@ -578,6 +578,8 @@ namespace colt::lang
     SmallVector<StringView, 4> arguments_name;
     /// @brief The name of the function
     StringView name;
+    /// @brief True if the function is 'extern'
+    bool is_extern_v;
 
   public:
     //No default copy constructor 
@@ -591,8 +593,8 @@ namespace colt::lang
     /// @param name The name of the function
     /// @param arguments_name The arguments name
     /// @param src_info The source code information
-    FnDeclExpr(PTR<const Type> type, StringView name, SmallVector<StringView, 4>&& arguments_name, const SourceCodeExprInfo& src_info) noexcept
-      : Expr(EXPR_FN_DECL, type, src_info), arguments_name(std::move(arguments_name)), name(name)
+    FnDeclExpr(PTR<const Type> type, StringView name, SmallVector<StringView, 4>&& arguments_name, bool is_extern_v, const SourceCodeExprInfo& src_info) noexcept
+      : Expr(EXPR_FN_DECL, type, src_info), arguments_name(std::move(arguments_name)), name(name), is_extern_v(is_extern_v)
     {
       assert_true(type->is_fn(), "Expected a function type!");
     }
@@ -613,6 +615,9 @@ namespace colt::lang
     /// @brief Returns the return type of the function
     /// @return The return type of the function
     PTR<const Type> get_return_type() const noexcept { return static_cast<const FnType*>(get_type())->get_return_type(); }
+    /// @brief Returns true if the function is externally defined
+    /// @return True if function is externally defined
+    bool is_extern() const noexcept { return is_extern_v; }
 
     /// @brief Creates a FnDeclExpr
     /// @param type The type of the resulting expression
@@ -621,7 +626,7 @@ namespace colt::lang
     /// @param src_info The source code information
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
-    static PTR<Expr> CreateExpr(PTR<const Type> type, StringView name, SmallVector<StringView, 4>&& arguments_name, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+    static PTR<Expr> CreateExpr(PTR<const Type> type, StringView name, SmallVector<StringView, 4>&& arguments_name, bool is_extern, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a function definition
