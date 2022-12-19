@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <filesystem>
 
-#include <colt/String.h>
+#include <colt/data_structs/String.h>
 #include <code_gen/opt_level.h>
 
 /// @brief Contains utilities for parsing command line arguments

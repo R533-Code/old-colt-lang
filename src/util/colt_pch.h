@@ -30,13 +30,13 @@
 
 //Colt-Structs includes
 #define COLT_USE_FMT
-#include <colt/Expected.h>
-#include <colt/Optional.h>
-#include <colt/Vector.h>
-#include <colt/String.h>
-#include <colt/Map.h>
-#include <colt/UniquePtr.h>
-#include <colt/Set.h>
+#include <colt/data_structs/Expected.h>
+#include <colt/data_structs/Optional.h>
+#include <colt/data_structs/Vector.h>
+#include <colt/data_structs/String.h>
+#include <colt/data_structs/Map.h>
+#include <colt/data_structs/UniquePtr.h>
+#include <colt/data_structs/Set.h>
 
 //Includes
 #include <util/colt_config.h>
