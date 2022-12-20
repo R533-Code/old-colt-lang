@@ -48,8 +48,8 @@ namespace colt::lang
 
     /// @brief The ID of the expression
     TypeID ID;
-    /// @brief True if the type is mutable
-    bool is_mut;
+    /// @brief True if the type is const
+    bool is_const_v;
 
   public:
     Type() = delete;
@@ -59,8 +59,8 @@ namespace colt::lang
     /// @brief Constructor
     /// @param ID The type ID
     /// @param is_mut True if the type is mutable
-    constexpr Type(TypeID ID, bool is_mut) noexcept
-      : ID(ID), is_mut(is_mut) {}
+    constexpr Type(TypeID ID, bool is_const) noexcept
+      : ID(ID), is_const_v(is_const) {}
 
     /// @brief Destructor
     virtual ~Type() noexcept = default;
@@ -72,7 +72,7 @@ namespace colt::lang
     /// @brief Check if the type is mutable.
     /// For VoidType or FnType, returns false.
     /// @return True if the type is mutable
-    constexpr bool is_mutable() const noexcept { return is_mut; }
+    constexpr bool is_const() const noexcept { return is_const_v; }
     /// @brief Check if the type is void
     /// @return True if is void
     constexpr bool is_void() const noexcept { return ID == TYPE_VOID; }
@@ -90,28 +90,9 @@ namespace colt::lang
     constexpr bool is_builtin() const noexcept { return ID == TYPE_BUILTIN; }
     /// @brief Check if the type is error
     /// @return True if error
-    constexpr bool is_error() const noexcept { return ID == TYPE_ERROR; }
-
-    /// @brief Check if 2 types are equal (without looking at mutability).
-    /// If 'this' or 'to' are ErrorType, returns true.
-    /// @param to The type to compare against
-    /// @return True if the true type of 'to' and 'this' are the same
-    bool is_equal(PTR<const Type> to) const noexcept;
-
-    /// @brief Compares two Type.
-    /// This function dispatches to the right operator== depending on the true
-    /// type of lhs and rhs.
-    /// @param lhs The left hand side
-    /// @param rhs The right hand side
-    /// @return True if both are equal
-    friend bool operator==(const Type& lhs, const Type& rhs) noexcept;
+    constexpr bool is_error() const noexcept { return ID == TYPE_ERROR; } 
+    constexpr bool is_equal(PTR<const Type> type) const noexcept { return true; }
   };
-
-  /// @brief Compares 2 UniquePtr of Type.
-  /// @param lhs The left hand side
-  /// @param rhs The right hand side
-  /// @return True if equal
-  bool operator==(const UniquePtr<Type>& lhs, const UniquePtr<Type>& rhs) noexcept;
 
   /// @brief Represents an error.
   /// The use of an ErrorType class is to replace use of nullptr.
@@ -332,12 +313,6 @@ namespace colt::lang
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
     static PTR<Type> CreateBool(bool is_mut, COLTContext& ctx) noexcept;
-
-    /// @brief Compares 2 BuiltInType, without checking their mutability
-    /// @param lhs The left hand side
-    /// @param rhs The right hand side
-    /// @return True if their BuiltInID are equal
-    friend bool operator==(const BuiltInType& lhs, const BuiltInType& rhs) noexcept;
   };
 
   /// @brief Represents a pointer to a type
@@ -373,12 +348,6 @@ namespace colt::lang
     /// @param ctx The COLTContext to store the resulting type
     /// @return Pointer to the resulting type
     static PTR<Type> CreatePtr(bool is_mut, PTR<const Type> ptr_to, COLTContext& ctx) noexcept;
-
-    /// @brief Compares 2 pointers type, without checking for mutability
-    /// @param lhs The left hand side
-    /// @param rhs The right hand side
-    /// @return True if the type pointed to is the same
-    friend bool operator==(const PtrType& lhs, const PtrType& rhs) noexcept;
   };
 
   /// @brief Represents a function type
@@ -420,22 +389,100 @@ namespace colt::lang
     /// @param ctx The COLTContext to store the resulting type
     /// @return Pointer to the resulting type
     static PTR<Type> CreateFn(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, COLTContext& ctx) noexcept;
-
-    /// @brief Compares 2 pointers type, without checking for mutability
-    /// @param lhs The left hand side
-    /// @param rhs The right hand side
-    /// @return True if the type pointed to is the same
-    friend bool operator==(const FnType& lhs, const FnType& rhs) noexcept;
   };
-}
 
-namespace colt
-{
-  template<>
-  struct hash<lang::Type>
+  template<typename T>
+  constexpr bool is_cpp_equivalent(PTR<const Type> type) noexcept;
+
+  namespace
   {
-    size_t operator()(const lang::Type& type) const noexcept;    
-  };  
+    template<typename T, typename... Args>
+    constexpr bool is_cpp_equivalent_arg(ContiguousView<PTR<const Type>> args) noexcept
+    {
+      if constexpr (sizeof...(Args) == 0)
+        return is_cpp_equivalent<T>(args[sizeof...(Args)]);
+      else
+      {
+        if (!is_cpp_equivalent<T>(args[sizeof...(Args)]))
+          return false;
+        args.pop_back();
+        return is_cpp_equivalent_arg<Args...>(args);
+      }
+    }
+
+    template<typename T>
+    constexpr bool is_cpp_equivalent_fn(PTR<const FnType> ptr, T(*fn)(void)) noexcept
+    {
+      if (ptr->get_params_type().get_size() != 0)
+        return false;
+      return is_cpp_equivalent<T>(ptr->get_return_type());
+    }
+
+    template<typename T, typename T2, typename... Args>
+    constexpr bool is_cpp_equivalent_fn(PTR<const FnType> ptr, T(*fn)(T2, Args...)) noexcept
+    {
+      if (ptr->get_params_type().get_size() != sizeof...(Args) + 1)
+        return false;
+      return is_cpp_equivalent<T>(ptr->get_return_type())
+        && is_cpp_equivalent_arg<T2, Args...>(ptr->get_params_type());
+    }
+  }
+
+  template<typename T>
+  constexpr bool is_cpp_equivalent(PTR<const Type> type) noexcept
+  {
+    if constexpr (std::is_pointer_v<T>
+      && std::is_function_v<std::remove_pointer_t<T>>)
+    {
+      if (!is_a<FnType>(type))
+        return false;
+      T fn_ptr = nullptr;
+      return is_cpp_equivalent_fn(as<PTR<const FnType>>(type), fn_ptr);
+    }
+    else if constexpr (std::is_pointer_v<T>)
+    {
+      if (!is_a<PtrType>(type))
+        return false;
+      return std::is_const_v<T> == type->is_const()
+        && is_cpp_equivalent<decltype(*std::declval<T>())>(as<PTR<const PtrType>>(type)->get_type_to());
+    }
+    else if constexpr (std::is_void_v<T>)
+    {
+      if (!is_a<VoidType>(type))
+        return false;
+      return true;
+    }
+    else if constexpr (std::is_fundamental_v<T>)
+    {
+      if (!is_a<BuiltInType>(type))
+        return false;
+      if constexpr (std::is_same_v<T, i8>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I8;
+      else if constexpr (std::is_same_v<T, u8>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::U8;
+      else if constexpr (std::is_same_v<T, i16>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I16;
+      else if constexpr (std::is_same_v<T, u16>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::U16;
+      else if constexpr (std::is_same_v<T, i32>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I32;
+      else if constexpr (std::is_same_v<T, u32>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::U32;
+      else if constexpr (std::is_same_v<T, i64>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I64;
+      else if constexpr (std::is_same_v<T, u64>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::U64;
+      else if constexpr (std::is_same_v<T, f32>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::F32;
+      else if constexpr (std::is_same_v<T, f64>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::F64;
+      else if constexpr (std::is_same_v<T, bool>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::BOOL;
+      /*else if constexpr (std::is_same_v<T, char>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::CHAR;*/
+    }
+    colt_unreachable("Unknown type!");
+  }
 }
 
 #endif //!HG_COLT_TYPE
