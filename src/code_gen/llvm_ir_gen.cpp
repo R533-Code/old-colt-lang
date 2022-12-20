@@ -386,10 +386,19 @@ namespace colt::gen
     gen_ir(ptr->get_value());
     PTR<Value> to_write = returned_value;
     if (!ptr->is_global())
-      returned_value = builder.CreateStore(to_write,
+    {
+      builder.CreateStore(to_write,
         local_vars[ptr->get_local_ID()], false);
+      returned_value = builder.CreateLoad(
+        local_vars[ptr->get_local_ID()]->getAllocatedType(), local_vars[ptr->get_local_ID()]
+      );
+    }
     else
-      returned_value = builder.CreateStore(to_write, global_vars.find(ptr->get_name())->second);
+    {
+      auto gptr = global_vars.find(ptr->get_name())->second;
+      builder.CreateStore(to_write, global_vars.find(ptr->get_name())->second);
+      returned_value = builder.CreateLoad(gptr->getValueType(), gptr);
+    }
   }
 
   void LLVMIRGenerator::gen_fn_def(PTR<const lang::FnDefExpr> ptr) noexcept
