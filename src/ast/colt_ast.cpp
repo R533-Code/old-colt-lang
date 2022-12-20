@@ -921,10 +921,23 @@ namespace colt::lang
             line_state.to_src_info(), ctx);
       }
     }
-    generate_any<report_as::ERROR>(identifier_info, nullptr,
-      "Variable of name '{}' does not exist!", identifier);
-    //TODO: Search global variables
-    return ErrorExpr::CreateExpr(ctx);
+    if (auto gvar = global_map.find(identifier); gvar != nullptr)
+    {
+      if (!is_a<VarDeclExpr>(gvar->second))
+      {
+        generate_any<report_as::ERROR>(identifier_info, nullptr,
+          "'{}' is not a variable!", identifier);
+        return ErrorExpr::CreateExpr(ctx);
+      }
+      return VarReadExpr::CreateExpr(gvar->second->get_type(), identifier,
+        line_state.to_src_info(), ctx);
+    }
+    else
+    {
+      generate_any<report_as::ERROR>(identifier_info, nullptr,
+        "Variable of name '{}' does not exist!", identifier);
+      return ErrorExpr::CreateExpr(ctx);
+    }
   }
 
   PTR<Expr> ASTMaker::parse_function_call(StringView identifier, const SavedExprInfo& line_state) noexcept
