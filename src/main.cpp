@@ -17,8 +17,6 @@ COLT_EXPORT void _ColtPrinti64(i64 a)
   io::Print("{}", a);
 }
 
-
-
 void run_main(gen::GeneratedIR&& IR) noexcept
 {
   if (auto JITError = gen::ColtJIT::Create(); !JITError)
