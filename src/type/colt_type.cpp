@@ -127,4 +127,52 @@ namespace colt::lang
   {
     return ctx.add_type(make_unique<ErrorType>());
   }  
+  
+  bool Type::is_equal(PTR<const Type> type) const noexcept
+  {
+    if (this->is_error() || type->is_error())
+      return true;
+    switch (classof())
+    {
+    case TYPE_VOID:
+      return true;
+    case TYPE_BUILTIN:
+    {
+      auto a = as<PTR<const BuiltInType>>(type);
+      auto b = as<PTR<const BuiltInType>>(this);
+      return a->get_builtin_id() == b->get_builtin_id();
+    }
+    case TYPE_PTR:
+    {
+      auto a = as<PTR<const PtrType>>(type);
+      auto b = as<PTR<const PtrType>>(this);      
+      return a->get_type_to()->is_equal_with_const(b->get_type_to());
+    }
+    case TYPE_FN:
+    {
+      auto a = as<PTR<const FnType>>(type);
+      auto b = as<PTR<const FnType>>(this);
+      if (!a->get_return_type()->is_equal(b->get_return_type())
+        && a->get_params_type().get_size() != b->get_params_type().get_size())
+        return false;
+      for (size_t i = 0; i < a->get_params_type().get_size(); i++)
+      {
+        if (!a->get_params_type()[i]->is_equal(b->get_params_type()[i]))
+          return false;
+      }
+      return true;
+    }
+    case TYPE_ARRAY:
+    case TYPE_CLASS:
+    default:
+      colt_unreachable("Invalid type comparison!");
+    }
+  }
+  
+  bool Type::is_equal_with_const(PTR<const Type> type) const noexcept
+  {    
+    if (this->is_const() != type->is_const())
+      return false;
+    return this->is_equal(type);
+  }
 }

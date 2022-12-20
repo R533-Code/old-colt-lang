@@ -91,7 +91,9 @@ namespace colt::lang
     /// @brief Check if the type is error
     /// @return True if error
     constexpr bool is_error() const noexcept { return ID == TYPE_ERROR; } 
-    constexpr bool is_equal(PTR<const Type> type) const noexcept { return true; }
+
+    bool is_equal(PTR<const Type> type) const noexcept;
+    bool is_equal_with_const(PTR<const Type> type) const noexcept;
   };
 
   /// @brief Represents an error.
@@ -431,7 +433,11 @@ namespace colt::lang
   template<typename T>
   constexpr bool is_cpp_equivalent(PTR<const Type> type) noexcept
   {
-    if constexpr (std::is_pointer_v<T>
+    if constexpr (std::is_function_v<T> && !std::is_pointer_v<T>)
+    {
+      return is_cpp_equivalent<std::add_pointer_t<T>>(type);
+    }
+    else if constexpr (std::is_pointer_v<T>
       && std::is_function_v<std::remove_pointer_t<T>>)
     {
       if (!is_a<FnType>(type))
@@ -454,7 +460,7 @@ namespace colt::lang
     }
     else if constexpr (std::is_fundamental_v<T>)
     {
-      if (!is_a<BuiltInType>(type))
+      if (!is_a<BuiltInType>(type) && std::is_const_v<T> != type->is_const())
         return false;
       if constexpr (std::is_same_v<T, i8>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I8;
