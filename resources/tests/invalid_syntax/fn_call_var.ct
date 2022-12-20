@@ -3,7 +3,7 @@
 var hela = 10i64;
 fn hello(mut i64 a)->i32;
 
-fn main()->void
+fn main()->i64
 {
   hela(); //<- error
   hello(10i64); //<- no error
