@@ -485,7 +485,7 @@ namespace colt::lang
     /// @param local_ID The local ID of the variable
     /// @param src_info The source code information
     VarWriteExpr(PTR<const Type> type, StringView name, PTR<Expr> value, u64 local_ID, const SourceCodeExprInfo& src_info) noexcept
-      : Expr(EXPR_VAR_WRITE, type, src_info), local_ID(local_ID), value(value), name(name) { assert_true(!is_global(), "Invalid local ID!"); }
+      : Expr(EXPR_VAR_WRITE, type, src_info), local_ID(local_ID), value(value), name(name) {}
 
     /// @brief Get the expression to convert
     /// @return The expression to converse
