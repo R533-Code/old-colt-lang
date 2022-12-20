@@ -332,19 +332,40 @@ namespace colt::gen
 
   void LLVMIRGenerator::gen_var_decl(PTR<const lang::VarDeclExpr> ptr) noexcept
   {
-    //Create an allocation on the stack and store it
-    local_vars.push_back(
-      builder.CreateAlloca(type_to_llvm(ptr->get_type()), nullptr,
-        ToStringRef(ptr->get_name()))
-    );
-    
-    //If initialized
-    if (ptr->get_value())
+    if (current_fn != nullptr) //LOCAL VARIABLE
     {
-      gen_ir(ptr->get_value());
-      PTR<Value> to_write = returned_value;
-      builder.CreateStore(to_write, local_vars.get_back(), false);
+      //Create an allocation on the stack and store it
+      local_vars.push_back(
+        builder.CreateAlloca(type_to_llvm(ptr->get_type()), nullptr,
+          ToStringRef(ptr->get_name()))
+      );
+    
+      //If initialized
+      if (ptr->get_value())
+      {
+        gen_ir(ptr->get_value());
+        PTR<Value> to_write = returned_value;
+        builder.CreateStore(to_write, local_vars.get_back(), false);
+      }
     }
+    else //GLOBAL VARIABLE
+    {
+      assert(ptr->is_global());
+
+      module.getOrInsertGlobal(ToStringRef(ptr->get_name()), type_to_llvm(ptr->get_type()));
+      PTR<GlobalVariable> gvar = module.getNamedGlobal(ToStringRef(ptr->get_name()));
+      //Insert variable
+      global_vars.insert(ptr->get_name(), gvar);
+      if (ptr->is_initialized())
+      {
+        gen_ir(ptr->get_value());
+        if (auto p = llvm::dyn_cast<Constant>(returned_value))
+          gvar->setInitializer(p);
+        else
+          call_before_main.push_back(returned_value);
+      }
+    }
+
   }
 
   void LLVMIRGenerator::gen_var_read(PTR<const lang::VarReadExpr> ptr) noexcept
@@ -353,7 +374,11 @@ namespace colt::gen
       returned_value = builder.CreateLoad(local_vars[ptr->get_local_ID()]->getAllocatedType(),
         local_vars[ptr->get_local_ID()], false);
     else
-      colt_unreachable("Not implemented!");
+    {
+      auto gptr = global_vars.find(ptr->get_name());
+      assert(gptr);
+      returned_value = builder.CreateLoad(gptr->second->getValueType(), gptr->second);
+    }
   }
 
   void LLVMIRGenerator::gen_var_write(PTR<const lang::VarWriteExpr> ptr) noexcept
@@ -364,7 +389,7 @@ namespace colt::gen
       returned_value = builder.CreateStore(to_write,
         local_vars[ptr->get_local_ID()], false);
     else
-      colt_unreachable("Not implemented!");
+      returned_value = builder.CreateStore(to_write, global_vars.find(ptr->get_name())->second);
   }
 
   void LLVMIRGenerator::gen_fn_def(PTR<const lang::FnDefExpr> ptr) noexcept
@@ -376,13 +401,22 @@ namespace colt::gen
     if (ptr->get_fn_decl()->is_extern())
       return;
     
-    assert_true(ptr->get_body(), "Body should not be empty!");
+    assert_true(ptr->get_body(), "Body should not be empty!");       
     
     current_fn = fn;
     //Reset current_fn to nullptr
     ON_EXIT{ current_fn = nullptr; };
 
     PTR<llvm::BasicBlock> BB = BasicBlock::Create(context, "entry", fn);
+    
+    if (ptr->get_name() == "main" && !call_before_main.is_empty())
+    {
+      PTR<llvm::BasicBlock> init = BasicBlock::Create(context, "init", fn, BB);
+      builder.SetInsertPoint(init);
+      for (auto i : call_before_main)
+        builder.Insert(i);
+      builder.CreateBr(BB);
+    }    
     builder.SetInsertPoint(BB);
 
     size_t i = 0;
@@ -396,8 +430,7 @@ namespace colt::gen
       );
       builder.CreateStore(&arg, local_vars.get_back());
       ++i;
-    }
-
+    }    
     gen_ir(ptr->get_body());
   }
 

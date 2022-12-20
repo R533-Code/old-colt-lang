@@ -60,9 +60,11 @@ namespace colt::gen
 		/// @brief Function map
 		Map<PTR<const lang::FnDeclExpr>, PTR<llvm::Function>> function_map;
 		/// @brief Contains all global variables
-		Vector<llvm::GlobalVariable> global_vars;
+		Map<StringView, PTR<llvm::GlobalVariable>> global_vars{};
+		/// @brief The IR to generate before the code in main
+		Vector<PTR<llvm::Value>> call_before_main{};
 		/// @brief Contains all local variables
-		Vector<PTR<llvm::AllocaInst>> local_vars;
+		Vector<PTR<llvm::AllocaInst>> local_vars{};
 		/// @brief Contains the result of visiting an expression
 		PTR<llvm::Value> returned_value = nullptr;
 		/// @brief Contains the current function whose IR is being generated
