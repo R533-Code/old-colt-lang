@@ -408,6 +408,7 @@ namespace colt::gen
       cast<FunctionType>(type_to_llvm(ptr->get_type())),
       GlobalValue::ExternalLinkage, ToStringRef(ptr->get_name()), module);
     function_map.insert(ptr->get_fn_decl(), fn);
+    fn->addFnAttr(llvm::Attribute::NoUnwind);
     if (ptr->get_fn_decl()->is_extern())
       return;
     
