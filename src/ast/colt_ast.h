@@ -317,6 +317,8 @@ namespace colt::lang
     void panic_consume_fn_decl() noexcept;
     /// @brief Consumes all tokens till a TKN_RIGHT_PAREN or TKN_EOF is hit
     void panic_consume_rparen() noexcept;
+    /// @brief Consumes the same tokens as panic_consume_sttmnt(), without consuming the SEMICOLON
+    void panic_consume_return() noexcept;
 
     template<typename... Args>
     /// @brief Validates that the current token is 'expected' and consumes it, else generates 'error'

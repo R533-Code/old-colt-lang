@@ -449,7 +449,7 @@ namespace colt::lang
 
     //If 'main' function, check declaration
     if (declaration->get_name() == "main"
-      && !fn_ptr_t->is_equal(FnType::CreateFn(BuiltInType::CreateI64(false, ctx), {}, ctx)))
+      && !is_cpp_equivalent<i64(*)(void)>(fn_ptr_t))
     {
       generate_any<report_as::ERROR>(declaration->get_src_code(), &ASTMaker::panic_consume_fn_decl,
         "Function 'main' should be declared as 'fn main()->i64'!");
@@ -981,9 +981,11 @@ namespace colt::lang
       {
         //Save state after 'return' keyword
         SavedExprInfo cnsm = { *this };
-        //Consume every token till a ';' is hit
-        panic_consume_sttmnt();
+
+        //This will consume the last ';'
+        ON_EXIT{ if (current_tkn == TKN_SEMICOLON) consume_current_tkn(); };
         //We consumed before calling 'to_src_info' to obtain the correct highlighting
+        panic_consume_return();
         generate_any<report_as::ERROR>(cnsm.to_src_info(), nullptr,
           "Function '{}' of return type 'void' cannot return a value!", current_function->get_name());
         return ErrorExpr::CreateExpr(ctx);
@@ -1073,6 +1075,13 @@ namespace colt::lang
   void ASTMaker::panic_consume_decl() noexcept
   {
     while (current_tkn != TKN_KEYWORD_VAR && current_tkn != TKN_KEYWORD_FN && current_tkn != TKN_EOF)
+      consume_current_tkn();
+  }
+
+  void ASTMaker::panic_consume_return() noexcept
+  {
+    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF
+      && current_tkn != TKN_KEYWORD_IF && current_tkn != TKN_KEYWORD_WHILE && current_tkn != TKN_KEYWORD_VAR)
       consume_current_tkn();
   }
 
