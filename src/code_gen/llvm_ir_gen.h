@@ -69,6 +69,8 @@ namespace colt::gen
 		PTR<llvm::Value> returned_value = nullptr;
 		/// @brief Contains the current function whose IR is being generated
 		PTR<llvm::Function> current_fn = nullptr;
+		/// @brief Current loop begin block (used for continue)
+		PTR<llvm::BasicBlock> loop_begin = nullptr;
 
 	public:
 		/// @brief No default constructor
@@ -114,6 +116,8 @@ namespace colt::gen
 		void gen_scope(PTR<const lang::ScopeExpr> ptr) noexcept;
 		
 		void gen_condition(PTR<const lang::ConditionExpr> ptr) noexcept;
+
+		void gen_while_loop(PTR<const lang::WhileLoopExpr> ptr) noexcept;
 
 		PTR<llvm::Type> type_to_llvm(PTR<const lang::Type> type) noexcept;
 	};

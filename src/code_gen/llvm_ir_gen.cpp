@@ -127,6 +127,7 @@ namespace colt::gen
       returned_value = builder.CreateIntrinsic(llvm::Intrinsic::donothing, {}, {}, nullptr);
     break; case Expr::EXPR_FOR_LOOP:
     break; case Expr::EXPR_WHILE_LOOP:
+      gen_while_loop(as<PTR<const WhileLoopExpr>>(ptr));
     break; case Expr::EXPR_BREAK_CONTINUE:    
     break; default:
       colt_unreachable("Generating invalid expression!");
@@ -258,11 +259,11 @@ namespace colt::gen
 
     break; case BinaryOperator::OP_LESS:
       if (type_t->is_unsigned_int())
-        returned_value = builder.CreateICmpULE(lhs, rhs, "ui_le");
+        returned_value = builder.CreateICmpULT(lhs, rhs, "ui_lt");
       else if (type_t->is_signed_int())
-        returned_value = builder.CreateICmpSLE(lhs, rhs, "si_le");
+        returned_value = builder.CreateICmpSLT(lhs, rhs, "si_lt");
       else if (type_t->is_floating())
-        returned_value = builder.CreateFCmpOLE(lhs, rhs, "fp_le");
+        returned_value = builder.CreateFCmpOLT(lhs, rhs, "fp_lt");
     break; case BinaryOperator::OP_LESS_EQUAL:
       if (type_t->is_unsigned_int())
         returned_value = builder.CreateICmpULE(lhs, rhs, "ui_leq");
@@ -272,11 +273,11 @@ namespace colt::gen
         returned_value = builder.CreateFCmpOLE(lhs, rhs, "fp_leq");
     break; case BinaryOperator::OP_GREAT:
       if (type_t->is_unsigned_int())
-        returned_value = builder.CreateICmpULE(lhs, rhs, "ui_ge");
+        returned_value = builder.CreateICmpUGT(lhs, rhs, "ui_gt");
       else if (type_t->is_signed_int())
-        returned_value = builder.CreateICmpSLE(lhs, rhs, "si_ge");
+        returned_value = builder.CreateICmpSGT(lhs, rhs, "si_gt");
       else if (type_t->is_floating())
-        returned_value = builder.CreateFCmpOLE(lhs, rhs, "fp_ge");
+        returned_value = builder.CreateFCmpOGT(lhs, rhs, "fp_gt");
     break; case BinaryOperator::OP_GREAT_EQUAL:
       if (type_t->is_unsigned_int())
         returned_value = builder.CreateICmpUGE(lhs, rhs, "ui_geq");
@@ -468,7 +469,7 @@ namespace colt::gen
     }
     returned_value = builder.CreateCall(fn->second, args,
       ptr->get_type()->is_void() ? "" : "call_ret");
-  }
+  }  
 
   void LLVMIRGenerator::gen_scope(PTR<const lang::ScopeExpr> ptr) noexcept
   {
@@ -526,6 +527,28 @@ namespace colt::gen
       function->getBasicBlockList().push_back(after_st);
       builder.SetInsertPoint(after_st);
     }
+  }
+
+  void LLVMIRGenerator::gen_while_loop(PTR<const lang::WhileLoopExpr> ptr) noexcept
+  {
+    BasicBlock* while_cond = BasicBlock::Create(context, "while_cond", current_fn);
+    BasicBlock* body = BasicBlock::Create(context, "loop_body", current_fn);
+    BasicBlock* end = BasicBlock::Create(context, "after_loop", current_fn);
+    loop_begin = while_cond;
+    //Jump from current block to while condition
+    builder.CreateBr(while_cond);
+    
+    builder.SetInsertPoint(while_cond);
+    gen_ir(ptr->get_condition());
+    builder.CreateCondBr(returned_value, body, end);
+
+    builder.SetInsertPoint(body);
+    gen_ir(ptr->get_body());
+    //Jump back to reevaluate condition
+    builder.CreateBr(while_cond);
+    
+    //Set insertion to after loop body
+    builder.SetInsertPoint(end);
   }
 
   PTR<llvm::Type> LLVMIRGenerator::type_to_llvm(PTR<const lang::Type> type) noexcept
