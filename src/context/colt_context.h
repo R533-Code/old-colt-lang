@@ -21,7 +21,7 @@ namespace colt::lang
   class COLTContext
   {
     /// @brief StableSet of types
-    StableSet<UniquePtr<Type>> type_set;
+    FlatList<UniquePtr<Type>> type_set;
     /// @brief StableSet of expressions
     FlatList<UniquePtr<Expr>, 256> expr_set;
 
@@ -40,7 +40,8 @@ namespace colt::lang
     /// @return Pointer to the unique type
     PTR<Type> add_type(UniquePtr<Type>&& type) noexcept
     {
-      return type_set.insert(std::move(type)).first->get_ptr();
+      type_set.push_back(std::move(type));
+      return type_set.get_back().get_ptr();
     }
   };
 }
