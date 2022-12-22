@@ -216,13 +216,6 @@ namespace colt::lang
       generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_semicolon, "Expected an expression!");
       return ErrorExpr::CreateExpr(ctx);
     }
-
-    //Post-unary operators
-    if (is_valid_post_unary())
-    {
-      to_ret = UnaryExpr::CreateExpr(to_ret->get_type(), current_tkn, true, to_ret, line_state.to_src_info(), ctx);
-      consume_current_tkn(); //consume the post unary operator
-    }
     return to_ret;
   }
 
@@ -312,7 +305,16 @@ namespace colt::lang
     }
 
     if (op == TKN_PLUS_PLUS || op == TKN_MINUS_MINUS)
-      return parse_primary();
+    {
+      PTR<Expr> read = parse_primary();
+      if (!is_a<VarReadExpr>(read))
+      {
+        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+          "Increment/Decrement operator can only be applied on variables!");
+        return ErrorExpr::CreateExpr(ctx);
+      }
+
+    }
 
     //Dereference operator
     if (op == TKN_STAR)
@@ -475,7 +477,7 @@ namespace colt::lang
         //If function is not main, (and returns void) add 'return void'
         as<PTR<ScopeExpr>>(body)->push_back(FnReturnExpr::CreateExpr(
           declaration->get_name() != "main" ? nullptr :
-          LiteralExpr::CreateExpr(QWORD{ 0ULL }, BuiltInType::CreateI64(false, ctx), {}, ctx), {}, ctx)
+          LiteralExpr::CreateValue(0LL, ctx), {}, ctx)
         );
       }
 
@@ -745,52 +747,51 @@ namespace colt::lang
     }
 
     if (assignment_tkn == TKN_EQUAL)
-      return VarWriteExpr::CreateExpr(lhs->get_type(), as<PTR<VarReadExpr>>(lhs)->get_name(), rhs,
-        as<PTR<VarReadExpr>>(lhs)->unsafe_get_local_id(), line_state.to_src_info(), ctx);
+      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs), rhs, line_state.to_src_info(), ctx);
 
     //Expands VAR += VALUE as VAR = VAR + VALUE
     switch (assignment_tkn)
     {
     case colt::lang::TKN_PLUS_EQUAL:
-      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
         BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_PLUS, rhs, line_state.to_src_info(), ctx),
-        as<PTR<VarReadExpr>>(lhs)->unsafe_get_local_id(), line_state.to_src_info(), ctx);
+        line_state.to_src_info(), ctx);
     case colt::lang::TKN_MINUS_EQUAL:
-      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
         BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_MINUS, rhs, line_state.to_src_info(), ctx),
-        as<PTR<VarReadExpr>>(lhs)->unsafe_get_local_id(), line_state.to_src_info(), ctx);
+        line_state.to_src_info(), ctx);
     case colt::lang::TKN_STAR_EQUAL:
-      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
         BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_STAR, rhs, line_state.to_src_info(), ctx),
-        as<PTR<VarReadExpr>>(lhs)->unsafe_get_local_id(), line_state.to_src_info(), ctx);
+        line_state.to_src_info(), ctx);
     case colt::lang::TKN_SLASH_EQUAL:
-      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
         BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_SLASH, rhs, line_state.to_src_info(), ctx),
-        as<PTR<VarReadExpr>>(lhs)->unsafe_get_local_id(), line_state.to_src_info(), ctx);
+        line_state.to_src_info(), ctx);
     case colt::lang::TKN_PERCENT_EQUAL:
-      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
         BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_PERCENT, rhs, line_state.to_src_info(), ctx),
-        as<PTR<VarReadExpr>>(lhs)->unsafe_get_local_id(), line_state.to_src_info(), ctx);
+        line_state.to_src_info(), ctx);
     case colt::lang::TKN_AND_EQUAL:
-      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
         BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_AND, rhs, line_state.to_src_info(), ctx),
-        as<PTR<VarReadExpr>>(lhs)->unsafe_get_local_id(), line_state.to_src_info(), ctx);
+        line_state.to_src_info(), ctx);
     case colt::lang::TKN_OR_EQUAL:
-      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
         BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_OR, rhs, line_state.to_src_info(), ctx),
-        as<PTR<VarReadExpr>>(lhs)->unsafe_get_local_id(), line_state.to_src_info(), ctx);
+        line_state.to_src_info(), ctx);
     case colt::lang::TKN_CARET_EQUAL:
-      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
         BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_CARET, rhs, line_state.to_src_info(), ctx),
-        as<PTR<VarReadExpr>>(lhs)->unsafe_get_local_id(), line_state.to_src_info(), ctx);
+        line_state.to_src_info(), ctx);
     case colt::lang::TKN_LESS_LESS_EQUAL:
-      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
         BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_LESS_LESS, rhs, line_state.to_src_info(), ctx),
-        as<PTR<VarReadExpr>>(lhs)->unsafe_get_local_id(), line_state.to_src_info(), ctx);
+        line_state.to_src_info(), ctx);
     case colt::lang::TKN_GREAT_GREAT_EQUAL:
-      return VarWriteExpr::CreateExpr(lhs->get_type(), as<VarReadExpr*>(lhs)->get_name(),
+      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
         BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_GREAT_GREAT, rhs, line_state.to_src_info(), ctx),
-        as<PTR<VarReadExpr>>(lhs)->unsafe_get_local_id(), line_state.to_src_info(), ctx);
+        line_state.to_src_info(), ctx);
     default:
       colt_unreachable("Invalid assignment token!");
     }
