@@ -58,7 +58,7 @@ namespace colt::lang
 
     /// @brief Constructor
     /// @param ID The type ID
-    /// @param is_mut True if the type is mutable
+    /// @param is_const True if the type is const
     constexpr Type(TypeID ID, bool is_const) noexcept
       : ID(ID), is_const_v(is_const) {}
 
@@ -69,9 +69,9 @@ namespace colt::lang
     /// @return The ExprID of the current expression
     constexpr TypeID classof() const noexcept { return ID; }
 
-    /// @brief Check if the type is mutable.
+    /// @brief Check if the type is const.
     /// For VoidType or FnType, returns false.
-    /// @return True if the type is mutable
+    /// @return True if the type is const
     constexpr bool is_const() const noexcept { return is_const_v; }
     /// @brief Check if the type is void
     /// @return True if is void
@@ -221,10 +221,10 @@ namespace colt::lang
 
     /// @brief Creates a built-in type
     /// @param builtinID The type ID
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param valid_op Array of possible binary operator
-    constexpr BuiltInType(BuiltInID builtinID, bool is_mut, ContiguousView<BinaryOperator> valid_op) noexcept
-      : Type(TYPE_BUILTIN, is_mut), builtin_ID(builtinID), valid_op(valid_op) {}
+    constexpr BuiltInType(BuiltInID builtinID, bool is_const, ContiguousView<BinaryOperator> valid_op) noexcept
+      : Type(TYPE_BUILTIN, is_const), builtin_ID(builtinID), valid_op(valid_op) {}
 
     /// @brief Returns the built-in ID
     /// @return BuiltInID of the current type
@@ -251,70 +251,70 @@ namespace colt::lang
     bool supports(BinaryOperator op) const noexcept;
 
     /// @brief Creates a U8 type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateU8(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateU8(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a U16 type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateU16(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateU16(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a U32 type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateU32(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateU32(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a U64 type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateU64(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateU64(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a U128 type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateU128(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateU128(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a I8 type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateI8(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateI8(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a I16 type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateI16(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateI16(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a I32 type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateI32(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateI32(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a I64 type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateI64(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateI64(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a I128 type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateI128(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateI128(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a F32 type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateF32(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateF32(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a F64 type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateF64(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateF64(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a boolean type
-    /// @param is_mut True if mutable
+    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
-    static PTR<Type> CreateBool(bool is_mut, COLTContext& ctx) noexcept;
+    static PTR<Type> CreateBool(bool is_const, COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a pointer to a type
@@ -335,21 +335,21 @@ namespace colt::lang
     /// @brief Destructor
     ~PtrType() noexcept override = default;
     /// @brief Creates a pointer type
-    /// @param is_mut True if the pointer is mutable
+    /// @param is_const True if the pointer is const
     /// @param ptr_to The type pointed by the pointer
-    constexpr PtrType(bool is_mut, PTR<const Type> ptr_to) noexcept
-      : Type(TYPE_PTR, is_mut), ptr_to(ptr_to) {}
+    constexpr PtrType(bool is_const, PTR<const Type> ptr_to) noexcept
+      : Type(TYPE_PTR, is_const), ptr_to(ptr_to) {}
 
     /// @brief Returns the type pointed to by the pointer
     /// @return The type pointed to by the pointer
     constexpr PTR<const Type> get_type_to() const noexcept { return ptr_to; }
 
     /// @brief Creates a pointer type
-    /// @param is_mut True if the pointer is mutable
+    /// @param is_const True if the pointer is const
     /// @param ptr_to The type pointed by the pointer
     /// @param ctx The COLTContext to store the resulting type
     /// @return Pointer to the resulting type
-    static PTR<Type> CreatePtr(bool is_mut, PTR<const Type> ptr_to, COLTContext& ctx) noexcept;
+    static PTR<Type> CreatePtr(bool is_const, PTR<const Type> ptr_to, COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a function type
@@ -396,6 +396,9 @@ namespace colt::lang
   template<typename T>
   constexpr bool is_cpp_equivalent(PTR<const Type> type) noexcept;
 
+  template<typename T>
+  constexpr PTR<const Type> from_cpp_equivalent(COLTContext& ctx) noexcept;
+
   namespace
   {
     template<typename T, typename... Args>
@@ -427,6 +430,21 @@ namespace colt::lang
         return false;
       return is_cpp_equivalent<T>(ptr->get_return_type())
         && is_cpp_equivalent_arg<T2, Args...>(ptr->get_params_type());
+    }
+
+    template<typename T, typename T1, typename... Args>
+    constexpr PTR<const Type> from_cpp_equivalent_fn(T(*fn)(T1, Args...), COLTContext& ctx) noexcept
+    {
+      SmallVector<PTR<const Type>, 4> args;
+      args.push_back(from_cpp_equivalent<T1>(ctx));
+      (args.push_back(from_cpp_equivalent<Args>(ctx)), ...);
+      return FnType::CreateFn(from_cpp_equivalent<T>(ctx), {}, ctx);
+    }
+
+    template<typename T>
+    constexpr PTR<const Type> from_cpp_equivalent_fn(T(*fn)(void), COLTContext& ctx) noexcept
+    {
+      return FnType::CreateFn(from_cpp_equivalent<T>(ctx), {}, ctx);
     }
   }
 
@@ -484,6 +502,54 @@ namespace colt::lang
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::F64;
       else if constexpr (std::is_same_v<T, bool>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::BOOL;
+      /*else if constexpr (std::is_same_v<T, char>)
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::CHAR;*/
+    }
+    colt_unreachable("Unknown type!");
+  }
+
+  template<typename T>
+  constexpr PTR<const Type> from_cpp_equivalent(COLTContext& ctx) noexcept
+  {
+    if constexpr (std::is_function_v<T> && !std::is_pointer_v<T>)
+    {
+      T* fn = nullptr;
+      return from_cpp_equivalent_fn(fn, ctx);
+    }
+    else if constexpr (std::is_pointer_v<T>
+      && std::is_function_v<std::remove_pointer_t<T>>)
+    {
+      T fn = nullptr;
+      return from_cpp_equivalent_fn(fn, ctx);
+    }
+    else if constexpr (std::is_pointer_v<T>)
+      return PtrType::CreatePtr(std::is_const_v<T>, from_cpp_equivalent<decltype(*std::declval<T>())>(ctx), ctx);
+    else if constexpr (std::is_void_v<T>)
+      return VoidType::CreateType(ctx);
+    else if constexpr (std::is_fundamental_v<T>)
+    {
+      if constexpr (std::is_same_v<T, i8>)
+        return BuiltInType::CreateI8(std::is_const_v<T>, ctx);
+      else if constexpr (std::is_same_v<T, u8>)
+        return BuiltInType::CreateU8(std::is_const_v<T>, ctx);
+      else if constexpr (std::is_same_v<T, i16>)
+        return BuiltInType::CreateI16(std::is_const_v<T>, ctx);
+      else if constexpr (std::is_same_v<T, u16>)
+        return BuiltInType::CreateU16(std::is_const_v<T>, ctx);
+      else if constexpr (std::is_same_v<T, i32>)
+        return BuiltInType::CreateI32(std::is_const_v<T>, ctx);
+      else if constexpr (std::is_same_v<T, u32>)
+        return BuiltInType::CreateU32(std::is_const_v<T>, ctx);
+      else if constexpr (std::is_same_v<T, i64>)
+        return BuiltInType::CreateI64(std::is_const_v<T>, ctx);
+      else if constexpr (std::is_same_v<T, u64>)
+        return BuiltInType::CreateU64(std::is_const_v<T>, ctx);
+      else if constexpr (std::is_same_v<T, f32>)
+        return BuiltInType::CreateF32(std::is_const_v<T>, ctx);
+      else if constexpr (std::is_same_v<T, f64>)
+        return BuiltInType::CreateF64(std::is_const_v<T>, ctx);
+      else if constexpr (std::is_same_v<T, bool>)
+        return BuiltInType::CreateBool(std::is_const_v<T>, ctx);
       /*else if constexpr (std::is_same_v<T, char>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::CHAR;*/
     }
