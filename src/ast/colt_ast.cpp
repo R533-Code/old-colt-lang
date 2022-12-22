@@ -504,7 +504,7 @@ namespace colt::lang
     {
       //Save '{' informations
       auto lexeme_info = get_expr_info();
-      consume_current_tkn(); // {
+      consume_current_tkn(); // '{'
 
       Vector<PTR<Expr>> statements = {};
       while (current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF)
@@ -615,7 +615,7 @@ namespace colt::lang
     //into a comparison with 'true'
     else if (!is_a<BinaryExpr>(if_cond))
       if_cond = BinaryExpr::CreateExpr(if_cond->get_type(), if_cond, TKN_EQUAL_EQUAL,
-        LiteralExpr::CreateExpr(QWORD{ true }, if_cond->get_type(), if_cond->get_src_code(), ctx), if_cond->get_src_code(), ctx);
+        LiteralExpr::CreateValue(true, ctx), if_cond->get_src_code(), ctx);
 
     PTR<Expr> if_body = parse_scope(); //if body
 
@@ -656,7 +656,7 @@ namespace colt::lang
     //into a comparison with 'true'
     else if (!is_a<BinaryExpr>(condition))
       condition = BinaryExpr::CreateExpr(condition->get_type(), condition, TKN_EQUAL_EQUAL,
-        LiteralExpr::CreateExpr(QWORD{ true }, condition->get_type(), condition->get_src_code(), ctx), condition->get_src_code(), ctx);
+        LiteralExpr::CreateValue(true, ctx), condition->get_src_code(), ctx);
 
     PTR<Expr> body = parse_scope();
 
@@ -819,10 +819,10 @@ namespace colt::lang
       return parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0))->get_type();
     }
 
-    bool is_mut = false;
+    bool is_const = true;
     if (current_tkn == TKN_KEYWORD_MUT) // mut TYPE
     {
-      is_mut = true;
+      is_const = false;
       consume_current_tkn();
     }
 
@@ -830,7 +830,7 @@ namespace colt::lang
     {
     case TKN_KEYWORD_VOID:
     {
-      if (is_mut)
+      if (is_const)
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "'void' typename cannot be marked as mutable!");
       consume_current_tkn(); //void
@@ -838,41 +838,41 @@ namespace colt::lang
     }
     case TKN_KEYWORD_BOOL:
       consume_current_tkn();
-      return BuiltInType::CreateBool(is_mut, ctx);
+      return BuiltInType::CreateBool(is_const, ctx);
     case TKN_KEYWORD_CHAR:
       //TODO: add
       colt_unreachable("not implemented");
-      //return BuiltInType::CreateChar(is_mut, ctx);
+      //return BuiltInType::CreateChar(is_const, ctx);
     case TKN_KEYWORD_I8:
       consume_current_tkn();
-      return BuiltInType::CreateI8(is_mut, ctx);
+      return BuiltInType::CreateI8(is_const, ctx);
     case TKN_KEYWORD_U8:
       consume_current_tkn();
-      return BuiltInType::CreateU8(is_mut, ctx);
+      return BuiltInType::CreateU8(is_const, ctx);
     case TKN_KEYWORD_I16:
       consume_current_tkn();
-      return BuiltInType::CreateI16(is_mut, ctx);
+      return BuiltInType::CreateI16(is_const, ctx);
     case TKN_KEYWORD_U16:
       consume_current_tkn();
-      return BuiltInType::CreateU16(is_mut, ctx);
+      return BuiltInType::CreateU16(is_const, ctx);
     case TKN_KEYWORD_I32:
       consume_current_tkn();
-      return BuiltInType::CreateI32(is_mut, ctx);
+      return BuiltInType::CreateI32(is_const, ctx);
     case TKN_KEYWORD_U32:
       consume_current_tkn();
-      return BuiltInType::CreateU32(is_mut, ctx);
+      return BuiltInType::CreateU32(is_const, ctx);
     case TKN_KEYWORD_I64:
       consume_current_tkn();
-      return BuiltInType::CreateI64(is_mut, ctx);
+      return BuiltInType::CreateI64(is_const, ctx);
     case TKN_KEYWORD_U64:
       consume_current_tkn();
-      return BuiltInType::CreateU64(is_mut, ctx);
+      return BuiltInType::CreateU64(is_const, ctx);
     case TKN_KEYWORD_FLOAT:
       consume_current_tkn();
-      return BuiltInType::CreateF32(is_mut, ctx);
+      return BuiltInType::CreateF32(is_const, ctx);
     case TKN_KEYWORD_DOUBLE:
       consume_current_tkn();
-      return BuiltInType::CreateF64(is_mut, ctx);
+      return BuiltInType::CreateF64(is_const, ctx);
     case TKN_KEYWORD_LSTRING:
       //TODO: add
       colt_unreachable("not implemented");
@@ -885,7 +885,7 @@ namespace colt::lang
         if (current_tkn == TKN_GREAT_GREAT) // '>>' is parsed as '>' '>'
           current_tkn = TKN_GREAT;
         if (!check_and_consume(TKN_GREAT, "Expected a '>'!"))
-          return PtrType::CreatePtr(is_mut, ptr_to, ctx);
+          return PtrType::CreatePtr(is_const, ptr_to, ctx);
       }
     }
     break;
