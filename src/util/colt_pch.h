@@ -37,6 +37,7 @@
 #include <colt/data_structs/Map.h>
 #include <colt/data_structs/UniquePtr.h>
 #include <colt/data_structs/Set.h>
+#include <colt/utility/Typedefs.h>
 
 //Includes
 #include <util/colt_config.h>
@@ -47,6 +48,5 @@
 
 #include <util/colt_macro.h>
 #include <util/colt_print.h>
-#include <util/typedefs.h>
 
 #endif //!HG_COLT_PCH

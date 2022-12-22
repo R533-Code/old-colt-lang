@@ -949,8 +949,7 @@ namespace colt::lang
   template<typename T, typename>
   PTR<Expr> LiteralExpr::CreateValue(T value, COLTContext& ctx) noexcept
   {
-    QWORD vl = { value };
-    return LiteralExpr::CreateExpr(vl, from_cpp_equivalent<T>(ctx), {}, ctx);
+    return LiteralExpr::CreateExpr({ value }, from_cpp_equivalent<T>(ctx), {}, ctx);
   }
 }
 
