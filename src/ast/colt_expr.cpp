@@ -47,14 +47,9 @@ namespace colt::lang
     return ctx.add_expr(make_unique<VarReadExpr>(type, name, src_info));
   }
   
-  PTR<Expr> VarWriteExpr::CreateExpr(PTR<const Type> type, StringView name, PTR<Expr> value, u64 ID, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
+  PTR<Expr> VarWriteExpr::CreateExpr(PTR<const VarReadExpr> var, PTR<Expr> value, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<VarWriteExpr>(type, name, value, ID, src_info));
-  }
-  
-  PTR<Expr> VarWriteExpr::CreateExpr(PTR<const Type> type, StringView name, PTR<Expr> value, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
-  {
-    return ctx.add_expr(make_unique<VarWriteExpr>(type, name, value, src_info));
+    return ctx.add_expr(make_unique<VarWriteExpr>(var->get_type(), var->get_name(), value, var->unsafe_get_local_id(), src_info));
   }
   
   PTR<Expr> FnReturnExpr::CreateExpr(PTR<Expr> to_ret, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
@@ -134,5 +129,5 @@ namespace colt::lang
     return ctx.add_expr(make_unique<NoOpExpr>(
       ctx.add_type(make_unique<VoidType>()), src_info
       ));
-  }
+  }  
 }

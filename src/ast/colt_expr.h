@@ -165,6 +165,9 @@ namespace colt::lang
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(QWORD value, PTR<const Type> type, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+
+    template<typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
+    static PTR<Expr> CreateValue(T value, COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a unary operation applied on an expression
@@ -508,23 +511,7 @@ namespace colt::lang
     /// @return The local ID
     u64 unsafe_get_local_id() const noexcept { return local_ID; }
 
-    /// @brief Creates a VarWriteExpr
-    /// @param type The type of the resulting expression
-    /// @param name The name of the variable
-    /// @param value The value to write to the variable
-    /// @param ID The local ID of the variable
-    /// @param src_info The source code information
-    /// @param ctx The COLTContext to store the resulting expression
-    /// @return Pointer to the created expression
-    static PTR<Expr> CreateExpr(PTR<const Type> type, StringView name, PTR<Expr> value, u64 ID, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
-    /// @brief Creates a VarWriteExpr to a global variable
-    /// @param type The type of the resulting expression
-    /// @param name The name of the variable
-    /// @param value The value to write to the variable
-    /// @param src_info The source code information
-    /// @param ctx The COLTContext to store the resulting expression
-    /// @return Pointer to the created expression
-    static PTR<Expr> CreateExpr(PTR<const Type> type, StringView name, PTR<Expr> value, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+    static PTR<Expr> CreateExpr(PTR<const VarReadExpr> var, PTR<Expr> value, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
   /// @brief Return expression
@@ -958,6 +945,13 @@ namespace colt::lang
     /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
+  
+  template<typename T, typename>
+  PTR<Expr> LiteralExpr::CreateValue(T value, COLTContext& ctx) noexcept
+  {
+    QWORD vl = { value };
+    return LiteralExpr::CreateExpr(vl, from_cpp_equivalent<T>(ctx), {}, ctx);
+  }
 }
 
 #endif //!HG_COLT_EXPR
