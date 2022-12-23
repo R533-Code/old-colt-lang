@@ -1,0 +1,5 @@
+//`Function 'hello' of return type 'void' cannot return a value!
+//1
+fn hello()->void {
+  return 10;
+}

@@ -1,0 +1,6 @@
+//`Expression should be of type 'bool'!
+//1
+fn main()->i64 {
+  while 10:
+    10;
+}

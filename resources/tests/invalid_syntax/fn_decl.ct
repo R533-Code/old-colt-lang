@@ -1,8 +1,0 @@
-//Error:
-//2
-fn()
-{
-  a; //<-error
-}
-
-fn he: 10 + 10u32; //<-error

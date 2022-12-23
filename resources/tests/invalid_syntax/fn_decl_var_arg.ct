@@ -1,0 +1,3 @@
+//`Function using C-style variadic can only be extern!
+//1
+fn print(va_arg)->void;

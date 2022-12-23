@@ -1,3 +1,0 @@
-//Error: Unclosed parenthesis delimiter!
-//1
-fn hello()->void: (10 + 10 + (10 + (10));

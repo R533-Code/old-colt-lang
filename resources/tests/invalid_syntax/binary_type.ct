@@ -1,0 +1,5 @@
+//`Operands should be of same type!
+//1
+fn main()->i64 {
+  10i64 + 10u64;
+}

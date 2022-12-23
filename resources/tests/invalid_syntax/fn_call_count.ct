@@ -1,0 +1,7 @@
+//`Function 'hello' expects 2 arguments, not 1!
+//1
+fn hello(i64 a, i64 b)->void;
+
+fn main()->i64 {
+  hello(10);
+}

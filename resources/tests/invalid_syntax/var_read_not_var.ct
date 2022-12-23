@@ -1,0 +1,7 @@
+//`'a' is not a variable!
+//1
+fn a()->void;
+
+fn hello()->void {
+  return a;
+}

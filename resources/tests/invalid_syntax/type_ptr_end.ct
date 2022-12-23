@@ -1,0 +1,5 @@
+//`Expected a '>'!
+//1
+fn hello()->PTR<i8 {
+  pass;
+}

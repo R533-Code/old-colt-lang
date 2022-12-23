@@ -1,3 +1,5 @@
-//Error: Expected an expression!
+//`Expected an expression!
 //1
-fn hello()->void: +=;
+fn main()->i64 {
+  +=;
+}

@@ -1,0 +1,5 @@
+//`Function of name 'a' does not exist!
+//1
+fn hello()->void {
+  a();
+}

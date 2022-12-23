@@ -1,0 +1,5 @@
+//`'void' typename cannot be marked as mutable!
+//1
+fn hello()->mut void {
+  pass;
+}

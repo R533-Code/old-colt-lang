@@ -1,9 +1,0 @@
-//Error: Expression should be of type 'bool'!
-//1
-fn a()->void
-{
-  if 10: //<- error
-    10;
-  else:
-    12;
-}

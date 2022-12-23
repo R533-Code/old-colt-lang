@@ -1,0 +1,7 @@
+//`Variadic function 'printf' expects at least 1 argument, not 0!
+//1
+extern fn printf(PTR<i8> str, va_arg)->i32;
+
+fn main()->i64 {
+  printf();
+}

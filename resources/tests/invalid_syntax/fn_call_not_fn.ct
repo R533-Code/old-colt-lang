@@ -1,0 +1,7 @@
+//`'a' is not a function!
+//1
+var a = 10;
+
+fn hello()->void {
+  a();
+}

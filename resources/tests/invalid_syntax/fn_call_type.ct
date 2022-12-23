@@ -1,0 +1,7 @@
+//`Type of argument does not match that of declaration!
+//1
+fn hello(i64 a, i64 b)->void;
+
+fn main()->i64 {
+  hello(10u64, 10);
+}

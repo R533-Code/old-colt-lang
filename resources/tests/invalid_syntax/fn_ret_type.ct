@@ -1,0 +1,5 @@
+//`Type of return value does not match function return type!
+//1
+fn hello()->i64 {
+  return 10u64;
+}

@@ -1,0 +1,3 @@
+//`Function 'main' should be declared as 'fn main()->i64'!
+//1
+fn main()->void {}

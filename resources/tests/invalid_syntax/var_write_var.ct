@@ -1,0 +1,5 @@
+//`Left hand side of an assignment should be a variable!
+//1
+fn main()->i64 {
+  10 = 10;
+}

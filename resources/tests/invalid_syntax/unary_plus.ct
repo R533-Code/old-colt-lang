@@ -1,3 +1,5 @@
-//`Error: Unary '+' is not supported!
+//`Unary '+' is not supported!
 //1
-fn hello()->void: +10;
+fn main()->i64 {  
+  +10;
+}

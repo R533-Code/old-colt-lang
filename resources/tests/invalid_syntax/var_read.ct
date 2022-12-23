@@ -1,11 +1,5 @@
-//Error: Variable of name 'hell' does not exist!
+//`Variable of name 'a' does not exist!
 //1
-fn hello()->void
-{
-  var read = 10;
-  {
-    var hel = 10;
-    read + hell; //<- error
-  }
-  read - 10;
+fn hello()->void {
+  return a;
 }

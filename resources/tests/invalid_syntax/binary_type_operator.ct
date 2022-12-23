@@ -1,0 +1,5 @@
+//`Type does not support operator '&'!
+//1
+fn main()->i64 {  
+  100.0f & 10.0f;
+}
