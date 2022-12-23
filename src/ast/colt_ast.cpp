@@ -1026,8 +1026,12 @@ namespace colt::lang
   {
     if (arguments.get_size() != decl->get_params_name().get_size())
     {
-      generate_any<report_as::ERROR>(info, nullptr, "Function '{}' expects {} argument{} not {}!", identifier,
-        decl->get_params_name().get_size(), decl->get_params_name().get_size() == 1 ? "," : "s,", arguments.get_size());
+      if (as<PTR<const FnType>>(decl->get_type())->is_varargs() && arguments.get_size() < decl->get_params_name().get_size())
+        generate_any<report_as::ERROR>(info, nullptr, "Variadic function '{}' expects at least {} argument{} not {}!", identifier,
+          decl->get_params_name().get_size(), decl->get_params_name().get_size() == 1 ? "," : "s,", arguments.get_size());
+      else
+        generate_any<report_as::ERROR>(info, nullptr, "Function '{}' expects {} argument{} not {}!", identifier,
+          decl->get_params_name().get_size(), decl->get_params_name().get_size() == 1 ? "," : "s,", arguments.get_size());
       return false;
     }
     bool ret = true;
