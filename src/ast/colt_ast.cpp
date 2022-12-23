@@ -1151,7 +1151,7 @@ namespace colt::lang
 
   void ASTMaker::panic_consume_rparen() noexcept
   {
-    while (current_tkn != TKN_SEMICOLON && is_valid_scope_begin() && current_tkn != TKN_EOF)
+    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_PAREN && current_tkn != TKN_EOF)
       consume_current_tkn();
   }
 }
