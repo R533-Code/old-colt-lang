@@ -28,14 +28,14 @@ namespace colt
 
   void REPL() noexcept
   {
-    char buffer[2048];
     for (;;)
     {
       io::Print<false>("{}>{} ", io::BrightCyanF, io::Reset);
-      if (fgets(buffer, 2048, stdin) == nullptr)
+      auto line = String::getLine(WithNUL);
+      if (line.is_error())
         break;
 
-      CompileStr({ buffer, WithNUL });
+      CompileStr(line.get_value());
     }
   }
 
