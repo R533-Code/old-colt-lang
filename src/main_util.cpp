@@ -52,7 +52,6 @@ namespace colt
         line->c_str();
         CompileStr(line.get_value());
       }
-      fputc('\n', stdout);
     }
   }
 
