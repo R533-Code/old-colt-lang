@@ -3,5 +3,5 @@
 fn a()->void;
 
 fn hello()->void {
-  return a;
+  a;
 }

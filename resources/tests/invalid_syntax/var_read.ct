@@ -1,5 +1,5 @@
 //`Variable of name 'a' does not exist!
 //1
 fn hello()->void {
-  return a;
+  a;
 }
