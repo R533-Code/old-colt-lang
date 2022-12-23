@@ -9,12 +9,18 @@ using namespace colt::lang;
 COLT_EXPORT i64 _ColtRand(i64 a, i64 b)
 {
   static std::mt19937 generator(std::random_device{}());
-  return (generator() % (b - a)) - a;
+  std::uniform_int_distribution<i64> distr(a, b);
+  return distr(generator);
 }
 
 COLT_EXPORT void _ColtPrinti64(i64 a)
 {
   io::Print("{}", a);
+}
+
+COLT_EXPORT PTR<const char> _ColtHelloWorld()
+{
+  return "Hello Colt!";
 }
 
 void run_main(gen::GeneratedIR&& IR) noexcept
