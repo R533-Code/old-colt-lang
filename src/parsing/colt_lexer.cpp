@@ -101,6 +101,8 @@ namespace colt::lang
 		case ';':
 			current_char = get_next_char();
 			return TKN_SEMICOLON;
+		case '@':
+			return handle_at();
 		case '\0':
 		case EOF:
 			return TKN_EOF;
@@ -649,6 +651,42 @@ namespace colt::lang
 		}
 	}
 
+	Token Lexer::handle_at() noexcept
+	{
+		temp_str.clear();
+		current_char = parse_alnum();
+		if (temp_str == "line")
+		{
+			Token tkn;
+			if ((tkn = get_next_token()) != TKN_LEFT_PAREN)
+			{
+				gen_warn(get_current_lexeme(), "Expected '('!");
+				current_char = consume_line();
+				return get_next_token();
+			}
+			if ((tkn = get_next_token()) != TKN_I64_L)
+			{
+				gen_warn(get_current_lexeme(), "Expected an unsigned integer!");
+				current_char = consume_line();
+				return get_next_token();
+			}
+			u32 new_line_nb = as<u32>(parsed_value.i64_v);
+			if ((tkn = get_next_token()) != TKN_RIGHT_PAREN)
+			{
+				gen_warn(get_current_lexeme(), "Expected '('!");
+				current_char = consume_line();
+				return get_next_token();
+			}
+			(void)consume_line();
+			current_char = get_next_char(); // consume '\n'			
+			current_line = new_line_nb;
+			return get_next_token();
+		}
+		gen_warn(get_current_lexeme(), "Unknown directive!");
+		current_char = consume_line();
+		return get_next_token();
+	}
+
 	char Lexer::parse_alnum() noexcept
 	{
 		char next_char = get_next_char();
@@ -772,6 +810,14 @@ namespace colt::lang
 			return None;
 		}
 		return ret;
+	}
+
+	char Lexer::consume_line() noexcept
+	{		
+		char chr = current_char;
+		while (chr != '\n' && chr != EOF && chr != '\0')
+			chr = get_next_char();
+		return chr;
 	}
 
 	Token Lexer::get_identifier_or_keyword() noexcept

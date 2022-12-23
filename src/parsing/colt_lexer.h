@@ -172,6 +172,9 @@ namespace colt::lang
 		/// @brief Handles ^, ^=
 		Token handle_caret() noexcept;
 
+		/// @brief Handles '@' 
+		Token handle_at() noexcept;
+
 		/// @brief Parses digits greedily, storing in temp_str
 		/// @return The first non-digit char
 		char parse_digits() noexcept;
@@ -216,6 +219,10 @@ namespace colt::lang
 		/// @return A valid char or nullopt
 		Optional<char> parse_escape_sequence() noexcept;
 
+		/// @brief Consumes all chars till a '\n' or EOF is hit
+		/// @return The character that stopped the consume
+		char consume_line() noexcept;
+
 		template<typename... Args>
 		/// @brief Generates an error
 		/// @tparam ...Args The parameter pack to format
@@ -223,6 +230,14 @@ namespace colt::lang
 		/// @param fmt The format string
 		/// @param ...args The argument pack to format
 		void gen_error(StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
+
+		template<typename... Args>
+		/// @brief Generates an error
+		/// @tparam ...Args The parameter pack to format
+		/// @param lexeme The lexeme to highlight
+		/// @param fmt The format string
+		/// @param ...args The argument pack to format
+		void gen_warn(StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
 	};
 
 	template<typename ...Args>
@@ -233,6 +248,16 @@ namespace colt::lang
 		SourceCodeExprInfo lexeme_info = { info.line_nb, info.line_nb, info.line_strv, get_current_lexeme() };
 		
 		GenerateError(lexeme_info, fmt, std::forward<Args>(args)...);
+	}
+
+	template<typename ...Args>
+	inline void Lexer::gen_warn(StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept
+	{
+		auto info = get_line_info();
+		//Construct source information from lexeme information
+		SourceCodeExprInfo lexeme_info = { info.line_nb, info.line_nb, info.line_strv, get_current_lexeme() };
+
+		GenerateWarning(lexeme_info, fmt, std::forward<Args>(args)...);
 	}
 }
 
