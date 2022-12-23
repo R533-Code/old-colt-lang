@@ -830,7 +830,7 @@ namespace colt::lang
     {
     case TKN_KEYWORD_VOID:
     {
-      if (is_const)
+      if (!is_const)
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "'void' typename cannot be marked as mutable!");
       consume_current_tkn(); //void
