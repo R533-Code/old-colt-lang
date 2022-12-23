@@ -93,6 +93,13 @@ namespace colt::gen
     MPM.run(*module, MAM);
   }
 
+  LLVMIRGenerator::LLVMIRGenerator(const lang::AST& ast, llvm::LLVMContext& ctx, llvm::Module& mod) noexcept
+    : context(ctx), module(mod), builder(ctx)
+  {
+    for (size_t i = 0; i < ast.expressions.get_size(); i++)
+      gen_ir(ast.expressions[i]);
+  }
+
   void LLVMIRGenerator::gen_ir(PTR<const lang::Expr> ptr) noexcept
   {
     using namespace lang;

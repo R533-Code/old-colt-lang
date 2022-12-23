@@ -44,7 +44,7 @@ namespace colt::gen
 		Expected<bool, const char*> to_object_file(const char* path) noexcept;
 
 		void optimize(colt::gen::OptimizationLevel level) noexcept;
-	};
+	};	
 
 	Expected<GeneratedIR, std::string> GenerateIR(const lang::AST& ast, const std::string& target_triple = LLVM_DEFAULT_TARGET_TRIPLE) noexcept;
 
@@ -83,12 +83,7 @@ namespace colt::gen
 		/// @brief Generate LLVM IR from expressions
 		/// @param ast The AST to compile to IR
 		/// @param level The optimization level
-		LLVMIRGenerator(const lang::AST& ast, llvm::LLVMContext& ctx, llvm::Module& mod) noexcept
-			: context(ctx), module(mod), builder(ctx)
-		{		
-			for (size_t i = 0; i < ast.expressions.get_size(); i++)
-				gen_ir(ast.expressions[i]);
-		}
+		LLVMIRGenerator(const lang::AST& ast, llvm::LLVMContext& ctx, llvm::Module& mod) noexcept;
 
 	private:
 		void gen_ir(PTR<const lang::Expr> ptr) noexcept;
