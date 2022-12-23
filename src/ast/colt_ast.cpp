@@ -313,7 +313,8 @@ namespace colt::lang
           "Increment/Decrement operator can only be applied on variables!");
         return ErrorExpr::CreateExpr(ctx);
       }
-
+      //TODO: implement
+      return ErrorExpr::CreateExpr(ctx);
     }
 
     //Dereference operator
@@ -417,11 +418,8 @@ namespace colt::lang
 
       args_type.push_back(parse_typename());
       auto arg_name = lexer.get_parsed_identifier();
-      if (check_and_consume(TKN_IDENTIFIER, "Expected an identifier!"))
-      {
-        panic_consume_rparen();
+      if (check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_rparen, "Expected an identifier!"))
         break;
-      }
 
       if (args_name.to_view().contains(arg_name))
       {
@@ -546,6 +544,7 @@ namespace colt::lang
     }
     else
     {
+      //TODO: choose consuming strategy
       generate_any_current<report_as::ERROR>(nullptr, "Expected the beginning of a scope ('{{'{}", one_expr ? "or ':')!" : ")!");
       return ErrorExpr::CreateExpr(ctx);
     }
@@ -606,6 +605,7 @@ namespace colt::lang
       else
         to_ret = parse_binary();
     }
+    //TODO: recheck strategy
     check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_sttmnt,
       "Expected a ';'!");
     if (is_valid)
@@ -893,6 +893,7 @@ namespace colt::lang
     case TKN_KEYWORD_PTR:
     {
       consume_current_tkn();
+      //TODO: pass strategy to consume
       if (!check_and_consume(TKN_LESS, "Expected a '<'!"))
       {
         PTR<const Type> ptr_to = parse_typename();
