@@ -387,6 +387,9 @@ namespace colt::lang
     /// @brief Returns the parameters' type of the function
     /// @return View over the parameters' type
     constexpr ContiguousView<PTR<const Type>> get_params_type() const noexcept { return args_type.to_view(); }
+    /// @brief Check if the function supports c-style variadics
+    /// @return True if it does
+    constexpr bool is_varargs() const noexcept { return is_vararg; }
 
     /// @brief Creates a function type
     /// @param return_type Return type of the function
@@ -441,6 +444,23 @@ namespace colt::lang
       return is_cpp_equivalent<T>(ptr->get_return_type())
         && is_cpp_equivalent_arg<T2, Args...>(ptr->get_params_type());
     }
+
+    template<typename T>
+    constexpr bool is_cpp_equivalent_fn(PTR<const FnType> ptr, T(*fn)(...)) noexcept
+    {
+      if (ptr->get_params_type().get_size() != 0 || !ptr->is_varargs())
+        return false;
+      return is_cpp_equivalent<T>(ptr->get_return_type());
+    }
+
+    template<typename T, typename T2, typename... Args>
+    constexpr bool is_cpp_equivalent_fn(PTR<const FnType> ptr, T(*fn)(T2, Args..., ...)) noexcept
+    {
+      if ((ptr->get_params_type().get_size() != sizeof...(Args) + 1) || !ptr->is_varargs())
+        return false;
+      return is_cpp_equivalent<T>(ptr->get_return_type())
+        && is_cpp_equivalent_arg<T2, Args...>(ptr->get_params_type());
+    }    
 
     template<typename T, typename... Args>
     constexpr PTR<const Type> from_cpp_equivalent_fn(T(*fn)(Args...), COLTContext& ctx) noexcept
