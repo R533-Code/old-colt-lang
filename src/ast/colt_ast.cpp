@@ -401,11 +401,19 @@ namespace colt::lang
         "Expected a '('!")
     );
 
+    bool is_vararg = false;
     SmallVector<PTR<const Type>, 4> args_type;
     SmallVector<StringView, 4> args_name;
     while (current_tkn != TKN_EOF && current_tkn != TKN_RIGHT_PAREN)
     {
       SavedExprInfo line_state_arg = { *this };
+
+      if (lexer.get_current_lexeme() == "va_arg")
+      {
+        is_vararg = true;
+        consume_current_tkn(); //consume va_arg
+        break;
+      }
 
       args_type.push_back(parse_typename());
       auto arg_name = lexer.get_parsed_identifier();
@@ -441,8 +449,8 @@ namespace colt::lang
     //The return type of the function
     PTR<const Type> return_t = parse_typename();
 
-    PTR<const Type> fn_ptr_t = FnType::CreateFn(return_t, std::move(args_type), ctx);
-    PTR<FnDeclExpr> declaration = as<PTR<FnDeclExpr>>(FnDeclExpr::CreateExpr(fn_ptr_t, fn_name, std::move(args_name), is_extern, line_state.to_src_info(), ctx));
+    PTR<const Type> fn_ptr_t = FnType::CreateFn(return_t, std::move(args_type), is_vararg, ctx);
+    PTR<FnDeclExpr> declaration = as<PTR<FnDeclExpr>>(FnDeclExpr::CreateExpr(fn_ptr_t, fn_name, std::move(args_name), is_extern, line_state.to_src_info(), ctx));    
 
     //Set the current function being parsed
     current_function = declaration;
@@ -458,7 +466,7 @@ namespace colt::lang
       return ErrorExpr::CreateExpr(ctx);
     }
 
-    if (is_valid_scope_begin() && !is_extern)
+    if (is_valid_scope_begin() && !is_extern && !is_vararg)
     {
       SavedLocalState local_state = { *this };
       //Create arguments in local variables table
@@ -482,6 +490,12 @@ namespace colt::lang
       }
 
       return FnDefExpr::CreateExpr(declaration, body, line_state.to_src_info(), ctx);
+    }
+    if (!is_extern && is_vararg)
+    {
+      generate_any<report_as::ERROR>(declaration->get_src_code(), &ASTMaker::panic_consume_fn_decl,
+        "Function using C-style variadic can only be extern!");
+      return ErrorExpr::CreateExpr(ctx);
     }
     check_and_consume(TKN_SEMICOLON, "Expected a ';'!");
     return FnDefExpr::CreateExpr(declaration, line_state.to_src_info(), ctx);
@@ -1024,18 +1038,26 @@ namespace colt::lang
 
   bool ASTMaker::validate_fn_call(const SmallVector<PTR<Expr>, 4>& arguments, PTR<const FnDeclExpr> decl, StringView identifier, const SourceCodeExprInfo& info) noexcept
   {
-    if (arguments.get_size() != decl->get_params_name().get_size())
+    if (arguments.get_size() != decl->get_params_count())
     {
-      if (as<PTR<const FnType>>(decl->get_type())->is_varargs() && arguments.get_size() < decl->get_params_name().get_size())
-        generate_any<report_as::ERROR>(info, nullptr, "Variadic function '{}' expects at least {} argument{} not {}!", identifier,
-          decl->get_params_name().get_size(), decl->get_params_name().get_size() == 1 ? "," : "s,", arguments.get_size());
+      if (as<PTR<const FnType>>(decl->get_type())->is_varargs())
+      {
+        if (arguments.get_size() < decl->get_params_count())
+        {
+          generate_any<report_as::ERROR>(info, nullptr, "Variadic function '{}' expects at least {} argument{} not {}!", identifier,
+            decl->get_params_count(), decl->get_params_count() == 1 ? "," : "s,", arguments.get_size());
+          return false;
+        }
+      }
       else
+      {
         generate_any<report_as::ERROR>(info, nullptr, "Function '{}' expects {} argument{} not {}!", identifier,
-          decl->get_params_name().get_size(), decl->get_params_name().get_size() == 1 ? "," : "s,", arguments.get_size());
-      return false;
+          decl->get_params_count(), decl->get_params_count() == 1 ? "," : "s,", arguments.get_size());
+        return false;
+      }
     }
     bool ret = true;
-    for (size_t i = 0; i < arguments.get_size(); i++)
+    for (size_t i = 0; i < decl->get_params_count(); i++)
     {
       if (!arguments[i]->get_type()->is_equal(decl->get_params_type()[i]))
       {
