@@ -41,9 +41,9 @@ namespace colt
       str.strip_spaces();
       if (!str.begins_with("fn") && !str.begins_with("var"))
       {
-        auto to_cmp = String{ "fn main() { Print(\n@line(1)\n" };
+        auto to_cmp = String{ "fn main()->i64 { @line(1)\n" };
         to_cmp += str;
-        to_cmp += "); }";
+        to_cmp += "; }";
         to_cmp.c_str();
         CompileStr(to_cmp);
       }
@@ -52,6 +52,7 @@ namespace colt
         line->c_str();
         CompileStr(line.get_value());
       }
+      fputc('\n', stdout);
     }
   }
 
