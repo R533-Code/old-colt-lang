@@ -68,8 +68,6 @@ llvm_map_components_to_libnames(llvm_libs
   X86Info X86TargetMCA
 )
 
-message("${llvm_libs}")
-
 # Link against LLVM libraries
 target_link_libraries(${COLT_EXECUTABLE_NAME} PUBLIC "${llvm_libs}")
 
@@ -146,7 +144,7 @@ foreach(testPath ${ColtTestsPath})
   # Strip new lines from end of line
   string(REGEX REPLACE "\n$" "" RegexTest "${RegexTest}")
 
-  if (${RegexTest} MATCHES "^`.*")
+  if ("${RegexTest}" MATCHES "^`.*")
     string(REGEX REPLACE "([][+.*()^;])" "\\\\\\1" RegexTest "${RegexTest}")
     # Pop the first characters which is '`'
     string(REPLACE "`" "" RegexTest ${RegexTest})
