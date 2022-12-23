@@ -31,11 +31,27 @@ namespace colt
     for (;;)
     {
       io::Print<false>("{}>{} ", io::BrightCyanF, io::Reset);
-      auto line = String::getLine(WithNUL);
+      auto line = String::getLine();
       if (line.is_error())
         break;
-
-      CompileStr(line.get_value());
+      if (line->is_empty())
+        continue;
+      
+      StringView str = *line;
+      str.strip_spaces();
+      if (!str.begins_with("fn") && !str.begins_with("var"))
+      {
+        auto to_cmp = String{ "fn main() { Print(\n@line(1)\n" };
+        to_cmp += str;
+        to_cmp += "); }";
+        to_cmp.c_str();
+        CompileStr(to_cmp);
+      }
+      else
+      {
+        line->c_str();
+        CompileStr(line.get_value());
+      }
     }
   }
 
