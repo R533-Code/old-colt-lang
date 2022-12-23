@@ -23,6 +23,11 @@ COLT_EXPORT PTR<const char> _ColtHelloWorld()
   return "Hello Colt!";
 }
 
+COLT_EXPORT PTR<const char> _ColtPrintfi64()
+{
+  return "i64 %lld\n";
+}
+
 void run_main(gen::GeneratedIR&& IR) noexcept
 {
   if (auto JITError = gen::ColtJIT::Create(); !JITError)
