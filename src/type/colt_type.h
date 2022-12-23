@@ -487,9 +487,7 @@ namespace colt::lang
   constexpr bool is_cpp_equivalent(PTR<const Type> type) noexcept
   {
     if constexpr (std::is_function_v<T> && !std::is_pointer_v<T>)
-    {
-      return details::is_cpp_equivalent<std::add_pointer_t<T>>(type);
-    }
+      return is_cpp_equivalent<std::add_pointer_t<T>>(type);
     else if constexpr (std::is_pointer_v<T>
       && std::is_function_v<std::remove_pointer_t<T>>)
     {
