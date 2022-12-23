@@ -601,7 +601,7 @@ namespace colt::gen
       llvm::SmallVector<PTR<llvm::Type>> arg_types;
       for (size_t i = 0; i < ptr->get_params_type().get_size(); i++)
         arg_types.push_back(type_to_llvm(ptr->get_params_type()[i]));
-      return FunctionType::get(type_to_llvm(ptr->get_return_type()), arg_types, false);
+      return FunctionType::get(type_to_llvm(ptr->get_return_type()), arg_types, ptr->is_varargs());
     }      
     case lang::Type::TYPE_ARRAY:
     case lang::Type::TYPE_CLASS:      
