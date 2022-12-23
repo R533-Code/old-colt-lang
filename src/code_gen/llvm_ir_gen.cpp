@@ -148,31 +148,31 @@ namespace colt::gen
     switch (as<PTR<const lang::BuiltInType>>(ptr->get_type())->get_builtin_id())
     {
     break; case BuiltInType::U8:
-      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().u8_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<u8>());
     break; case BuiltInType::U16:
-      returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().u16_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().as<u16>());
     break; case BuiltInType::U32:
-      returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().u32_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().as<u32>());
     break; case BuiltInType::U64:
-      returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().u64_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().as<u64>());
     break; case BuiltInType::U128:
-      returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().u64_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().as<u64>());
     break; case BuiltInType::I8:
-      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().i8_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<i8>());
     break; case BuiltInType::I16:
-      returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().i16_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().as<i16>());
     break; case BuiltInType::I32:
-      returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().i32_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().as<i32>());
     break; case BuiltInType::I64:
-      returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().i64_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().as<i64>());
     break; case BuiltInType::I128:
-      returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().i64_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().as<i64>());
     break; case BuiltInType::F32:
-      returned_value = ConstantFP::get(llvm::Type::getFloatTy(context), ptr->get_value().float_v);
+      returned_value = ConstantFP::get(llvm::Type::getFloatTy(context), ptr->get_value().as<f32>());
     break; case BuiltInType::F64:
-      returned_value = ConstantFP::get(llvm::Type::getDoubleTy(context), ptr->get_value().double_v);
+      returned_value = ConstantFP::get(llvm::Type::getDoubleTy(context), ptr->get_value().as<f64>());
     break; case BuiltInType::BOOL:
-      returned_value = ConstantInt::get(llvm::Type::getInt1Ty(context), ptr->get_value().bool_v);
+      returned_value = ConstantInt::get(llvm::Type::getInt1Ty(context), ptr->get_value().as<bool>());
     break; default:
       colt_unreachable("Invalid literal expr!");
     }

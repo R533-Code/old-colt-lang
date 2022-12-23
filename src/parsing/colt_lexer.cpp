@@ -201,7 +201,7 @@ namespace colt::lang
 	Token Lexer::handle_digit() noexcept
 	{
 		//Allows some optimization for when the AST needs to extract the values from the Lexer
-		parsed_value.u64_v = 0;
+		parsed_value.reset_all();
 
 		//Clear the string
 		temp_str.clear();
@@ -349,7 +349,7 @@ namespace colt::lang
 	Token Lexer::handle_char_literal() noexcept
 	{
 		//To simplify conversions
-		parsed_value.u64_v = 0;
+		parsed_value.reset_all();
 
 		//Consume the '
 		current_char = get_next_char();
@@ -375,7 +375,7 @@ namespace colt::lang
 				current_char = opt.get_value();
 		}
 		//Save the char in parsed_value
-		parsed_value.char_v = current_char;
+		parsed_value = current_char;
 		current_char = get_next_char();
 
 		if (current_char != '\'')
@@ -670,7 +670,7 @@ namespace colt::lang
 				current_char = consume_line();
 				return get_next_token();
 			}
-			u32 new_line_nb = as<u32>(parsed_value.i64_v);
+			u32 new_line_nb = parsed_value.as<u32>();
 			if ((tkn = get_next_token()) != TKN_RIGHT_PAREN)
 			{
 				gen_warn(get_current_lexeme(), "Expected '('!");
@@ -715,7 +715,7 @@ namespace colt::lang
 		auto [ptr, err] = std::from_chars(temp_str.begin(), temp_str.end(), value);
 		if (ptr == temp_str.end() && err == std::errc{})
 		{
-			parsed_value.u64_v = value;
+			parsed_value = value;
 			return TKN_U64_L;
 		}
 		gen_error(get_current_lexeme(), "Invalid integral literal!");
@@ -729,7 +729,7 @@ namespace colt::lang
 		auto [ptr, err] = std::from_chars(temp_str.begin(), temp_str.end(), value);
 		if (ptr == temp_str.end() && err == std::errc{})
 		{
-			parsed_value.float_v = value;
+			parsed_value = value;
 			return TKN_FLOAT_L;
 		}		
 #else
@@ -753,7 +753,7 @@ namespace colt::lang
 		auto [ptr, err] = std::from_chars(temp_str.begin(), temp_str.end(), value);
 		if (ptr == temp_str.end() && err == std::errc{})
 		{
-			parsed_value.double_v = value;
+			parsed_value = value;
 			return TKN_DOUBLE_L;
 		}
 #else
@@ -865,7 +865,7 @@ namespace colt::lang
 				return TKN_KEYWORD_FN;
 			else if (temp_str == "false")
 			{
-				parsed_value.bool_v = false;
+				parsed_value = false;
 				return TKN_BOOL_L;
 			}
 			else if (temp_str == "float")
@@ -907,7 +907,7 @@ namespace colt::lang
 		break; case 't':
 			if (temp_str == "true")
 			{
-				parsed_value.bool_v = true;
+				parsed_value = true;
 				return TKN_BOOL_L;
 			}
 			else if (temp_str == "typeof")
