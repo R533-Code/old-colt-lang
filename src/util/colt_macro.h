@@ -28,7 +28,7 @@
   #endif
 #endif
 
-#if !defined(COLT_MSVC)
+#if defined(COLT_MSVC)
   /// @brief Current function name
   #define COLT_FUNC __FUNCTION__
 #else
