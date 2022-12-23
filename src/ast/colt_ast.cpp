@@ -4,9 +4,6 @@
 
 #include "colt_ast.h"
 
-/// @brief If 'boolean' evaluates to true, returns ErrorExpr::CreateExpr(ctx)
-#define IF_TRUE_RET_ERR(boolean) if ((boolean)) return ErrorExpr::CreateExpr(ctx)
-
 namespace colt::lang
 {
   Expected<AST, u32> CreateAST(StringView from, COLTContext& ctx) noexcept
@@ -393,14 +390,12 @@ namespace colt::lang
     consume_current_tkn();
     auto fn_name = lexer.get_parsed_identifier();
 
-    IF_TRUE_RET_ERR(
-      check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_fn_decl,
-        "Expected an identifier, not '{}'!", lexer.get_current_lexeme())
-    );
-    IF_TRUE_RET_ERR(
-      check_and_consume(TKN_LEFT_PAREN, &ASTMaker::panic_consume_fn_decl,
-        "Expected a '('!")
-    );
+    if (check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_fn_decl,
+        "Expected an identifier, not '{}'!", lexer.get_current_lexeme()))
+      return ErrorExpr::CreateExpr(ctx);
+    if (check_and_consume(TKN_LEFT_PAREN, &ASTMaker::panic_consume_fn_decl,
+      "Expected a '('!"))
+      return ErrorExpr::CreateExpr(ctx);
 
     bool is_vararg = false;
     SmallVector<PTR<const Type>, 4> args_type;
@@ -435,14 +430,12 @@ namespace colt::lang
         break;
     }
 
-    IF_TRUE_RET_ERR(
-      check_and_consume(TKN_RIGHT_PAREN, &ASTMaker::panic_consume_fn_decl,
-        "Expected a ')'!")
-    );
-    IF_TRUE_RET_ERR(
-      check_and_consume(TKN_MINUS_GREAT, &ASTMaker::panic_consume_fn_decl,
-        "Expected a '->'!")
-    );
+    if (check_and_consume(TKN_RIGHT_PAREN, &ASTMaker::panic_consume_fn_decl,
+        "Expected a ')'!"))
+      return ErrorExpr::CreateExpr(ctx);
+    if (check_and_consume(TKN_MINUS_GREAT, &ASTMaker::panic_consume_fn_decl,
+        "Expected a '->'!"))
+      return ErrorExpr::CreateExpr(ctx);
 
     //The return type of the function
     PTR<const Type> return_t = parse_typename(&ASTMaker::panic_consume_fn_decl);
@@ -687,12 +680,10 @@ namespace colt::lang
   {
     SavedExprInfo line_state = { *this };
 
-    IF_TRUE_RET_ERR(
-      check_and_consume(TKN_KEYWORD_VAR, &ASTMaker::panic_consume_var_decl, "Expected a variable declaration!")
-    );
-    IF_TRUE_RET_ERR(
-      check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_var_decl, "Expected an identifier!")
-    );
+    if (check_and_consume(TKN_KEYWORD_VAR, &ASTMaker::panic_consume_var_decl, "Expected a variable declaration!"))
+      return ErrorExpr::CreateExpr(ctx);
+    if (check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_var_decl, "Expected an identifier!"))
+      return ErrorExpr::CreateExpr(ctx);
 
     StringView var_name = lexer.get_parsed_identifier();
 
@@ -706,9 +697,8 @@ namespace colt::lang
     PTR<Expr> var_init = nullptr;
     if (current_tkn != TKN_SEMICOLON)
     {
-      IF_TRUE_RET_ERR(
-        check_and_consume(TKN_EQUAL, &ASTMaker::panic_consume_var_decl, "Expected a '='!")
-      );
+      if (check_and_consume(TKN_EQUAL, &ASTMaker::panic_consume_var_decl, "Expected a '='!"))
+        return ErrorExpr::CreateExpr(ctx);
       var_init = parse_binary();
     }
     else if (var_type == nullptr)
@@ -731,9 +721,8 @@ namespace colt::lang
       var_init = ConvertExpr::CreateExpr(var_type, var_init,
         line_state.to_src_info(), ctx);
 
-    IF_TRUE_RET_ERR(
-      check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_var_decl, "Expected a ';'!")
-    );
+    if (check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_var_decl, "Expected a ';'!"))
+      return ErrorExpr::CreateExpr(ctx);
 
   GEN:
     if (is_global)
@@ -1160,5 +1149,3 @@ namespace colt::lang
       consume_current_tkn();
   }
 }
-
-#undef IF_TRUE_RET_ERR
