@@ -365,6 +365,8 @@ namespace colt::lang
     SmallVector<PTR<const Type>, 4> args_type;
     /// @brief The function return type
     PTR<const Type> return_type;
+    /// @brief True if the function accept c-style variadic arguments
+    bool is_vararg;
 
   public:
     /// @brief No default constructor
@@ -374,8 +376,9 @@ namespace colt::lang
     /// @brief Creates a function type
     /// @param return_type Return type of the function
     /// @param args_type Parameters' type
-    constexpr FnType(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type) noexcept
-      : Type(TYPE_FN, false), args_type(std::move(args_type)), return_type(return_type) {}
+    /// @param is_vararg True if accepts c-style variadic arguments
+    constexpr FnType(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, bool is_vararg) noexcept
+      : Type(TYPE_FN, false), args_type(std::move(args_type)), return_type(return_type), is_vararg(is_vararg) {}
 
     /// @brief Returns the return type of the function
     /// @return Return type of the function
@@ -391,6 +394,13 @@ namespace colt::lang
     /// @param ctx The COLTContext to store the resulting type
     /// @return Pointer to the resulting type
     static PTR<Type> CreateFn(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, COLTContext& ctx) noexcept;
+    /// @brief Creates a function type
+    /// @param return_type Return type of the function
+    /// @param args_type Parameters' type
+    /// @param is_vararg True if accepts c-style variadic arguments
+    /// @param ctx The COLTContext to store the resulting type
+    /// @return Pointer to the resulting type
+    static PTR<Type> CreateFn(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, bool is_vararg, COLTContext& ctx) noexcept;
   };
 
   template<typename T>
@@ -399,7 +409,7 @@ namespace colt::lang
   template<typename T>
   constexpr PTR<const Type> from_cpp_equivalent(COLTContext& ctx) noexcept;
 
-  namespace
+  namespace details
   {
     template<typename T, typename... Args>
     constexpr bool is_cpp_equivalent_arg(ContiguousView<PTR<const Type>> args) noexcept
@@ -432,19 +442,20 @@ namespace colt::lang
         && is_cpp_equivalent_arg<T2, Args...>(ptr->get_params_type());
     }
 
-    template<typename T, typename T1, typename... Args>
-    constexpr PTR<const Type> from_cpp_equivalent_fn(T(*fn)(T1, Args...), COLTContext& ctx) noexcept
+    template<typename T, typename... Args>
+    constexpr PTR<const Type> from_cpp_equivalent_fn(T(*fn)(Args...), COLTContext& ctx) noexcept
     {
       SmallVector<PTR<const Type>, 4> args;
-      args.push_back(from_cpp_equivalent<T1>(ctx));
       (args.push_back(from_cpp_equivalent<Args>(ctx)), ...);
-      return FnType::CreateFn(from_cpp_equivalent<T>(ctx), {}, ctx);
+      return FnType::CreateFn(from_cpp_equivalent<T>(ctx), std::move(args), ctx);
     }
 
-    template<typename T>
-    constexpr PTR<const Type> from_cpp_equivalent_fn(T(*fn)(void), COLTContext& ctx) noexcept
+    template<typename T, typename... Args>
+    constexpr PTR<const Type> from_cpp_equivalent_fn(T(*fn)(Args..., ...), COLTContext& ctx) noexcept
     {
-      return FnType::CreateFn(from_cpp_equivalent<T>(ctx), {}, ctx);
+      SmallVector<PTR<const Type>, 4> args;
+      (args.push_back(from_cpp_equivalent<Args>(ctx)), ...);
+      return FnType::CreateFn(from_cpp_equivalent<T>(ctx), std::move(args), true, ctx);
     }
   }
 
@@ -453,7 +464,7 @@ namespace colt::lang
   {
     if constexpr (std::is_function_v<T> && !std::is_pointer_v<T>)
     {
-      return is_cpp_equivalent<std::add_pointer_t<T>>(type);
+      return details::is_cpp_equivalent<std::add_pointer_t<T>>(type);
     }
     else if constexpr (std::is_pointer_v<T>
       && std::is_function_v<std::remove_pointer_t<T>>)
@@ -461,14 +472,14 @@ namespace colt::lang
       if (!is_a<FnType>(type))
         return false;
       T fn_ptr = nullptr;
-      return is_cpp_equivalent_fn(as<PTR<const FnType>>(type), fn_ptr);
+      return details::is_cpp_equivalent_fn(as<PTR<const FnType>>(type), fn_ptr);
     }
     else if constexpr (std::is_pointer_v<T>)
     {
       if (!is_a<PtrType>(type))
         return false;
       return std::is_const_v<T> == type->is_const()
-        && is_cpp_equivalent<decltype(*std::declval<T>())>(as<PTR<const PtrType>>(type)->get_type_to());
+        && is_cpp_equivalent<std::remove_pointer_t<T>>(as<PTR<const PtrType>>(type)->get_type_to());
     }
     else if constexpr (std::is_void_v<T>)
     {
@@ -480,27 +491,27 @@ namespace colt::lang
     {
       if (!is_a<BuiltInType>(type) && std::is_const_v<T> != type->is_const())
         return false;
-      if constexpr (std::is_same_v<T, i8>)
+      if constexpr (std::is_same_v<std::decay_t<T>, i8>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I8;
-      else if constexpr (std::is_same_v<T, u8>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, u8>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::U8;
-      else if constexpr (std::is_same_v<T, i16>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, i16>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I16;
-      else if constexpr (std::is_same_v<T, u16>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, u16>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::U16;
-      else if constexpr (std::is_same_v<T, i32>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, i32>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I32;
-      else if constexpr (std::is_same_v<T, u32>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, u32>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::U32;
-      else if constexpr (std::is_same_v<T, i64>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, i64>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I64;
-      else if constexpr (std::is_same_v<T, u64>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, u64>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::U64;
-      else if constexpr (std::is_same_v<T, f32>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, f32>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::F32;
-      else if constexpr (std::is_same_v<T, f64>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, f64>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::F64;
-      else if constexpr (std::is_same_v<T, bool>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, bool>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::BOOL;
       /*else if constexpr (std::is_same_v<T, char>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::CHAR;*/
@@ -514,41 +525,41 @@ namespace colt::lang
     if constexpr (std::is_function_v<T> && !std::is_pointer_v<T>)
     {
       T* fn = nullptr;
-      return from_cpp_equivalent_fn(fn, ctx);
+      return details::from_cpp_equivalent_fn(fn, ctx);
     }
     else if constexpr (std::is_pointer_v<T>
       && std::is_function_v<std::remove_pointer_t<T>>)
     {
       T fn = nullptr;
-      return from_cpp_equivalent_fn(fn, ctx);
+      return details::from_cpp_equivalent_fn(fn, ctx);
     }
     else if constexpr (std::is_pointer_v<T>)
-      return PtrType::CreatePtr(std::is_const_v<T>, from_cpp_equivalent<decltype(*std::declval<T>())>(ctx), ctx);
+      return PtrType::CreatePtr(std::is_const_v<T>, from_cpp_equivalent<std::remove_pointer_t<T>>(ctx), ctx);
     else if constexpr (std::is_void_v<T>)
       return VoidType::CreateType(ctx);
     else if constexpr (std::is_fundamental_v<T>)
     {
-      if constexpr (std::is_same_v<T, i8>)
+      if constexpr (std::is_same_v<std::decay_t<T>, i8>)
         return BuiltInType::CreateI8(std::is_const_v<T>, ctx);
-      else if constexpr (std::is_same_v<T, u8>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, u8>)
         return BuiltInType::CreateU8(std::is_const_v<T>, ctx);
-      else if constexpr (std::is_same_v<T, i16>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, i16>)
         return BuiltInType::CreateI16(std::is_const_v<T>, ctx);
-      else if constexpr (std::is_same_v<T, u16>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, u16>)
         return BuiltInType::CreateU16(std::is_const_v<T>, ctx);
-      else if constexpr (std::is_same_v<T, i32>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, i32>)
         return BuiltInType::CreateI32(std::is_const_v<T>, ctx);
-      else if constexpr (std::is_same_v<T, u32>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, u32>)
         return BuiltInType::CreateU32(std::is_const_v<T>, ctx);
-      else if constexpr (std::is_same_v<T, i64>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, i64>)
         return BuiltInType::CreateI64(std::is_const_v<T>, ctx);
-      else if constexpr (std::is_same_v<T, u64>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, u64>)
         return BuiltInType::CreateU64(std::is_const_v<T>, ctx);
-      else if constexpr (std::is_same_v<T, f32>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, f32>)
         return BuiltInType::CreateF32(std::is_const_v<T>, ctx);
-      else if constexpr (std::is_same_v<T, f64>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, f64>)
         return BuiltInType::CreateF64(std::is_const_v<T>, ctx);
-      else if constexpr (std::is_same_v<T, bool>)
+      else if constexpr (std::is_same_v<std::decay_t<T>, bool>)
         return BuiltInType::CreateBool(std::is_const_v<T>, ctx);
       /*else if constexpr (std::is_same_v<T, char>)
         return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::CHAR;*/

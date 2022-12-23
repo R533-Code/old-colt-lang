@@ -118,9 +118,14 @@ namespace colt::lang
     return ctx.add_type(make_unique<PtrType>(is_const, ptr_to));
   }
   
+  PTR<Type> FnType::CreateFn(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, bool is_vararg, COLTContext& ctx) noexcept
+  {
+    return ctx.add_type(make_unique<FnType>(return_type, std::move(args_type), is_vararg));
+  }
+
   PTR<Type> FnType::CreateFn(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<FnType>(return_type, std::move(args_type)));
+    return ctx.add_type(make_unique<FnType>(return_type, std::move(args_type), false));
   }
   
   PTR<Type> ErrorType::CreateType(COLTContext& ctx) noexcept
