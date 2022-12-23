@@ -257,7 +257,7 @@ namespace colt::lang
 
     /// @brief Parses a typename (can be function pointer/pointer)
     /// @return Parsed typename or ErrorType
-    PTR<const Type> parse_typename() noexcept;
+    PTR<const Type> parse_typename(panic_consume_t panic = nullptr) noexcept;
 
     /// @brief Handles an identifier in a primary expression.
     /// The identifier could represent a variable, or a function call

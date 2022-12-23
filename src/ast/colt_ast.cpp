@@ -445,7 +445,9 @@ namespace colt::lang
     );
 
     //The return type of the function
-    PTR<const Type> return_t = parse_typename();
+    PTR<const Type> return_t = parse_typename(&ASTMaker::panic_consume_fn_decl);
+    if (is_a<ErrorType>(return_t))
+      return ErrorExpr::CreateExpr(ctx);
 
     PTR<const Type> fn_ptr_t = FnType::CreateFn(return_t, std::move(args_type), is_vararg, ctx);
     PTR<FnDeclExpr> declaration = as<PTR<FnDeclExpr>>(FnDeclExpr::CreateExpr(fn_ptr_t, fn_name, std::move(args_name), is_extern, line_state.to_src_info(), ctx));    
@@ -822,7 +824,7 @@ namespace colt::lang
       line_state.to_src_info(), ctx);
   }
 
-  PTR<const Type> ASTMaker::parse_typename() noexcept
+  PTR<const Type> ASTMaker::parse_typename(panic_consume_t panic) noexcept
   {
     //Save current expression state
     SavedExprInfo line_state = { *this };
@@ -845,8 +847,11 @@ namespace colt::lang
     case TKN_KEYWORD_VOID:
     {
       if (!is_const)
-        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+      {
+        generate_any<report_as::ERROR>(line_state.to_src_info(), panic,
           "'void' typename cannot be marked as mutable!");
+        return ErrorType::CreateType(ctx);
+      }
       consume_current_tkn(); //void
       return VoidType::CreateType(ctx);
     }
@@ -894,12 +899,12 @@ namespace colt::lang
     {
       consume_current_tkn();
       //TODO: pass strategy to consume
-      if (!check_and_consume(TKN_LESS, "Expected a '<'!"))
+      if (!check_and_consume(TKN_LESS, panic, "Expected a '<'!"))
       {
-        PTR<const Type> ptr_to = parse_typename();
+        PTR<const Type> ptr_to = parse_typename(panic);
         if (current_tkn == TKN_GREAT_GREAT) // '>>' is parsed as '>' '>'
           current_tkn = TKN_GREAT;
-        if (!check_and_consume(TKN_GREAT, "Expected a '>'!"))
+        if (!check_and_consume(TKN_GREAT, panic, "Expected a '>'!"))
           return PtrType::CreatePtr(is_const, ptr_to, ctx);
       }
     }
@@ -908,7 +913,7 @@ namespace colt::lang
       //TODO: add
       colt_unreachable("not implemented");
     default:
-      generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+      generate_any<report_as::ERROR>(line_state.to_src_info(), panic,
         "Expected a typename!");
     }
     //return an error
