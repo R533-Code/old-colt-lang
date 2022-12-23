@@ -6,7 +6,7 @@
 #define HG_COLT_CONSOLE_COLORS
 
 #include <fmt/core.h>
-#include <util/typedefs.h>
+#include <colt/utility/Typedefs.h>
 #include <cmd/colt_args.h>
 
 /******************************************************
