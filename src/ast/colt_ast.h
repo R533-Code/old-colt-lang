@@ -161,13 +161,6 @@ namespace colt::lang
     /// @return The warning count
     u16 get_warn_count() const noexcept { return warn_count; }
 
-    /// @brief Obtains a view over the result of the parsing
-    /// @return Vector of expressions representing the abstract syntax tree
-    ContiguousView<PTR<Expr>> get_result() const noexcept { return expressions.to_view(); }
-    /// @brief Steals the result of the parsing
-    /// @return Vector of expressions representing the abstract syntax tree
-    Vector<PTR<Expr>>&& steal_result() noexcept { return std::move(expressions); }
-
     /// @brief Check if the abstract syntax tree does not contain any expression
     /// @return True if the abstract syntax tree is empty
     bool is_empty() const noexcept { return expressions.get_size() == 0; }
