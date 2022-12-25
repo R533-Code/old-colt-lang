@@ -361,6 +361,7 @@ namespace colt::gen
       assert(ptr->is_global());
 
       module.getOrInsertGlobal(ToStringRef(ptr->get_name()), type_to_llvm(ptr->get_type()));
+
       PTR<GlobalVariable> gvar = module.getNamedGlobal(ToStringRef(ptr->get_name()));
       //Insert variable
       global_vars.insert(ptr->get_name(), gvar);
@@ -414,8 +415,13 @@ namespace colt::gen
     PTR<Function> fn = Function::Create(
       cast<FunctionType>(type_to_llvm(ptr->get_type())),
       GlobalValue::ExternalLinkage, ToStringRef(ptr->get_name()), module);
-    function_map.insert(ptr->get_fn_decl(), fn);
+    //Save to global table
+    function_map.insert_or_assign(ptr->get_fn_decl(), fn);
+    
+    //noexcept
     fn->addFnAttr(llvm::Attribute::NoUnwind);
+    
+    //Extern functions do not have bodies
     if (ptr->get_fn_decl()->is_extern())
       return;
     
