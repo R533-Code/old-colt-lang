@@ -589,6 +589,9 @@ namespace colt::lang
     /// @brief Returns the name of the global variable
     /// @return The name of the variable
     StringView get_name() const noexcept { return name; }
+    /// @brief Check if the declaration name is "main"
+    /// @return True if equal to "main"
+    bool is_main() const noexcept { return get_name() == "main"; }
 
     /// @brief Returns the count of parameter the function accepts
     /// @return The parameter count of the function
@@ -659,6 +662,9 @@ namespace colt::lang
     /// @brief Returns the name of the global variable
     /// @return The name of the variable
     StringView get_name() const noexcept { return declaration->get_name(); }
+    /// @brief Check if the declaration name is "main"
+    /// @return True if equal to "main"
+    bool is_main() const noexcept { return get_name() == "main"; }
 
     /// @brief Returns the parameter names
     /// @return View over the parameter names
