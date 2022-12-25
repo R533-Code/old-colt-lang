@@ -355,9 +355,8 @@ namespace colt::lang
     VarDeclExpr(PTR<const Type> type, StringView name, PTR<Expr> init_value, bool is_global, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_VAR_DECL, type, src_info), is_global_v(is_global), init_value(init_value), name(name) {}
 
-    /// @brief Get the expression to convert
-    /// @return The expression to converse
     PTR<const Expr> get_value() const noexcept { return init_value; }
+    void set_value(PTR<Expr> ptr) noexcept { init_value = ptr; }
 
     /// @brief Returns the name of the global variable
     /// @return The name of the variable

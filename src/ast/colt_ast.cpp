@@ -16,6 +16,18 @@ namespace colt::lang
       return { InPlace, std::move(result) };
   }
 
+  bool CompileAndAdd(StringView str, AST& ast) noexcept
+  {
+    u64 crr = ast.expressions.get_size();
+    if (ASTMaker astm = { str, ast.expressions, ast.global_map, ast.ctx };
+      astm.get_error_count() != 0)
+    {
+      ast.expressions.pop_back_n(ast.expressions.get_size() - crr);
+      return false;
+    }
+    return true;
+  }
+
   u8 GetOpPrecedence(Token tkn) noexcept
   {
     static constexpr u8 operator_precedence_table[] =
@@ -477,7 +489,7 @@ namespace colt::lang
         //If main has no return, add 'return 0'
         //If function is not main, (and returns void) add 'return void'
         as<PTR<ScopeExpr>>(body)->push_back(FnReturnExpr::CreateExpr(
-          declaration->is_main() ? nullptr :
+          !declaration->is_main() ? nullptr :
           LiteralExpr::CreateValue(0LL, ctx), {}, ctx)
         );
       }
@@ -1103,7 +1115,8 @@ namespace colt::lang
 
   void ASTMaker::panic_consume_semicolon() noexcept
   {
-    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF)
+    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY
+      && current_tkn != TKN_RIGHT_PAREN && current_tkn != TKN_EOF)
       consume_current_tkn();
   }
 

@@ -376,6 +376,11 @@ namespace colt::lang
   /// @param ctx The COLTContext where to store the expressions
   /// @return Error count if errors where detected else the AST
   Expected<AST, u32> CreateAST(StringView from, COLTContext& ctx) noexcept;
+  /// @brief Compiles an expression and adds it to an already existing AST
+  /// @param str The StringView to parse
+  /// @param ast The AST in which to add the result
+  /// @return True if compilation was successful
+  bool CompileAndAdd(StringView str, AST& ast) noexcept;
 
   /************************************
   * IMPLEMENTATIONS

@@ -28,6 +28,9 @@ namespace colt
 
   void REPL() noexcept
   {
+    COLTContext ctx;
+    AST ast = { ctx };
+
     for (;;)
     {
       io::Print<false>("{}>{} ", io::BrightCyanF, io::Reset);
@@ -41,16 +44,30 @@ namespace colt
       str.strip_spaces();
       if (!str.begins_with("fn") && !str.begins_with("var"))
       {
-        auto to_cmp = String{ "fn main()->i64 { @line(1)\n" };
+        auto to_cmp = String{
+          "extern fn _ColtPrinti64(i64 a)->void;\n"
+          "fn main()->i64 { _ColtPrinti64(@line(1)\n"
+        };
         to_cmp += str;
-        to_cmp += "; }";
+        to_cmp += "\n); }";
         to_cmp.c_str();
-        CompileStr(to_cmp);
+        if (CompileAndAdd(ctx.add_str(std::move(to_cmp)), ast))
+        {
+          if (auto result = GenerateIR(ast); result.is_expected())
+            RunMain(std::move(result.get_value()));
+          for (auto& [name, value] : ast.global_map)
+          {
+            if (is_a<VarDeclExpr>(value))
+              as<PTR<VarDeclExpr>>(value)->set_value(nullptr);
+          }
+        }
       }
       else
       {
-        line->c_str();
-        CompileStr(line.get_value());
+        line->c_str();        
+        CompileAndAdd(
+          ctx.add_str(std::move(line.get_value())),
+          ast);
       }
     }
   }
