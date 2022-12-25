@@ -39,7 +39,7 @@ namespace colt::gen
 		std::unique_ptr<llvm::Module> module = std::make_unique<llvm::Module>("Colt", *context);
 		PTR<llvm::TargetMachine> target_machine;
 
-		void print_module(llvm::raw_ostream& os) const noexcept;
+		void print_module(llvm::raw_ostream& os = llvm::errs()) const noexcept;
 
 		Expected<bool, const char*> to_object_file(const char* path) noexcept;
 
