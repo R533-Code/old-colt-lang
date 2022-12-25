@@ -379,7 +379,7 @@ namespace colt::gen
   void LLVMIRGenerator::gen_var_read(PTR<const lang::VarReadExpr> ptr) noexcept
   {
     if (!ptr->is_global())
-      returned_value = builder.CreateLoad(local_vars[ptr->get_local_ID()]->getAllocatedType(),
+      returned_value = builder.CreateLoad(type_to_llvm(ptr->get_type()),
         local_vars[ptr->get_local_ID()], false);
     else
     {
