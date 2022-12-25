@@ -10,20 +10,17 @@ COLT_EXPORT i64 _ColtRand(i64 a, i64 b)
   return distr(generator);
 }
 
-COLT_EXPORT void _ColtPrinti64(i64 a)
-{
-  io::Print("{}", a);
-}
-
-COLT_EXPORT PTR<const char> _ColtHelloWorld()
-{
-  return "Hello Colt!";
-}
-
-COLT_EXPORT PTR<const char> _ColtPrintfi64()
-{
-  return "i64 %lld\n";
-}
+COLT_EXPORT void _ColtPrinti8(i8 a) { io::Print("{}", a); }
+COLT_EXPORT void _ColtPrinti16(i16 a) { io::Print("{}", a); }
+COLT_EXPORT void _ColtPrinti32(i32 a) { io::Print("{}", a); }
+COLT_EXPORT void _ColtPrinti64(i64 a) { io::Print("{}", a); }
+COLT_EXPORT void _ColtPrintu8(u8 a) { io::Print("{}", a); }
+COLT_EXPORT void _ColtPrintu16(u16 a) { io::Print("{}", a); }
+COLT_EXPORT void _ColtPrintu32(u32 a) { io::Print("{}", a); }
+COLT_EXPORT void _ColtPrintu64(u64 a) { io::Print("{}", a); }
+COLT_EXPORT void _ColtPrintbool(bool a) { io::Print("{}", a); }
+COLT_EXPORT void _ColtPrintf32(f32 a) { io::Print("{}", a); }
+COLT_EXPORT void _ColtPrintf64(f64 a) { io::Print("{}", a); }
 
 int main(int argc, const char** argv)
 {
