@@ -173,6 +173,8 @@ namespace colt::gen
       returned_value = ConstantFP::get(llvm::Type::getDoubleTy(context), ptr->get_value().as<f64>());
     break; case BuiltInType::BOOL:
       returned_value = ConstantInt::get(llvm::Type::getInt1Ty(context), ptr->get_value().as<bool>());
+    break; case BuiltInType::CHAR:
+      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<char>());
     break; default:
       colt_unreachable("Invalid literal expr!");
     }
@@ -599,6 +601,8 @@ namespace colt::gen
         return llvm::Type::getDoubleTy(context);
       case BuiltInType::BOOL:
         return llvm::Type::getInt1Ty(context);
+      case BuiltInType::CHAR:
+        return llvm::Type::getInt8Ty(context);
       default:
         colt_unreachable("Invalid ID!");
       }
