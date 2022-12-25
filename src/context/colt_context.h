@@ -20,6 +20,8 @@ namespace colt::lang
   /// @brief Class responsible of holding Type and Expr used in the AST
   class COLTContext
   {
+    /// @brief Saved String
+    FlatList<String, 256> saved_str;
     /// @brief StableSet of types
     FlatList<UniquePtr<Type>> type_set;
     /// @brief StableSet of expressions
@@ -42,6 +44,15 @@ namespace colt::lang
     {
       type_set.push_back(std::move(type));
       return type_set.get_back().get_ptr();
+    }
+
+    /// @brief Saves a String and returns a StringView over it
+    /// @param str The String to save
+    /// @return StringView over the saved String
+    StringView add_str(String&& str) noexcept
+    {
+      saved_str.push_back(std::move(str));
+      return saved_str.get_back();
     }
   };
 }
