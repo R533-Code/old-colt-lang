@@ -45,7 +45,8 @@ namespace colt::lang
     static constexpr TypeID classof_v = TYPE_BASE;
 
   private:
-
+    /// @brief Name of the type
+    StringView name;
     /// @brief The ID of the expression
     TypeID ID;
     /// @brief True if the type is const
@@ -59,8 +60,8 @@ namespace colt::lang
     /// @brief Constructor
     /// @param ID The type ID
     /// @param is_const True if the type is const
-    constexpr Type(TypeID ID, bool is_const) noexcept
-      : ID(ID), is_const_v(is_const) {}
+    constexpr Type(TypeID ID, bool is_const, StringView name) noexcept
+      : name(name), ID(ID), is_const_v(is_const) {}
 
     /// @brief Destructor
     virtual ~Type() noexcept = default;
@@ -91,6 +92,9 @@ namespace colt::lang
     /// @brief Check if the type is error
     /// @return True if error
     constexpr bool is_error() const noexcept { return ID == TYPE_ERROR; } 
+    /// @brief Returns the typename
+    /// @return StringView over the typename
+    constexpr StringView get_name() const noexcept { return name; }
 
     bool is_equal(PTR<const Type> type) const noexcept;
     bool is_equal_with_const(PTR<const Type> type) const noexcept;
@@ -107,7 +111,7 @@ namespace colt::lang
 
     /// @brief No default constructor
     constexpr ErrorType() noexcept
-      : Type(TYPE_ERROR, false) {}
+      : Type(TYPE_ERROR, false, "<Error>") {}
 
     /// @brief Destructor
     ~ErrorType() noexcept override = default;
@@ -128,7 +132,7 @@ namespace colt::lang
 
     /// @brief No default constructor
     constexpr VoidType() noexcept
-      : Type(TYPE_VOID, false) {}
+      : Type(TYPE_VOID, false, "void") {}
     
     /// @brief Destructor
     ~VoidType() noexcept override = default;
@@ -223,8 +227,8 @@ namespace colt::lang
     /// @param builtinID The type ID
     /// @param is_const True if const
     /// @param valid_op Array of possible binary operator
-    constexpr BuiltInType(BuiltInID builtinID, bool is_const, ContiguousView<BinaryOperator> valid_op) noexcept
-      : Type(TYPE_BUILTIN, is_const), builtin_ID(builtinID), valid_op(valid_op) {}
+    constexpr BuiltInType(BuiltInID builtinID, bool is_const, ContiguousView<BinaryOperator> valid_op, StringView name) noexcept
+      : Type(TYPE_BUILTIN, is_const, name), builtin_ID(builtinID), valid_op(valid_op) {}
 
     /// @brief Returns the built-in ID
     /// @return BuiltInID of the current type
@@ -337,8 +341,8 @@ namespace colt::lang
     /// @brief Creates a pointer type
     /// @param is_const True if the pointer is const
     /// @param ptr_to The type pointed by the pointer
-    constexpr PtrType(bool is_const, PTR<const Type> ptr_to) noexcept
-      : Type(TYPE_PTR, is_const), ptr_to(ptr_to) {}
+    constexpr PtrType(bool is_const, PTR<const Type> ptr_to, StringView name) noexcept
+      : Type(TYPE_PTR, is_const, name), ptr_to(ptr_to) {}
 
     /// @brief Returns the type pointed to by the pointer
     /// @return The type pointed to by the pointer
@@ -377,8 +381,8 @@ namespace colt::lang
     /// @param return_type Return type of the function
     /// @param args_type Parameters' type
     /// @param is_vararg True if accepts c-style variadic arguments
-    constexpr FnType(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, bool is_vararg) noexcept
-      : Type(TYPE_FN, false), args_type(std::move(args_type)), return_type(return_type), is_vararg(is_vararg) {}
+    constexpr FnType(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, bool is_vararg, StringView name) noexcept
+      : Type(TYPE_FN, false, name), args_type(std::move(args_type)), return_type(return_type), is_vararg(is_vararg) {}
 
     /// @brief Returns the return type of the function
     /// @return Return type of the function
