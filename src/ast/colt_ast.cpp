@@ -451,7 +451,7 @@ namespace colt::lang
     ON_EXIT{ current_function = nullptr; };
 
     //If 'main' function, check declaration
-    if (declaration->get_name() == "main"
+    if (declaration->is_main()
       && !is_cpp_equivalent<i64(*)(void)>(fn_ptr_t))
     {
       generate_any<report_as::ERROR>(declaration->get_src_code(), &ASTMaker::panic_consume_fn_decl,
@@ -467,7 +467,7 @@ namespace colt::lang
         local_var_table.push_back({ declaration->get_params_name()[i], declaration->get_params_type()[i] });
 
       auto body = parse_scope();
-      if (!current_function->get_return_type()->is_void() && declaration->get_name() != "main")
+      if (!current_function->get_return_type()->is_void() && !declaration->is_main())
         validate_all_path_return(body);
       //If a return is not present at the end of the void function,
       //add one. As parse_scope can return ErrorExpr or ScopeExpr,
@@ -477,7 +477,7 @@ namespace colt::lang
         //If main has no return, add 'return 0'
         //If function is not main, (and returns void) add 'return void'
         as<PTR<ScopeExpr>>(body)->push_back(FnReturnExpr::CreateExpr(
-          declaration->get_name() != "main" ? nullptr :
+          declaration->is_main() ? nullptr :
           LiteralExpr::CreateValue(0LL, ctx), {}, ctx)
         );
       }
