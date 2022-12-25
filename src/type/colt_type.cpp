@@ -125,6 +125,14 @@ namespace colt::lang
       "mut bool" + (4 * as<u64>(is_const)))
     );
   }
+
+  PTR<Type> BuiltInType::CreateChar(bool is_const, COLTContext& ctx) noexcept
+  {
+    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::CHAR, is_const,
+      ContiguousView<BinaryOperator>{ BuiltInType::CharSupported, std::size(BuiltInType::CharSupported) },
+      "mut char" + (4 * as<u64>(is_const)))
+    );
+  }
   
   PTR<Type> PtrType::CreatePtr(bool is_const, PTR<const Type> ptr_to, COLTContext& ctx) noexcept
   {

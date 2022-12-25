@@ -157,6 +157,8 @@ namespace colt::lang
     {
       /// @brief Boolean, Unsigned 1-bit integer
       BOOL,
+      /// @brief 8-bit ASCII char
+      CHAR,
       /// @brief Unsigned 8-bit integer
       U8,
       /// @brief Unsigned 16-bit integer
@@ -180,7 +182,7 @@ namespace colt::lang
       /// @brief 32-bit floating point
       F32,
       /// @brief 64-bit floating point
-      F64
+      F64,      
     };
   
   private:
@@ -210,6 +212,16 @@ namespace colt::lang
     static constexpr BinaryOperator BoolSupported[4] = {     
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,      
       BinaryOperator::OP_BOOL_AND, BinaryOperator::OP_BOOL_OR,
+    };
+
+    /// @brief BinaryOperator supported by boolean
+    static constexpr BinaryOperator CharSupported[4] = {
+      BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
+    };
+
+    /// @brief BinaryOperator supported by boolean
+    static constexpr BinaryOperator lstringSupported[4] = {
+      BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
     };
 
     /// @brief The ID of the built-in type
@@ -244,7 +256,7 @@ namespace colt::lang
     constexpr bool is_floating() const noexcept { return builtin_ID == F32 || builtin_ID == F64; }
     /// @brief Check if the current type is any of the signed built-in integers
     /// @return True if built-in signed integer
-    constexpr bool is_signed_int() const noexcept { return builtin_ID - 6 < I8; }
+    constexpr bool is_signed_int() const noexcept { return builtin_ID - I8 < I8; }
     /// @brief Check if the current type is any of the unsigned built-in integers
     /// @return True if built-in unsigned integer
     constexpr bool is_unsigned_int() const noexcept { return builtin_ID < I8; }
@@ -319,6 +331,11 @@ namespace colt::lang
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
     static PTR<Type> CreateBool(bool is_const, COLTContext& ctx) noexcept;
+    /// @brief Creates a char type
+    /// @param is_const True if const
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
+    static PTR<Type> CreateChar(bool is_const, COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a pointer to a type

@@ -192,10 +192,11 @@ namespace colt::lang
       consume_current_tkn();
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateF64(false, ctx),
         line_state.to_src_info(), ctx);
-    break; case TKN_STRING_L:
-      consume_current_tkn();
-      to_ret = ErrorExpr::CreateExpr(ctx);
     break; case TKN_CHAR_L:
+      consume_current_tkn();
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateChar(false,  ctx),
+        line_state.to_src_info(), ctx);
+    break; case TKN_STRING_L:
       consume_current_tkn();
       to_ret = ErrorExpr::CreateExpr(ctx);
 
@@ -860,9 +861,8 @@ namespace colt::lang
       consume_current_tkn();
       return BuiltInType::CreateBool(is_const, ctx);
     case TKN_KEYWORD_CHAR:
-      //TODO: add
-      colt_unreachable("not implemented");
-      //return BuiltInType::CreateChar(is_const, ctx);
+      consume_current_tkn();
+      return BuiltInType::CreateChar(is_const, ctx);
     case TKN_KEYWORD_I8:
       consume_current_tkn();
       return BuiltInType::CreateI8(is_const, ctx);
