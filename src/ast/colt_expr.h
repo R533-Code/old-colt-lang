@@ -658,6 +658,10 @@ namespace colt::lang
     /// @return The expression to converse
     PTR<const Expr> get_body() const noexcept { return body; }
 
+    /// @brief Check if the function has a body
+    /// @return True if the function has a body
+    bool has_body() const noexcept { return body != nullptr; }
+
     /// @brief Returns the name of the global variable
     /// @return The name of the variable
     StringView get_name() const noexcept { return declaration->get_name(); }
@@ -665,6 +669,9 @@ namespace colt::lang
     /// @return True if equal to "main"
     bool is_main() const noexcept { return get_name() == "main"; }
 
+    /// @brief Returns the count of parameter the function accepts
+    /// @return The parameter count of the function
+    size_t get_params_count() const noexcept { return get_params_name().get_size(); }
     /// @brief Returns the parameter names
     /// @return View over the parameter names
     ContiguousView<StringView> get_params_name() const noexcept { return declaration->get_params_name(); }
