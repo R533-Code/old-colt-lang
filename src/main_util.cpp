@@ -20,25 +20,8 @@ namespace colt
   void InitializeBackend() noexcept
   {
 #if defined(COLT_MSVC) && defined(COLT_DEBUG)
-    //Report to 'stdout'
-    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDOUT);
-    _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDOUT);
-    /*int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-    _CrtSetDbgFlag(flag | _CRTDBG_CHECK_ALWAYS_DF);*/
+    //Print memory leaks
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
-    //Run after main
-    static ON_EXIT
-    {
-      if (_CrtDumpMemoryLeaks())
-      {
-        colt::io::PrintError("Memory leak(s) detected!");
-        colt_intrinsic_dbreak();
-      }
-    };
 #endif
 
 #ifndef COLT_NO_LLVM
