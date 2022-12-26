@@ -1,6 +1,8 @@
 #ifndef HG_LLVM_IR_GENERATOR
 #define HG_LLVM_IR_GENERATOR
 
+#ifndef COLT_NO_LLVM
+
 #include <llvm/ADT/APFloat.h>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/IR/BasicBlock.h>
@@ -117,5 +119,7 @@ namespace colt::gen
 		PTR<llvm::Type> type_to_llvm(PTR<const lang::Type> type) noexcept;
 	};
 }
+
+#endif //!COLT_NO_LLVM
 
 #endif //!HG_LLVM_IR_GENERATOR

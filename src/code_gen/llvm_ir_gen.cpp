@@ -1,6 +1,8 @@
 #include <code_gen/llvm_ir_gen.h>
 #include <ast/colt_ast.h>
 
+#ifndef COLT_NO_LLVM
+
 /// @brief Contains code generators
 namespace colt::gen
 {
@@ -460,7 +462,7 @@ namespace colt::gen
       );
       builder.CreateStore(&arg, local_vars.get_back());
       ++i;
-    }    
+    }
     gen_ir(ptr->get_body());
 
     //We pop variables allocated in the current scope
@@ -634,3 +636,5 @@ namespace colt::gen
     }
   }
 }
+
+#endif //!COLT_NO_LLVM
