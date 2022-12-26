@@ -23,7 +23,7 @@ namespace colt::lang
     /// @brief Saved String
     FlatList<String, 256> saved_str;
     /// @brief StableSet of types
-    FlatList<UniquePtr<Type>> type_set;
+    FlatList<UniquePtr<Type>, 256> type_set;
     /// @brief StableSet of expressions
     FlatList<UniquePtr<Expr>, 256> expr_set;
 
