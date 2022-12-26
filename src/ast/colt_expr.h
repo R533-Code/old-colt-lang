@@ -682,6 +682,11 @@ namespace colt::lang
     /// @return The return type of the function
     PTR<const Type> get_return_type() const noexcept { return declaration->get_return_type(); }
 
+    /// @brief Check if the declaration of this function is extern
+    /// @return True if extern
+    bool is_extern() const noexcept { return declaration->is_extern(); }
+    /// @brief Returns a pointer to the declaration of this function
+    /// @return Pointer to the declaration
     PTR<const FnDeclExpr> get_fn_decl() const noexcept { return declaration; }
 
     /// @brief Creates a FnDefExpr
