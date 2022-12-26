@@ -52,8 +52,30 @@ namespace colt
       if (!str.begins_with("fn") && !str.begins_with("var"))
       {
         auto to_cmp = String{
+          "extern fn _ColtPrintbool(bool a)->void;\n"
+          "extern fn _ColtPrinti8(i8 a)->void;\n"
+          "extern fn _ColtPrinti16(i16 a)->void;\n"
+          "extern fn _ColtPrinti32(i32 a)->void;\n"
           "extern fn _ColtPrinti64(i64 a)->void;\n"
-          "fn main()->i64 { _ColtPrinti64(@line(1)\n"
+          "extern fn _ColtPrintu8(u8 a)->void;\n"
+          "extern fn _ColtPrintu16(u16 a)->void;\n"
+          "extern fn _ColtPrintu32(u32 a)->void;\n"
+          "extern fn _ColtPrintu64(u64 a)->void;\n"
+          "extern fn _ColtPrintf32(float a)->void;\n"
+          "extern fn _ColtPrintf64(double a)->void;\n"
+          "fn Print(bool a)->void: _ColtPrintbool(a);\n"
+          "fn Print(i8 a)->void: _ColtPrinti8(a);\n"
+          "fn Print(i16 a)->void: _ColtPrinti16(a);\n"
+          "fn Print(i32 a)->void: _ColtPrinti32(a);\n"
+          "fn Print(i64 a)->void: _ColtPrinti64(a);\n"
+          "fn Print(u8 a)->void: _ColtPrintu8(a);\n"
+          "fn Print(u16 a)->void: _ColtPrintu16(a);\n"
+          "fn Print(u32 a)->void: _ColtPrintu32(a);\n"
+          "fn Print(u64 a)->void: _ColtPrintu64(a);\n"
+          "fn Print(float a)->void: _ColtPrintf32(a);\n"
+          "fn Print(double a)->void: _ColtPrintf64(a);\n"
+          "fn Print()->void: pass;\n"
+          "fn main()->i64 { Print(@line(1)\n"
         };
         to_cmp += str;
         to_cmp += "\n); }";
@@ -63,11 +85,6 @@ namespace colt
 #ifndef COLT_NO_LLVM
           if (auto result = GenerateIR(ast); result.is_expected())
             RunMain(std::move(result.get_value()));
-          for (auto& [name, value] : ast.global_map)
-          {
-            if (is_a<VarDeclExpr>(value))
-              as<PTR<VarDeclExpr>>(value)->set_value(nullptr);
-          }
 #endif //!COLT_NO_LLVM
         }
       }
@@ -79,11 +96,6 @@ namespace colt
 #ifndef COLT_NO_LLVM
           if (auto result = GenerateIR(ast); result.is_expected())
             RunMain(std::move(result.get_value()));
-          for (auto& [name, value] : ast.global_map)
-          {
-            if (is_a<VarDeclExpr>(value))
-              as<PTR<VarDeclExpr>>(value)->set_value(nullptr);
-          }
 #endif //!COLT_NO_LLVM
         }
       }
