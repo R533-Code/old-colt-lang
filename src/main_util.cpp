@@ -19,11 +19,32 @@ namespace colt
 
   void InitializeBackend() noexcept
   {
+#if defined(COLT_MSVC) && defined(COLT_DEBUG)
+    //Report to 'stdout'
+    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+    _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
+    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDOUT);
+    _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+    _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDOUT);
+    //Run after main
+    static ON_EXIT
+    {
+      if (_CrtDumpMemoryLeaks())
+      {
+        colt::io::PrintError("Memory leak(s) detected!");
+        colt_intrinsic_dbreak();
+      }
+    };
+#endif
+
+#ifndef COLT_NO_LLVM
     //Initialize targets of current machine
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmParser();
     llvm::InitializeNativeTargetAsmPrinter();
     llvm::InitializeNativeTargetDisassembler();
+#endif //!COLT_NO_LLVM
   }
 
   void REPL() noexcept
@@ -53,6 +74,7 @@ namespace colt
         to_cmp.c_str();
         if (CompileAndAdd(ctx.add_str(std::move(to_cmp)), ast))
         {
+#ifndef COLT_NO_LLVM
           if (auto result = GenerateIR(ast); result.is_expected())
             RunMain(std::move(result.get_value()));
           for (auto& [name, value] : ast.global_map)
@@ -60,14 +82,24 @@ namespace colt
             if (is_a<VarDeclExpr>(value))
               as<PTR<VarDeclExpr>>(value)->set_value(nullptr);
           }
+#endif //!COLT_NO_LLVM
         }
       }
       else
       {
-        line->c_str();        
-        CompileAndAdd(
-          ctx.add_str(std::move(line.get_value())),
-          ast);
+        line->c_str();
+        if (CompileAndAdd(ctx.add_str(std::move(line.get_value())), ast))
+        {
+#ifndef COLT_NO_LLVM
+          if (auto result = GenerateIR(ast); result.is_expected())
+            RunMain(std::move(result.get_value()));
+          for (auto& [name, value] : ast.global_map)
+          {
+            if (is_a<VarDeclExpr>(value))
+              as<PTR<VarDeclExpr>>(value)->set_value(nullptr);
+          }
+#endif //!COLT_NO_LLVM
+        }
       }
     }
   }
@@ -99,6 +131,7 @@ namespace colt
 
   void CompileAST(const lang::AST& ast) noexcept
   {
+#ifndef COLT_NO_LLVM
     auto IR = gen::GenerateIR(ast);
     if (IR.is_error())
     {
@@ -121,15 +154,17 @@ namespace colt
 
     if (args::GlobalArguments.jit_run_main)
       RunMain(std::move(*IR));
+#endif //!COLT_NO_LLVM
   }
 
+#ifndef COLT_NO_LLVM
   void RunMain(gen::GeneratedIR&& IR) noexcept
   {
     if (auto JITError = gen::ColtJIT::Create(); !JITError)
       io::PrintError("Could not create JIT compiler!");
     else
     {
-      auto ColtJIT = JITError->get();
+      auto ColtJIT = std::move(*JITError);
       if (auto AddError = ColtJIT->addModule(std::move(IR)); AddError)
         io::PrintError("Could not add module!");
       else if (auto main = ColtJIT->lookup("main"))
@@ -141,4 +176,5 @@ namespace colt
         io::PrintWarning("Main function was not found!");
     }
   }  
+#endif //!COLT_NO_LLVM
 }
