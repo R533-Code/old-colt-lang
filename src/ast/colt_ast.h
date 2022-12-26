@@ -83,7 +83,7 @@ namespace colt::lang
     /// @brief The current function being parsed
     PTR<const FnDeclExpr> current_function = nullptr;
     /// @brief Map responsible of storing global state (functions, global variables)
-    Map<StringView, PTR<Expr>>& global_map;
+    Map<StringView, SmallVector<PTR<Expr>>>& global_map;
     /// @brief The context storing types and expressions
     COLTContext& ctx;
 
@@ -148,7 +148,7 @@ namespace colt::lang
     /// @param expressions The vector onto which to push expressions
     /// @param global_map The global map onto which to store functions and global variables
     /// @param ctx The COLTContext to use to store types and expressions
-    ASTMaker(StringView strv, Vector<PTR<Expr>>& expressions, Map<StringView, PTR<Expr>>& global_map, COLTContext& ctx) noexcept;
+    ASTMaker(StringView strv, Vector<PTR<Expr>>& expressions, Map<StringView, SmallVector<PTR<Expr>>>& global_map, COLTContext& ctx) noexcept;
     //No default move constructor
     ASTMaker(ASTMaker&&) = delete;
     //No default copy constructor
@@ -284,8 +284,13 @@ namespace colt::lang
     /// @brief Check recursively and prints errors if 'expr' does not end with a return
     void validate_all_path_return(PTR<const Expr> expr) noexcept;
 
+    PTR<Expr> handle_function_call(StringView identifier, SmallVector<PTR<Expr>, 4>&& arguments, const SourceCodeExprInfo&  identifier_loc, const SourceCodeExprInfo& fn_call) noexcept;
+
     /// @brief Consumes statement till a RIGHT_CURLY_BRACKET is hit and generates a warning
     void handle_unreachable_code() noexcept;
+
+    /// @brief Registers a function to the global table
+    void add_fn_to_global_table(PTR<FnDefExpr> expr) noexcept;
 
     /************* PEEKING HELPERS ************/
 
@@ -360,7 +365,7 @@ namespace colt::lang
     /// @brief The array of expressions
     Vector<PTR<Expr>> expressions = {};
     /// @brief The global function/variable table
-    Map<StringView, PTR<Expr>> global_map = {};
+    Map<StringView, SmallVector<PTR<Expr>>> global_map = {};
     /// @brief The context storing type and expression informations
     COLTContext& ctx;
 

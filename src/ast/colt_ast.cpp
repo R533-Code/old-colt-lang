@@ -125,7 +125,7 @@ namespace colt::lang
     return { scan_info.line_nb, scan_info.line_strv, lexer.get_current_lexeme() };
   }
 
-  ASTMaker::ASTMaker(StringView strv, Vector<PTR<Expr>>& expressions, Map<StringView, PTR<Expr>>& global_map, COLTContext& ctx) noexcept
+  ASTMaker::ASTMaker(StringView strv, Vector<PTR<Expr>>& expressions, Map<StringView, SmallVector<PTR<Expr>>>& global_map, COLTContext& ctx) noexcept
     : expressions(expressions), lexer(strv), global_map(global_map), ctx(ctx)
   {
     current_tkn = lexer.get_next_token();
@@ -365,7 +365,7 @@ namespace colt::lang
     {
       auto expr = parse_fn_decl(); //Function
       if (is_a<FnDefExpr>(expr)) //add to the global table
-        global_map.insert_or_assign(as<PTR<FnDefExpr>>(expr)->get_name(), expr);
+        add_fn_to_global_table(as<PTR<FnDefExpr>>(expr));
       return expr;
     }
     else if (current_tkn == TKN_KEYWORD_VAR)
@@ -742,8 +742,24 @@ namespace colt::lang
     {
       auto var_expr = VarDeclExpr::CreateExpr(var_type, var_name, var_init, true,
         line_state.to_src_info(), ctx);
-      global_map.insert(var_name, var_expr);
-      return var_expr;
+      if (auto gptr = global_map.find(var_name); gptr == nullptr)
+      {
+        SmallVector<PTR<Expr>> to_push;
+        to_push.push_back(var_expr);
+        //TODO: move
+        global_map.insert(var_name, to_push);
+        return var_expr;
+      }
+      else
+      {
+        if (is_a<FnDefExpr>(gptr->second.get_front()))
+          generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+            "Function of name '{}' already exist!", var_name);
+        else
+          generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+            "Global variable of name '{}' already exist!", var_name);
+        return ErrorExpr::CreateExpr(ctx);
+      }
     }
 
     local_var_table.push_back({ var_name, var_type });
@@ -946,13 +962,13 @@ namespace colt::lang
     }
     if (auto gvar = global_map.find(identifier); gvar != nullptr)
     {
-      if (!is_a<VarDeclExpr>(gvar->second))
+      if (!is_a<VarDeclExpr>(gvar->second.get_front()))
       {
         generate_any<report_as::ERROR>(identifier_info, nullptr,
           "'{}' is not a variable!", identifier);
         return ErrorExpr::CreateExpr(ctx);
       }
-      return VarReadExpr::CreateExpr(gvar->second->get_type(), identifier,
+      return VarReadExpr::CreateExpr(gvar->second.get_front()->get_type(), identifier,
         line_state.to_src_info(), ctx);
     }
     else
@@ -972,24 +988,8 @@ namespace colt::lang
     SmallVector<PTR<Expr>, 4> arguments;
     parse_parenthesis(&ASTMaker::parse_function_call_arguments, arguments);
 
-    if (auto found = global_map.find(identifier))
-    {
-      if (is_a<FnDefExpr>(found->second))
-      {
-        auto decl = as<PTR<FnDefExpr>>(found->second)->get_fn_decl();
-        if (!validate_fn_call(arguments, decl, identifier, identifier_location))
-          return ErrorExpr::CreateExpr(ctx);
-        return FnCallExpr::CreateExpr(decl, std::move(arguments),
-          line_state.to_src_info(), ctx);
-      }
-      else // and return an ErrorExpr
-        generate_any<report_as::ERROR>(identifier_location, nullptr,
-          "'{}' is not a function!", identifier);
-    }
-    else
-      generate_any<report_as::ERROR>(identifier_location, nullptr,
-        "Function of name '{}' does not exist!", identifier);
-    return ErrorExpr::CreateExpr(ctx);
+    return handle_function_call(identifier, std::move(arguments),
+      identifier_location, line_state.to_src_info());
   }
 
   void ASTMaker::parse_function_call_arguments(SmallVector<PTR<Expr>, 4>& arguments) noexcept
@@ -1071,11 +1071,67 @@ namespace colt::lang
       {
         //TODO: checking for pointer types
         generate_any<report_as::ERROR>(arguments[i]->get_src_code(), nullptr,
-          "Type of argument does not match that of declaration!");
+          "Type of argument ('{}') does not match that of declaration ('{}')!",
+          arguments[i]->get_type()->get_name(), decl->get_params_type()[i]->get_name());
         ret = false;
       }
     }
     return ret;
+  }
+
+  PTR<Expr> ASTMaker::handle_function_call(StringView identifier, SmallVector<PTR<Expr>, 4>&& arguments, const SourceCodeExprInfo& identifier_loc, const SourceCodeExprInfo& fn_call) noexcept
+  {
+    auto ptr = global_map.find(identifier);
+    if (ptr == nullptr)
+    {
+      generate_any<report_as::ERROR>(identifier_loc, nullptr,
+        "Function of name '{}' does not exist!", identifier);
+      return ErrorExpr::CreateExpr(ctx);
+    }
+    if (is_a<VarDeclExpr>(ptr->second.get_front()))
+    {
+      generate_any<report_as::ERROR>(identifier_loc, nullptr,
+        "'{}' is a global variable, not a function!", identifier);
+      return ErrorExpr::CreateExpr(ctx);
+    }
+    if (ptr->second.get_size() == 1)
+    {      
+      if (auto decl = as<PTR<FnDefExpr>>(ptr->second.get_front())->get_fn_decl();
+        validate_fn_call(arguments, decl, identifier, fn_call))
+        return FnCallExpr::CreateExpr(decl, std::move(arguments), fn_call, ctx);
+      return ErrorExpr::CreateExpr(ctx);
+    }
+
+    SmallVector<PTR<const FnDefExpr>> overload_set;
+    for (auto i : ptr->second)
+    {
+      assert_true(is_a<FnDefExpr>(i), "Invalid global table entry!");
+      auto fn = as<PTR<const FnDefExpr>>(i);
+      if (fn->get_params_count() == arguments.get_size())
+        overload_set.push_back(fn);
+    }
+    PTR<const FnDefExpr> best = nullptr;
+    for (auto i : overload_set)
+    {
+      auto fn = as<PTR<const FnDefExpr>>(i);
+      for (size_t i = 0; i < fn->get_params_count(); i++)
+      {
+        if (!arguments[i]->get_type()->is_equal(fn->get_params_type()[i]))
+          goto REPEAT;
+      }
+      best = fn;
+
+    REPEAT:
+      continue;
+    }
+    if (best == nullptr)
+    {
+      generate_any<report_as::ERROR>(identifier_loc, nullptr,
+        "None of the overloads of function '{}' matches these arguments!", identifier);
+      return ErrorExpr::CreateExpr(ctx);
+    }
+    return FnCallExpr::CreateExpr(best->get_fn_decl(),
+      std::move(arguments), fn_call, ctx);
   }
 
   void ASTMaker::handle_unreachable_code() noexcept
@@ -1112,6 +1168,77 @@ namespace colt::lang
       generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
         "Expected a 'return' statement, as path must return a value!");
     }
+  }
+
+  void ASTMaker::add_fn_to_global_table(PTR<FnDefExpr> expr) noexcept
+  {
+    auto ptr = global_map.find(expr->get_name());
+    if (ptr == nullptr)
+    {
+      SmallVector<PTR<Expr>> exprs;
+      exprs.push_back(expr);
+      //TODO: move
+      global_map.insert(expr->get_name(), exprs);
+      return;
+    }
+    if (is_a<VarDeclExpr>(ptr->second.get_front()))
+    {
+      generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+        "Global variable of name '{}' already exist!", expr->get_name());
+      return;
+    }
+    if (as<PTR<FnDefExpr>>(ptr->second.get_front())->is_extern())
+    {
+      if (expr->is_extern())
+      {
+        if (!expr->get_type()->is_equal(ptr->second.get_front()->get_type()))
+        {
+          generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+            "Cannot overload 'extern' functions!", expr->get_name());
+        }
+        return;
+      }
+      generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+        "Cannot overload non-'extern' with 'extern' functions!", expr->get_name());
+      return;
+    }
+
+    for (auto i : ptr->second)
+    {
+      assert_true(is_a<FnDefExpr>(i), "Invalid global table entry!");
+      auto fn = as<PTR<const FnDefExpr>>(i);
+      //If the functions do not have the same number of arguments
+      //then we can safely overload
+      if (fn->get_params_count() != expr->get_params_count())
+        continue;
+      for (size_t j = 0; j < fn->get_params_count(); j++)
+      {
+        //If any of the arguments differ, we can safely overload
+        if (!fn->get_params_type()[j]->is_equal(expr->get_params_type()[j]))
+          goto REPEAT;
+      }
+      //Same function: if both have body, then error
+      if (fn->get_return_type()->is_equal(expr->get_return_type()))
+      {
+        if (fn->has_body() && expr->has_body())
+        {
+          generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+            "Function of name '{}' already has a body!", expr->get_name());
+          return;
+        }
+      }
+      else //same arguments but different return types
+      {
+        generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+          "Cannot overload functions solely on return type!", expr->get_name());
+        return;
+      }
+
+    REPEAT:
+      continue;
+    }
+    //push new overload
+    ptr->second.push_back(expr);
   }
 
   void ASTMaker::panic_consume_semicolon() noexcept
@@ -1161,5 +1288,5 @@ namespace colt::lang
   {
     while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_PAREN && current_tkn != TKN_EOF)
       consume_current_tkn();
-  }
+  }  
 }
