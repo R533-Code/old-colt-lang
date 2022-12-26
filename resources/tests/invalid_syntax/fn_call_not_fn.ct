@@ -1,4 +1,4 @@
-//`'a' is not a function!
+//`'a' is a global variable, not a function!
 //1
 var a = 10;
 
