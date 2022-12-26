@@ -172,8 +172,9 @@ namespace colt
       else if (auto main = ColtJIT->lookup("main"))
       {
         auto main_fn = reinterpret_cast<i64(*)()>(main->getValue());
+        i64 ret = main_fn();
         if (print)
-          io::PrintMessage("Main function returned '{}'!", main_fn());
+          io::PrintMessage("Main function returned '{}'!", ret);
       }
       else if (print)
         io::PrintWarning("Main function was not found!");
