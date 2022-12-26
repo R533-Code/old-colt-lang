@@ -759,8 +759,9 @@ namespace colt::lang
 
     if (!is_a<VarReadExpr>(lhs))
     {
-      generate_any<report_as::ERROR>(lhs->get_src_code(), nullptr,
-        "Left hand side of an assignment should be a variable!");
+      if (!is_a<ErrorExpr>(lhs))
+        generate_any<report_as::ERROR>(lhs->get_src_code(), nullptr,
+          "Left hand side of an assignment should be a variable!");
       return ErrorExpr::CreateExpr(ctx);
     }
 

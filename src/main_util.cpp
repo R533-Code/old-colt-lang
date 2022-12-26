@@ -27,6 +27,9 @@ namespace colt
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDOUT);
     _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
     _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDOUT);
+    /*int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+    _CrtSetDbgFlag(flag | _CRTDBG_CHECK_ALWAYS_DF);*/
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
     //Run after main
     static ON_EXIT
     {
