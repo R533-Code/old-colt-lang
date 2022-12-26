@@ -41,7 +41,7 @@ namespace colt
 #ifndef COLT_NO_LLVM
   /// @brief Attempts to run the 'main' function from IR
   /// @param IR The IR to compile and in which to search for 'main' symbol
-  void RunMain(gen::GeneratedIR&& IR) noexcept;
+  void RunMain(gen::GeneratedIR&& IR, bool print = true) noexcept;
 #endif //!COLT_NO_LLVM
 }
 

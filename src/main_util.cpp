@@ -21,7 +21,7 @@ namespace colt
   {
 #if defined(COLT_MSVC) && defined(COLT_DEBUG)
     //Print memory leaks
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF /*| _CRTDBG_CHECK_ALWAYS_DF*/);
 #endif
 
 #ifndef COLT_NO_LLVM
@@ -40,6 +40,8 @@ namespace colt
 
     for (;;)
     {
+      ast.expressions.clear();
+      ast.global_map.clear();
       io::Print<false>("{}>{} ", io::BrightCyanF, io::Reset);
       auto line = String::getLine();
       if (line.is_error())
@@ -63,6 +65,7 @@ namespace colt
           "extern fn _ColtPrintu64(u64 a)->void;\n"
           "extern fn _ColtPrintf32(float a)->void;\n"
           "extern fn _ColtPrintf64(double a)->void;\n"
+          "extern fn _ColtPrintchar(char a)->void;\n"
           "fn Print(bool a)->void: _ColtPrintbool(a);\n"
           "fn Print(i8 a)->void: _ColtPrinti8(a);\n"
           "fn Print(i16 a)->void: _ColtPrinti16(a);\n"
@@ -74,6 +77,7 @@ namespace colt
           "fn Print(u64 a)->void: _ColtPrintu64(a);\n"
           "fn Print(float a)->void: _ColtPrintf32(a);\n"
           "fn Print(double a)->void: _ColtPrintf64(a);\n"
+          "fn Print(char a)->void: _ColtPrintchar(a);\n"
           "fn Print()->void: pass;\n"
           "fn main()->i64 { Print(@line(1)\n"
         };
@@ -84,7 +88,7 @@ namespace colt
         {
 #ifndef COLT_NO_LLVM
           if (auto result = GenerateIR(ast); result.is_expected())
-            RunMain(std::move(result.get_value()));
+            RunMain(std::move(result.get_value()), false);
 #endif //!COLT_NO_LLVM
         }
       }
@@ -95,7 +99,7 @@ namespace colt
         {
 #ifndef COLT_NO_LLVM
           if (auto result = GenerateIR(ast); result.is_expected())
-            RunMain(std::move(result.get_value()));
+            RunMain(std::move(result.get_value()), false);
 #endif //!COLT_NO_LLVM
         }
       }
@@ -156,7 +160,7 @@ namespace colt
   }
 
 #ifndef COLT_NO_LLVM
-  void RunMain(gen::GeneratedIR&& IR) noexcept
+  void RunMain(gen::GeneratedIR&& IR, bool print) noexcept
   {
     if (auto JITError = gen::ColtJIT::Create(); !JITError)
       io::PrintError("Could not create JIT compiler!");
@@ -168,9 +172,10 @@ namespace colt
       else if (auto main = ColtJIT->lookup("main"))
       {
         auto main_fn = reinterpret_cast<i64(*)()>(main->getValue());
-        io::PrintMessage("Main function returned '{}'!", main_fn());
+        if (print)
+          io::PrintMessage("Main function returned '{}'!", main_fn());
       }
-      else
+      else if (print)
         io::PrintWarning("Main function was not found!");
     }
   }  
