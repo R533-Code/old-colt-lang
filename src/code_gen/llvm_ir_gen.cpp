@@ -446,18 +446,25 @@ namespace colt::gen
     builder.SetInsertPoint(BB);
 
     size_t i = 0;
+
+    //We store the variables count to be able to pop variables of the scope
+    size_t current_scope_var_count = local_vars.get_size();
+
     for (auto& arg : fn->args())
     {
       arg.setName(ToStringRef(ptr->get_params_name()[i]));
       //Create an allocation on the stack and store it
       local_vars.push_back(
         builder.CreateAlloca(arg.getType(), nullptr,
-          ToStringRef(ptr->get_params_name()[i]) + "_arg")
+          ToStringRef(ptr->get_params_name()[i]) + "_ArgCopy")
       );
       builder.CreateStore(&arg, local_vars.get_back());
       ++i;
     }    
     gen_ir(ptr->get_body());
+
+    //We pop variables allocated in the current scope
+    local_vars.pop_back_n(local_vars.get_size() - current_scope_var_count);
   }
 
   void LLVMIRGenerator::gen_fn_ret(PTR<const lang::FnReturnExpr> ptr) noexcept
