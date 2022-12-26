@@ -28,10 +28,7 @@ target_precompile_headers(${COLT_EXECUTABLE_NAME} PUBLIC
 
 # Define COLT_DEBUG_BUILD for debug config
 target_compile_definitions(
-  ${COLT_EXECUTABLE_NAME} PRIVATE $<$<CONFIG:DEBUG>:COLT_DEBUG>
-)
-target_compile_definitions(
-  ${COLT_EXECUTABLE_NAME} PRIVATE $<$<CONFIG:DEBUG>:COLT_DEBUG_BUILD>
+  ${COLT_EXECUTABLE_NAME} PRIVATE $<$<CONFIG:DEBUG>:COLT_DEBUG> $<$<CONFIG:DEBUG>:COLT_DEBUG_BUILD>
 )
 
 if (MSVC)
@@ -47,6 +44,13 @@ endif()
 #########################################
 # LLVM SETUP
 #########################################
+
+option(COLT_NO_LLVM "Compile Colt without using LLVM" false)
+if (${COLT_NO_LLVM})
+  target_compile_definitions(
+    ${COLT_EXECUTABLE_NAME} PRIVATE "COLT_NO_LLVM"
+  )
+endif()
 
 message(STATUS "Setting up LLVM...")
 
