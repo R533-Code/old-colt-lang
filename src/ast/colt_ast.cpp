@@ -279,7 +279,7 @@ namespace colt::lang
         && !as<PTR<const BuiltInType>>(rhs->get_type())->supports(TokenToBinaryOperator(binary_op)))
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), &ASTMaker::panic_consume_semicolon,
-          "Type does not support operator '{}'!", binary_op_info.expression);
+          "Type '{}' does not support operator '{}'!", rhs->get_type()->get_name(), binary_op_info.expression);
         return ErrorExpr::CreateExpr(ctx);
       }
 
