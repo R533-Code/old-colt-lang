@@ -215,12 +215,12 @@ namespace colt::lang
     };
 
     /// @brief BinaryOperator supported by boolean
-    static constexpr BinaryOperator CharSupported[4] = {
+    static constexpr BinaryOperator CharSupported[2] = {
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
     };
 
     /// @brief BinaryOperator supported by boolean
-    static constexpr BinaryOperator lstringSupported[4] = {
+    static constexpr BinaryOperator lstringSupported[2] = {
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
     };
 
