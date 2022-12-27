@@ -995,12 +995,23 @@ namespace colt::lang
   void ASTMaker::parse_function_call_arguments(SmallVector<PTR<Expr>, 4>& arguments) noexcept
   {
     if (current_tkn != TKN_RIGHT_PAREN)
-      arguments.push_back(parse_binary());
+    {
+      auto expr = parse_binary();
+      if (expr->get_type()->is_void())
+        generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+          "Parameter cannot evaluate to 'void'!");
+      arguments.push_back(expr);
+    }
     while (current_tkn != TKN_RIGHT_PAREN)
     {
       if (check_and_consume(TKN_COMMA, "Expected a ')'!"))
         break;
-      arguments.push_back(parse_binary());
+
+      auto expr = parse_binary();
+      if (expr->get_type()->is_void())
+        generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+          "Parameter cannot evaluate to 'void'!");
+      arguments.push_back(expr);
     }
   }
 
@@ -1094,6 +1105,7 @@ namespace colt::lang
         "'{}' is a global variable, not a function!", identifier);
       return ErrorExpr::CreateExpr(ctx);
     }
+    
     if (ptr->second.get_size() == 1)
     {      
       if (auto decl = as<PTR<FnDefExpr>>(ptr->second.get_front())->get_fn_decl();
