@@ -95,6 +95,14 @@ namespace colt::lang
       VoidType::CreateType(ctx), std::move(body), src_info
       ));
   }
+
+  PTR<Expr> ScopeExpr::CreateExpr(std::initializer_list<PTR<Expr>> list, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
+  {
+    Vector<PTR<Expr>> body;
+    for (auto i : list)
+      body.push_back(i);
+    return CreateExpr(std::move(body), src_info, ctx);
+  }
   
   PTR<Expr> ConditionExpr::CreateExpr(PTR<Expr> if_cond, PTR<Expr> if_stmt, PTR<Expr> else_stmt, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {

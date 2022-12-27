@@ -793,6 +793,8 @@ namespace colt::lang
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(Vector<PTR<Expr>>&& body, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+
+    static PTR<Expr> CreateExpr(std::initializer_list<PTR<Expr>> list, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a condition
