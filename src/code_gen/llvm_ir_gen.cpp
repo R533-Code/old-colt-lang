@@ -335,7 +335,7 @@ namespace colt::gen
       returned_value = builder.CreateSIToFP(returned_value, type_to_llvm(expr_t), "si_to_fp");
     //Same types conversions
     else if (child_t->is_integral())
-      returned_value = builder.CreateIntCast(returned_value, type_to_llvm(expr_t), expr_t->is_signed_int(), "i_to_i");
+      returned_value = builder.CreateIntCast(returned_value, type_to_llvm(expr_t), child_t->is_bool() ? false : expr_t->is_signed_int(), "i_to_i");
     else if (child_t->is_floating())
       returned_value = builder.CreateFPCast(returned_value, type_to_llvm(expr_t), "fp_to_fp");
     else
