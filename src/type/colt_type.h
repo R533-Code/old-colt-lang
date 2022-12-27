@@ -256,7 +256,7 @@ namespace colt::lang
     constexpr bool is_floating() const noexcept { return builtin_ID == F32 || builtin_ID == F64; }
     /// @brief Check if the current type is any of the signed built-in integers
     /// @return True if built-in signed integer
-    constexpr bool is_signed_int() const noexcept { return builtin_ID - I8 < I8; }
+    constexpr bool is_signed_int() const noexcept { return U64 < builtin_ID && builtin_ID < F32; }
     /// @brief Check if the current type is any of the unsigned built-in integers
     /// @return True if built-in unsigned integer
     constexpr bool is_unsigned_int() const noexcept { return builtin_ID < I8; }
