@@ -187,7 +187,7 @@ namespace colt::lang
   
   private:
     /// @brief BinaryOperator supported by integral built-in types
-    static constexpr BinaryOperator IntegralSupported[16] = {
+    static constexpr BinaryOperator IntegralSupported[] = {
       BinaryOperator::OP_SUM, BinaryOperator::OP_SUB,
       BinaryOperator::OP_MUL, BinaryOperator::OP_DIV,
       BinaryOperator::OP_MOD,
@@ -200,7 +200,7 @@ namespace colt::lang
     };
 
     /// @brief BinaryOperator supported by floating point built-in types
-    static constexpr BinaryOperator FloatingSupported[10] = {
+    static constexpr BinaryOperator FloatingSupported[] = {
       BinaryOperator::OP_SUM, BinaryOperator::OP_SUB,
       BinaryOperator::OP_MUL, BinaryOperator::OP_DIV,
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
@@ -209,18 +209,18 @@ namespace colt::lang
     };
 
     /// @brief BinaryOperator supported by boolean
-    static constexpr BinaryOperator BoolSupported[4] = {     
+    static constexpr BinaryOperator BoolSupported[] = {     
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,      
       BinaryOperator::OP_BOOL_AND, BinaryOperator::OP_BOOL_OR,
     };
 
     /// @brief BinaryOperator supported by boolean
-    static constexpr BinaryOperator CharSupported[2] = {
+    static constexpr BinaryOperator CharSupported[] = {
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
     };
 
     /// @brief BinaryOperator supported by boolean
-    static constexpr BinaryOperator lstringSupported[2] = {
+    static constexpr BinaryOperator lstringSupported[] = {
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
     };
 
