@@ -416,19 +416,13 @@ namespace colt::gen
 
   void LLVMIRGenerator::gen_fn_def(PTR<const lang::FnDefExpr> ptr) noexcept
   {
-    auto mangled_name = String{ "_C"};
-    mangled_name += ptr->get_name();
-    mangled_name += ptr->get_return_type()->get_name();
-    for (auto i : ptr->get_params_type())
-      mangled_name += i->get_name();
-
     PTR<Function> fn = Function::Create(
       cast<FunctionType>(type_to_llvm(ptr->get_type())),
       GlobalValue::ExternalLinkage,
-      (ptr->is_extern() || ptr->is_main()) ? ToStringRef(ptr->get_name()) : ToStringRef(mangled_name),
+      ToStringRef(colt::gen::mangle(ptr->get_fn_decl())),
       module);
     //Save to global table
-    function_map.insert_or_assign(ptr->get_fn_decl(), fn);
+    function_map.insert(ptr->get_fn_decl(), fn);
     
     //noexcept
     fn->addFnAttr(llvm::Attribute::NoUnwind);

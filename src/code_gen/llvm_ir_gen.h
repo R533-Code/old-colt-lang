@@ -26,6 +26,7 @@
 #include <util/colt_pch.h>
 #include <type/colt_type.h>
 #include <ast/colt_ast.h>
+#include <code_gen/mangle.h>
 
 /// @brief Contains classes responsible of producing code from the Colt AST
 namespace colt::gen
