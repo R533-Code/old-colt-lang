@@ -16,6 +16,38 @@ namespace colt::lang
 {
   //Forward declaration
   class COLTContext;  
+  //Forward declaration
+  class Expr;
+
+  /// @brief Iterator over a view of PTR<Type>
+  using TypeIter = iter::ContiguousView<const PTR<const Type>>;
+  /// @brief Iterator over arguments
+  using ArgIter = iter::ContiguousView<const PTR<const Expr>>;
+  /// @brief Iterator over arguments name
+  using ArgNameIter = iter::ContiguousView<const StringView>;
+
+  /// @brief Iterator over type names
+  class TypeNameIter
+  {
+    /// @brief The iterator of PTR<Type>
+    iter::ContiguousView<const PTR<const Type>> types;
+
+  public:
+    /// @brief Constructor
+    /// @param types The iterator of PTR<Type>
+    constexpr TypeNameIter(iter::ContiguousView<const PTR<const Type>> types) noexcept
+      : types(types) {}
+
+    /// @brief Generates the next typename
+    /// @return Next typename or None
+    Optional<const StringView> next() noexcept
+    {
+      auto opt = types.next();
+      if (opt.is_value())
+        return opt.get_value()->get_name();
+      return None;
+    }
+  };
 
   /// @brief Abstract base class of all expressions
   class Expr
@@ -603,10 +635,17 @@ namespace colt::lang
     ContiguousView<PTR<const Type>> get_params_type() const noexcept { return as<PTR<const FnType>>(get_type())->get_params_type(); }
     /// @brief Returns the return type of the function
     /// @return The return type of the function
-    PTR<const Type> get_return_type() const noexcept { return static_cast<const FnType*>(get_type())->get_return_type(); }
+    PTR<const Type> get_return_type() const noexcept { return as<PTR<const FnType>>(get_type())->get_return_type(); }
     /// @brief Returns true if the function is externally defined
     /// @return True if function is externally defined
     bool is_extern() const noexcept { return is_extern_v; }
+
+    /// @brief Iterates over arguments name
+    /// @return Iterator over the arguments name
+    ArgNameIter args_name_iter() const noexcept { return arguments_name.to_iter(); }
+    /// @brief Iterates over the typename of each arguments
+    /// @return Iterator over the typenames of the arguments
+    TypeNameIter args_typename_iter() const noexcept { return as<PTR<const FnType>>(get_type())->get_params_type().to_iter(); }
 
     /// @brief Creates a FnDeclExpr
     /// @param type The type of the resulting expression
@@ -688,6 +727,13 @@ namespace colt::lang
     /// @brief Returns a pointer to the declaration of this function
     /// @return Pointer to the declaration
     PTR<const FnDeclExpr> get_fn_decl() const noexcept { return declaration; }
+
+    /// @brief Iterates over arguments name
+    /// @return Iterator over the arguments name
+    ArgNameIter args_name_iter() const noexcept { return get_fn_decl()->args_name_iter(); }
+    /// @brief Iterates over the typename of each arguments
+    /// @return Iterator over the typenames of the arguments
+    TypeNameIter args_typename_iter() const noexcept { return get_fn_decl()->args_typename_iter(); }
 
     /// @brief Creates a FnDefExpr
     /// @param decl The declaration of the function
