@@ -84,6 +84,8 @@ namespace colt::lang
     PTR<const FnDeclExpr> current_function = nullptr;
     /// @brief Map responsible of storing global state (functions, global variables)
     Map<StringView, SmallVector<PTR<Expr>>>& global_map;
+    /// @brief Table of String literals
+    StableSet<String>& str_table;
     /// @brief The context storing types and expressions
     COLTContext& ctx;
 
@@ -148,7 +150,7 @@ namespace colt::lang
     /// @param expressions The vector onto which to push expressions
     /// @param global_map The global map onto which to store functions and global variables
     /// @param ctx The COLTContext to use to store types and expressions
-    ASTMaker(StringView strv, Vector<PTR<Expr>>& expressions, Map<StringView, SmallVector<PTR<Expr>>>& global_map, COLTContext& ctx) noexcept;
+    ASTMaker(StringView strv, Vector<PTR<Expr>>& expressions, Map<StringView, SmallVector<PTR<Expr>>>& global_map, StableSet<String>& str, COLTContext& ctx) noexcept;
     //No default move constructor
     ASTMaker(ASTMaker&&) = delete;
     //No default copy constructor
@@ -366,6 +368,8 @@ namespace colt::lang
     Vector<PTR<Expr>> expressions = {};
     /// @brief The global function/variable table
     Map<StringView, SmallVector<PTR<Expr>>> global_map = {};
+    /// @brief The table of String literals
+    StableSet<String> str_table = {};
     /// @brief The context storing type and expression informations
     COLTContext& ctx;
 

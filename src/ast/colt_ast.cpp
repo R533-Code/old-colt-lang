@@ -9,7 +9,7 @@ namespace colt::lang
   Expected<AST, u32> CreateAST(StringView from, COLTContext& ctx) noexcept
   {
     AST result = { ctx };
-    ASTMaker ast = { from, result.expressions, result.global_map, ctx };
+    ASTMaker ast = { from, result.expressions, result.global_map, result.str_table, ctx };
     if (ast.is_empty() || ast.get_error_count() != 0)
       return { Error, ast.get_error_count() };
     else
@@ -19,7 +19,7 @@ namespace colt::lang
   bool CompileAndAdd(StringView str, AST& ast) noexcept
   {
     u64 crr = ast.expressions.get_size();
-    if (ASTMaker astm = { str, ast.expressions, ast.global_map, ast.ctx };
+    if (ASTMaker astm = { str, ast.expressions, ast.global_map, ast.str_table, ast.ctx };
       astm.get_error_count() != 0)
     {
       ast.expressions.pop_back_n(ast.expressions.get_size() - crr);
@@ -125,8 +125,8 @@ namespace colt::lang
     return { scan_info.line_nb, scan_info.line_strv, lexer.get_current_lexeme() };
   }
 
-  ASTMaker::ASTMaker(StringView strv, Vector<PTR<Expr>>& expressions, Map<StringView, SmallVector<PTR<Expr>>>& global_map, COLTContext& ctx) noexcept
-    : expressions(expressions), lexer(strv), global_map(global_map), ctx(ctx)
+  ASTMaker::ASTMaker(StringView strv, Vector<PTR<Expr>>& expressions, Map<StringView, SmallVector<PTR<Expr>>>& global_map, StableSet<String>& str, COLTContext& ctx) noexcept
+    : expressions(expressions), lexer(strv), global_map(global_map), str_table(str), ctx(ctx)
   {
     current_tkn = lexer.get_next_token();
     while (current_tkn != TKN_EOF)
@@ -197,8 +197,13 @@ namespace colt::lang
       to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateChar(false,  ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_STRING_L:
+    {
+      //We need to save the literal before consuming the token
+      String literal = lexer.get_string_literal();
       consume_current_tkn();
-      to_ret = ErrorExpr::CreateExpr(ctx);
+      to_ret = LiteralExpr::CreateExpr(str_table.insert(std::move(literal)).first, BuiltInType::CreateLString(ctx),
+        line_state.to_src_info(), ctx);
+    }
 
       break;
     case TKN_AND:          // &(var)
@@ -315,9 +320,9 @@ namespace colt::lang
     }
 
     if (op == TKN_PLUS_PLUS || op == TKN_MINUS_MINUS)
-    {
-      PTR<Expr> read = parse_primary();
-      if (!is_a<VarReadExpr>(read))
+    {      
+      if (PTR<Expr> read = parse_primary();
+        !is_a<VarReadExpr>(read))
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Increment/Decrement operator can only be applied on variables!");
@@ -911,8 +916,16 @@ namespace colt::lang
       consume_current_tkn();
       return BuiltInType::CreateF64(is_const, ctx);
     case TKN_KEYWORD_LSTRING:
-      //TODO: add
-      colt_unreachable("not implemented");
+    {
+      if (!is_const)
+      {
+        generate_any<report_as::ERROR>(line_state.to_src_info(), panic,
+          "'lstring' typename cannot be marked as mutable!");
+        return ErrorType::CreateType(ctx);
+      }
+      consume_current_tkn();
+      return BuiltInType::CreateLString(ctx);
+    }
     case TKN_KEYWORD_PTR:
     {
       consume_current_tkn();
