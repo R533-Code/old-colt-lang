@@ -94,6 +94,10 @@ namespace colt::lang
 		/// @return String view over the current lexeme
 		StringView get_current_lexeme() const noexcept { return { to_scan.get_data() + lexeme_begin, to_scan.get_data() + offset - 1 }; }
 
+		/// @brief Returns the parsed String literal
+		/// @return String literal
+		String get_string_literal() const noexcept { return temp_str; }
+
 		/// @brief Returns the next token from the string to parse
 		/// @return Token representing the parsed lexeme
 		Token get_next_token() noexcept;
