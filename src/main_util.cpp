@@ -66,6 +66,7 @@ namespace colt
           "extern fn _ColtPrintf32(float a)->void;\n"
           "extern fn _ColtPrintf64(double a)->void;\n"
           "extern fn _ColtPrintchar(char a)->void;\n"
+          "extern fn puts(lstring str)->i32;\n"
           "fn Print(bool a)->void: _ColtPrintbool(a);\n"
           "fn Print(i8 a)->void: _ColtPrinti8(a);\n"
           "fn Print(i16 a)->void: _ColtPrinti16(a);\n"
@@ -78,6 +79,7 @@ namespace colt
           "fn Print(float a)->void: _ColtPrintf32(a);\n"
           "fn Print(double a)->void: _ColtPrintf64(a);\n"
           "fn Print(char a)->void: _ColtPrintchar(a);\n"
+          "fn Print(lstring a)->void: puts(a);\n"
           "fn Print()->void: pass;\n"
           "fn main()->i64 { Print(@line(1)\n"
         };
