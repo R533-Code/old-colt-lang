@@ -182,7 +182,9 @@ namespace colt::lang
       /// @brief 32-bit floating point
       F32,
       /// @brief 64-bit floating point
-      F64,      
+      F64,
+      /// @brief Pointer to constant characters
+      lstring,
     };
   
   private:
@@ -222,6 +224,7 @@ namespace colt::lang
     /// @brief BinaryOperator supported by boolean
     static constexpr BinaryOperator lstringSupported[] = {
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
+      BinaryOperator::OP_SUM,
     };
 
     /// @brief The ID of the built-in type
@@ -260,6 +263,9 @@ namespace colt::lang
     /// @brief Check if the current type is any of the unsigned built-in integers
     /// @return True if built-in unsigned integer
     constexpr bool is_unsigned_int() const noexcept { return builtin_ID < I8; }
+    /// @brief Check if the current type is 'lstring'
+    /// @return True if the type is an 'lstring'
+    constexpr bool is_lstring() const noexcept { return builtin_ID == lstring; }
 
     /// @brief Check if the current type supports 'op' BinaryOperator
     /// @param op The operator to check for
@@ -336,6 +342,11 @@ namespace colt::lang
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
     static PTR<Type> CreateChar(bool is_const, COLTContext& ctx) noexcept;
+    /// @brief Creates a char type
+    /// @param is_const True if const
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
+    static PTR<Type> CreateLString(COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a pointer to a type
