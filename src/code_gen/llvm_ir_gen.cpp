@@ -177,6 +177,8 @@ namespace colt::gen
       returned_value = ConstantInt::get(llvm::Type::getInt1Ty(context), ptr->get_value().as<bool>());
     break; case BuiltInType::CHAR:
       returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<char>());
+    break; case BuiltInType::lstring:
+      returned_value = builder.CreateGlobalStringPtr(ToStringRef(*ptr->get_value().as<PTR<String>>()), "GlobStr", 0U, &module);
     break; default:
       colt_unreachable("Invalid literal expr!");
     }
@@ -614,6 +616,8 @@ namespace colt::gen
         return llvm::Type::getInt1Ty(context);
       case BuiltInType::CHAR:
         return llvm::Type::getInt8Ty(context);
+      case BuiltInType::lstring:
+        return PointerType::get(llvm::Type::getInt8Ty(context), 0);
       default:
         colt_unreachable("Invalid ID!");
       }
