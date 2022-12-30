@@ -51,7 +51,7 @@ namespace colt::gen
   String demangle(StringView mangled_name) noexcept
   {
     StringView copy = mangled_name;
-    if (mangled_name.get_size() < 2 || !mangled_name.begins_with("_C"))
+    if (mangled_name.get_size() < 3 || !mangled_name.begins_with("_C"))
       return String{ copy };
     //Pop "_C"
     mangled_name.pop_front_n(2);
