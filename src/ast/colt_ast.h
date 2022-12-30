@@ -42,7 +42,8 @@ namespace colt::lang
   /// @return Concatenated SourceCodeExprInfo
   SourceCodeExprInfo ConcatInfo(const SourceCodeExprInfo& lhs, const SourceCodeExprInfo& rhs) noexcept;
   
-  class AST;
+  //Forward declaration
+  struct AST;
 
   /// @brief Class responsible of producing an AST
   class ASTMaker
