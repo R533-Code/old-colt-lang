@@ -520,29 +520,29 @@ namespace colt::lang
       if (!is_a<BuiltInType>(type) && std::is_const_v<T> != type->is_const())
         return false;
       if constexpr (std::is_same_v<std::decay_t<T>, i8>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I8;
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::I8;
       else if constexpr (std::is_same_v<std::decay_t<T>, u8>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::U8;
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::U8;
       else if constexpr (std::is_same_v<std::decay_t<T>, i16>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I16;
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::I16;
       else if constexpr (std::is_same_v<std::decay_t<T>, u16>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::U16;
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::U16;
       else if constexpr (std::is_same_v<std::decay_t<T>, i32>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I32;
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::I32;
       else if constexpr (std::is_same_v<std::decay_t<T>, u32>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::U32;
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::U32;
       else if constexpr (std::is_same_v<std::decay_t<T>, i64>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::I64;
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::I64;
       else if constexpr (std::is_same_v<std::decay_t<T>, u64>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::U64;
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::U64;
       else if constexpr (std::is_same_v<std::decay_t<T>, f32>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::F32;
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::F32;
       else if constexpr (std::is_same_v<std::decay_t<T>, f64>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::F64;
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::F64;
       else if constexpr (std::is_same_v<std::decay_t<T>, bool>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::BOOL;
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::BOOL;
       /*else if constexpr (std::is_same_v<T, char>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::CHAR;*/
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::CHAR;*/
     }
     colt_unreachable("Unknown type!");
   }
@@ -594,7 +594,7 @@ namespace colt::lang
       else if constexpr (std::is_same_v<std::decay_t<T>, bool>)
         return BuiltInType::CreateBool(std::is_const_v<T>, ctx);
       /*else if constexpr (std::is_same_v<T, char>)
-        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInType::BuiltInID::CHAR;*/
+        return as<PTR<const BuiltInType>>(type)->get_builtin_id() == BuiltInID::CHAR;*/
     }
     colt_unreachable("Unknown type!");
   }

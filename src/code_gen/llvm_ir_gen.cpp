@@ -153,35 +153,35 @@ namespace colt::gen
 
     switch (as<PTR<const lang::BuiltInType>>(ptr->get_type())->get_builtin_id())
     {
-    break; case BuiltInType::U8:
+    break; case U8:
       returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<u8>());
-    break; case BuiltInType::U16:
+    break; case U16:
       returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().as<u16>());
-    break; case BuiltInType::U32:
+    break; case U32:
       returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().as<u32>());
-    break; case BuiltInType::U64:
+    break; case U64:
       returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().as<u64>());
-    break; case BuiltInType::U128:
+    break; case U128:
       returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().as<u64>());
-    break; case BuiltInType::I8:
+    break; case I8:
       returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<i8>());
-    break; case BuiltInType::I16:
+    break; case I16:
       returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().as<i16>());
-    break; case BuiltInType::I32:
+    break; case I32:
       returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().as<i32>());
-    break; case BuiltInType::I64:
+    break; case I64:
       returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().as<i64>());
-    break; case BuiltInType::I128:
+    break; case I128:
       returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().as<i64>());
-    break; case BuiltInType::F32:
+    break; case F32:
       returned_value = ConstantFP::get(llvm::Type::getFloatTy(context), ptr->get_value().as<f32>());
-    break; case BuiltInType::F64:
+    break; case F64:
       returned_value = ConstantFP::get(llvm::Type::getDoubleTy(context), ptr->get_value().as<f64>());
-    break; case BuiltInType::BOOL:
+    break; case BOOL:
       returned_value = ConstantInt::get(llvm::Type::getInt1Ty(context), ptr->get_value().as<bool>());
-    break; case BuiltInType::CHAR:
+    break; case CHAR:
       returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<char>());
-    break; case BuiltInType::lstring:
+    break; case lang::lstring:
       returned_value = builder.CreateGlobalStringPtr(ToStringRef(*ptr->get_value().as<PTR<String>>()), "GlobStr", 0U, &module);
     break; default:
       colt_unreachable("Invalid literal expr!");
@@ -329,7 +329,7 @@ namespace colt::gen
     auto expr_t = as<PTR<const BuiltInType>>(ptr->get_type());
     auto child_t = as<PTR<const BuiltInType>>(ptr->get_child()->get_type());
 
-    if (expr_t->get_builtin_id() == BuiltInType::BOOL)
+    if (expr_t->get_builtin_id() == BOOL)
       returned_value = builder.CreateIsNotNull(returned_value, "to_bool");
     if (child_t->is_floating() && expr_t->is_signed_int())
       returned_value = builder.CreateFPToSI(returned_value, type_to_llvm(expr_t), "fp_to_si");
@@ -597,30 +597,30 @@ namespace colt::gen
       auto ptr = as<PTR<const BuiltInType>>(type);
       switch (ptr->get_builtin_id())
       {
-      case BuiltInType::U8:
-      case BuiltInType::I8:
+      case U8:
+      case I8:
         return llvm::Type::getInt8Ty(context);
-      case BuiltInType::U16:
-      case BuiltInType::I16:
+      case U16:
+      case I16:
         return llvm::Type::getInt16Ty(context);
-      case BuiltInType::U32:
-      case BuiltInType::I32:
+      case U32:
+      case I32:
         return llvm::Type::getInt32Ty(context);
-      case BuiltInType::U64:
-      case BuiltInType::I64:
+      case U64:
+      case I64:
         return llvm::Type::getInt64Ty(context);
-      case BuiltInType::U128:
-      case BuiltInType::I128:
+      case U128:
+      case I128:
         return llvm::Type::getInt128Ty(context);
-      case BuiltInType::F32:
+      case F32:
         return llvm::Type::getFloatTy(context);
-      case BuiltInType::F64:
+      case F64:
         return llvm::Type::getDoubleTy(context);
-      case BuiltInType::BOOL:
+      case BOOL:
         return llvm::Type::getInt1Ty(context);
-      case BuiltInType::CHAR:
+      case CHAR:
         return llvm::Type::getInt8Ty(context);
-      case BuiltInType::lstring:
+      case lang::lstring:
         return PointerType::get(llvm::Type::getInt8Ty(context), 0);
       default:
         colt_unreachable("Invalid ID!");

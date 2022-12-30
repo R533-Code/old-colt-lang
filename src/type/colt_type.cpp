@@ -3,7 +3,7 @@
 */
 
 #include "colt_type.h"
-#include "context/colt_context.h"
+#include "ast/colt_context.h"
 
 namespace colt::lang
 {
