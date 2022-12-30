@@ -7,7 +7,7 @@
 #define HG_COLT_AST
 
 #include "colt_expr.h"
-#include "context/colt_context.h"
+#include "colt_context.h"
 #include "parsing/colt_lexer.h"
 
 namespace colt::lang
