@@ -1,3 +1,7 @@
+/** @file main_utils.cpp
+* Contains definition of functions declared in 'main_utils.h'.
+*/
+
 #include "main_util.h"
 
 using namespace colt::gen;
