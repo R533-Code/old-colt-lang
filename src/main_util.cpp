@@ -1,5 +1,5 @@
-/** @file main_utils.cpp
-* Contains definition of functions declared in 'main_utils.h'.
+/** @file main_util.cpp
+* Contains definition of functions declared in 'main_util.h'.
 */
 
 #include "main_util.h"

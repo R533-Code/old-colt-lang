@@ -768,6 +768,7 @@ namespace colt::lang
     static PTR<Expr> CreateExpr(PTR<FnDeclExpr> decl, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
+  /// @brief Represents a function call expression
   class FnCallExpr
     final : public Expr
   {
@@ -1006,6 +1007,7 @@ namespace colt::lang
     bool is_continue() const noexcept { return !is_break_v; }
 
     /// @brief Constructs a while loop expression
+    /// @param is_break True if break, false if continue
     /// @param src_info The source code information
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression

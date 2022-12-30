@@ -1,4 +1,4 @@
-/** @file main_utils.h
+/** @file main_util.h
 * Contains helper functions that joins front-end and back-end, into
 * simple function calls.
 * This header imports all utilities provided by Colt.

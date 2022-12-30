@@ -60,6 +60,7 @@ namespace colt::lang
     /// @brief Constructor
     /// @param ID The type ID
     /// @param is_const True if the type is const
+    /// @param name The type name
     constexpr Type(TypeID ID, bool is_const, StringView name) noexcept
       : name(name), ID(ID), is_const_v(is_const) {}
 
@@ -416,6 +417,7 @@ namespace colt::lang
     /// @param return_type Return type of the function
     /// @param args_type Parameters' type
     /// @param is_vararg True if accepts c-style variadic arguments
+    /// @param name The type name of the function
     constexpr FnType(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, bool is_vararg, StringView name) noexcept
       : Type(TYPE_FN, false, name), args_type(std::move(args_type)), return_type(return_type), is_vararg(is_vararg) {}
 
