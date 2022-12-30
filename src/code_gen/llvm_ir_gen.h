@@ -36,19 +36,35 @@ namespace colt::gen
 	/// @return The converted StringRef
 	llvm::StringRef ToStringRef(colt::StringView view) noexcept;
 
-	struct GeneratedIR
+	/// @brief Represents valid LLVM IR
+	class GeneratedIR
 	{
+		/// @brief Context in which types and other LLVM informations are stored
 		std::unique_ptr<llvm::LLVMContext> context = std::make_unique<llvm::LLVMContext>();
+		/// @brief Module in which IR is stored
 		std::unique_ptr<llvm::Module> module = std::make_unique<llvm::Module>("Colt", *context);
+		/// @brief The target machine for which the IR was generated
 		PTR<llvm::TargetMachine> target_machine;
 
+	public:
+		/// @brief Prints the generated IR
+		/// @param os The file to write in
 		void print_module(llvm::raw_ostream& os = llvm::errs()) const noexcept;
 
+		/// @brief Compiles IR to object file
+		/// @param path The path where to create the object file
+		/// @return True if no errors, or a const char* representing the error
 		Expected<bool, const char*> to_object_file(const char* path) noexcept;
 
+		/// @brief Optimizes the generated IR
+		/// @param level The optimization level
 		void optimize(colt::gen::OptimizationLevel level) noexcept;
 	};	
 
+	/// @brief Generates the LLVM corresponding to a valid AST
+	/// @param ast The AST from which to generate IR
+	/// @param target_triple The target for which to generate IR
+	/// @return IR or std::string representing the error (related to targets)
 	Expected<GeneratedIR, std::string> GenerateIR(const lang::AST& ast, const std::string& target_triple = LLVM_DEFAULT_TARGET_TRIPLE) noexcept;
 
 	/// @brief Class responsible of generating LLVM IR
@@ -85,38 +101,70 @@ namespace colt::gen
 
 		/// @brief Generate LLVM IR from expressions
 		/// @param ast The AST to compile to IR
-		/// @param level The optimization level
+		/// @param ctx The LLVMContext in which to store resulting informations
+		/// @param mod The module in which to write the IR
 		LLVMIRGenerator(const lang::AST& ast, llvm::LLVMContext& ctx, llvm::Module& mod) noexcept;
 
 	private:
+		/// @brief Generates IR for any expression by calling the
+		///        corresponding function.
 		void gen_ir(PTR<const lang::Expr> ptr) noexcept;
 
+		/// @brief Generates IR for literal expressions
+		/// @param ptr The expression for which to generate the IR
 		void gen_literal(PTR<const lang::LiteralExpr> ptr) noexcept;
 
+		/// @brief Generates IR for unary expressions
+		/// @param ptr The expression for which to generate the IR
 		void gen_unary(PTR<const lang::UnaryExpr> ptr) noexcept;
 
+		/// @brief Generates IR for binary expressions
+		/// @param ptr The expression for which to generate the IR
 		void gen_binary(PTR<const lang::BinaryExpr> ptr) noexcept;
 
+		/// @brief Generates IR for conversion expressions
+		/// @param ptr The expression for which to generate the IR 
 		void gen_convert(PTR<const lang::ConvertExpr> ptr) noexcept;
 
+		/// @brief Generates IR for variable declaration
+		/// @param ptr The expression for which to generate the IR
 		void gen_var_decl(PTR<const lang::VarDeclExpr> ptr) noexcept;
 		
+		/// @brief Generates IR for variable reads
+		/// @param ptr The expression for which to generate the IR 
 		void gen_var_read(PTR<const lang::VarReadExpr> ptr) noexcept;
 
+		/// @brief Generates IR for variable writes
+		/// @param ptr The expression for which to generate the IR 
 		void gen_var_write(PTR<const lang::VarWriteExpr> ptr) noexcept;
 
+		/// @brief Generates IR for function definitions/declarations
+		/// @param ptr The expression for which to generate the IR
 		void gen_fn_def(PTR<const lang::FnDefExpr> ptr) noexcept;
 
+		/// @brief Generates IR for function returns
+		/// @param ptr The expression for which to generate the IR
 		void gen_fn_ret(PTR<const lang::FnReturnExpr> ptr) noexcept;
 
+		/// @brief Generates IR for function calls
+		/// @param ptr The expression for which to generate the IR
 		void gen_fn_call(PTR<const lang::FnCallExpr> ptr) noexcept;
 		
+		/// @brief Generates IR for scope expressions
+		/// @param ptr The expression for which to generate the IR
 		void gen_scope(PTR<const lang::ScopeExpr> ptr) noexcept;
 		
+		/// @brief Generates IR for conditional expressions
+		/// @param ptr The expression for which to generate the IR
 		void gen_condition(PTR<const lang::ConditionExpr> ptr) noexcept;
 
+		/// @brief Generates IR for while expressions
+		/// @param ptr The expression for which to generate the IR
 		void gen_while_loop(PTR<const lang::WhileLoopExpr> ptr) noexcept;
 
+		/// @brief Converts a Colt type to an LLVM type
+		/// @param type The type to convert
+		/// @return Converted type
 		PTR<llvm::Type> type_to_llvm(PTR<const lang::Type> type) noexcept;
 	};
 }
