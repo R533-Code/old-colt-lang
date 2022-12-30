@@ -37,7 +37,7 @@ namespace colt::gen
 	llvm::StringRef ToStringRef(colt::StringView view) noexcept;
 
 	/// @brief Represents valid LLVM IR
-	class GeneratedIR
+	struct GeneratedIR
 	{
 		/// @brief Context in which types and other LLVM informations are stored
 		std::unique_ptr<llvm::LLVMContext> context = std::make_unique<llvm::LLVMContext>();
