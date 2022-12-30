@@ -19,7 +19,9 @@ namespace colt::gen
   /// @return String representing the mangled name
   String mangle(PTR<const lang::FnDeclExpr> fn_decl) noexcept;
 
-  /// @brief Demangles a mangled function name
+  /// @brief Demangles a mangled function name.
+  /// If \p mangled_name is not a mangled name,
+  /// returns \p mangled name as a String
   /// @param mangled_name The mangled name to demangle
   /// @return Demangled name
   String demangle(StringView mangled_name) noexcept;
