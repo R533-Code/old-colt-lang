@@ -74,22 +74,90 @@ namespace colt::args
 			ARG_CALLBACK callback;
 		};
 
+		/// @brief Version callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void version_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief Help callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void help_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief Enum callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void enum_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief Print IR callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void print_ir_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief No colors callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void no_color_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief No error callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void no_error_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief No warning callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void no_warning_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief No message callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void no_message_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief Out callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument 
 		void out_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief No wait callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void no_wait_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief O0 callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void o0_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief O1 callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void o1_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief O2 callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void o2_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief O3 callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void o3_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief Os callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void os_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief Oz callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void oz_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief Run main callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
 		void run_main_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 
 		/// @brief Contains all predefined valid arguments
