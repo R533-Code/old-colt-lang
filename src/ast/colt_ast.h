@@ -41,6 +41,8 @@ namespace colt::lang
   /// @param rhs The right hand side
   /// @return Concatenated SourceCodeExprInfo
   SourceCodeExprInfo ConcatInfo(const SourceCodeExprInfo& lhs, const SourceCodeExprInfo& rhs) noexcept;
+  
+  class AST;
 
   /// @brief Class responsible of producing an AST
   class ASTMaker
@@ -146,11 +148,9 @@ namespace colt::lang
 
   public:
     /// @brief Parses a StringView into an abstract syntax tree
-    /// @param strv The StringView to parse (should be NUL-terminated)
-    /// @param expressions The vector onto which to push expressions
-    /// @param global_map The global map onto which to store functions and global variables
-    /// @param ctx The COLTContext to use to store types and expressions
-    ASTMaker(StringView strv, Vector<PTR<Expr>>& expressions, Map<StringView, SmallVector<PTR<Expr>>>& global_map, StableSet<String>& str, COLTContext& ctx) noexcept;
+    /// @param strv The StringView to parse (should be NUL-terminated)    
+    /// @param ast The AST in which to store the result
+    ASTMaker(StringView strv, AST& ast) noexcept;
     //No default move constructor
     ASTMaker(ASTMaker&&) = delete;
     //No default copy constructor
@@ -374,7 +374,6 @@ namespace colt::lang
     COLTContext& ctx;
 
     /// @brief Creates an AST
-    /// @param exprs The vector of expressions
     /// @param ctx The context storing the expressions
     AST(COLTContext& ctx) noexcept
       : ctx(ctx) {}

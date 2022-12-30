@@ -9,7 +9,7 @@ namespace colt::lang
   Expected<AST, u32> CreateAST(StringView from, COLTContext& ctx) noexcept
   {
     AST result = { ctx };
-    ASTMaker ast = { from, result.expressions, result.global_map, result.str_table, ctx };
+    ASTMaker ast = { from, result };
     if (ast.is_empty() || ast.get_error_count() != 0)
       return { Error, ast.get_error_count() };
     else
@@ -19,7 +19,7 @@ namespace colt::lang
   bool CompileAndAdd(StringView str, AST& ast) noexcept
   {
     u64 crr = ast.expressions.get_size();
-    if (ASTMaker astm = { str, ast.expressions, ast.global_map, ast.str_table, ast.ctx };
+    if (ASTMaker astm = { str, ast };
       astm.get_error_count() != 0)
     {
       ast.expressions.pop_back_n(ast.expressions.get_size() - crr);
@@ -125,8 +125,8 @@ namespace colt::lang
     return { scan_info.line_nb, scan_info.line_strv, lexer.get_current_lexeme() };
   }
 
-  ASTMaker::ASTMaker(StringView strv, Vector<PTR<Expr>>& expressions, Map<StringView, SmallVector<PTR<Expr>>>& global_map, StableSet<String>& str, COLTContext& ctx) noexcept
-    : expressions(expressions), lexer(strv), global_map(global_map), str_table(str), ctx(ctx)
+  ASTMaker::ASTMaker(StringView strv, AST& ast) noexcept
+    : expressions(ast.expressions), lexer(strv), global_map(ast.global_map), str_table(ast.str_table), ctx(ast.ctx)
   {
     current_tkn = lexer.get_next_token();
     while (current_tkn != TKN_EOF)
