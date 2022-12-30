@@ -150,49 +150,49 @@ namespace colt::lang
     static PTR<Type> CreateType(COLTContext& ctx) noexcept;
   };
 
+  /// @brief ID of the built-in type
+  enum BuiltInID
+    : u8
+  {
+    /// @brief Boolean, Unsigned 1-bit integer
+    BOOL,
+    /// @brief 8-bit ASCII char
+    CHAR,
+    /// @brief Unsigned 8-bit integer
+    U8,
+    /// @brief Unsigned 16-bit integer
+    U16,
+    /// @brief Unsigned 32-bit integer
+    U32,
+    /// @brief Unsigned 64-bit integer
+    U64,
+    /// @brief Unsigned 128-bit integer
+    U128,
+    /// @brief Signed 8-bit integer
+    I8,
+    /// @brief Signed 16-bit integer
+    I16,
+    /// @brief Signed 32-bit integer
+    I32,
+    /// @brief Signed 64-bit integer
+    I64,
+    /// @brief Signed 128-bit integer
+    I128,
+    /// @brief 32-bit floating point
+    F32,
+    /// @brief 64-bit floating point
+    F64,
+    /// @brief Pointer to constant characters
+    lstring,
+  };
+
   /// @brief Built in types
   class BuiltInType
     final : public Type
   {
   public:
     /// @brief Helper for dyn_cast and is_a
-    static constexpr TypeID classof_v = TYPE_BUILTIN;
-
-    /// @brief ID of the built-in type
-    enum BuiltInID
-      : u8
-    {
-      /// @brief Boolean, Unsigned 1-bit integer
-      BOOL,
-      /// @brief 8-bit ASCII char
-      CHAR,
-      /// @brief Unsigned 8-bit integer
-      U8,
-      /// @brief Unsigned 16-bit integer
-      U16,
-      /// @brief Unsigned 32-bit integer
-      U32,
-      /// @brief Unsigned 64-bit integer
-      U64,
-      /// @brief Unsigned 128-bit integer
-      U128,
-      /// @brief Signed 8-bit integer
-      I8,
-      /// @brief Signed 16-bit integer
-      I16,
-      /// @brief Signed 32-bit integer
-      I32,
-      /// @brief Signed 64-bit integer
-      I64,
-      /// @brief Signed 128-bit integer
-      I128,
-      /// @brief 32-bit floating point
-      F32,
-      /// @brief 64-bit floating point
-      F64,
-      /// @brief Pointer to constant characters
-      lstring,
-    };
+    static constexpr TypeID classof_v = TYPE_BUILTIN;    
   
   private:
     /// @brief BinaryOperator supported by integral built-in types
