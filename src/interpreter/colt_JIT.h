@@ -25,15 +25,22 @@
 
 namespace colt::gen
 {
+  /// @brief An LLVM JIT interpreter
   class ColtJIT
   {
+    /// @brief Pointer to the JIT
     std::unique_ptr<llvm::orc::LLLazyJIT> JIT;
 
   public:
     ColtJIT() = delete;
+    /// @brief Constructor
+    /// @param JIT The JIT to store
     ColtJIT(std::unique_ptr<llvm::orc::LLLazyJIT> JIT) noexcept
       : JIT(std::move(JIT)) {}
 
+    /// @brief Adds generated IR to compile
+    /// @param IR The IR to compile
+    /// @return success if no error are encountered
     llvm::Error addModule(GeneratedIR&& IR) noexcept
     {      
       if (auto err = JIT->addLazyIRModule(llvm::orc::ThreadSafeModule{ std::move(IR.module), std::move(IR.context)}))
@@ -41,11 +48,16 @@ namespace colt::gen
       return llvm::Error::success();
     }
 
+    /// @brief Lookups a symbol in the generated code
+    /// @param str The name of the symbol
+    /// @return The symbol if found or error
     llvm::Expected<llvm::orc::ExecutorAddr> lookup(llvm::StringRef str) noexcept
     {
       return JIT->lookup(str);
     }
 
+    /// @brief Creates an instance of the JIT
+    /// @return A JIT if no error was generated
     static llvm::Expected<std::unique_ptr<ColtJIT>> Create() noexcept
     {
       using namespace llvm;
