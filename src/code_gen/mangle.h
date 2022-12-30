@@ -1,3 +1,7 @@
+/** @file mangle.h
+* Contains utilities for mangling and demangling of functions name.
+*/
+
 #ifndef HG_COLT_MANGLE
 #define HG_COLT_MANGLE
 

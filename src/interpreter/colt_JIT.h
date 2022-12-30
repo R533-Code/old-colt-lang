@@ -1,3 +1,7 @@
+/** @file colt_JIT.h
+* Contains the Colt LLVM JIT interpreter.
+*/
+
 #ifndef HG_COLT_JIT
 #define HG_COLT_JIT
 

@@ -96,7 +96,13 @@ namespace colt::lang
     /// @return StringView over the typename
     constexpr StringView get_name() const noexcept { return name; }
 
+    /// @brief Check if two types are equal (without considering 'const')
+    /// @param type The type to compare against
+    /// @return True if both type are equivalent
     bool is_equal(PTR<const Type> type) const noexcept;
+    /// @brief Check if two types are equal (considering 'const')
+    /// @param type The type to compare against
+    /// @return True if both type are equivalent
     bool is_equal_with_const(PTR<const Type> type) const noexcept;
   };
 
@@ -242,6 +248,7 @@ namespace colt::lang
     /// @param builtinID The type ID
     /// @param is_const True if const
     /// @param valid_op Array of possible binary operator
+    /// @param name The name of the type
     constexpr BuiltInType(BuiltInID builtinID, bool is_const, ContiguousView<BinaryOperator> valid_op, StringView name) noexcept
       : Type(TYPE_BUILTIN, is_const, name), builtin_ID(builtinID), valid_op(valid_op) {}
 
@@ -343,7 +350,6 @@ namespace colt::lang
     /// @return Pointer to the resulting type
     static PTR<Type> CreateChar(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a char type
-    /// @param is_const True if const
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
     static PTR<Type> CreateLString(COLTContext& ctx) noexcept;
@@ -369,6 +375,7 @@ namespace colt::lang
     /// @brief Creates a pointer type
     /// @param is_const True if the pointer is const
     /// @param ptr_to The type pointed by the pointer
+    /// @param name The type name
     constexpr PtrType(bool is_const, PTR<const Type> ptr_to, StringView name) noexcept
       : Type(TYPE_PTR, is_const, name), ptr_to(ptr_to) {}
 

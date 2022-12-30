@@ -199,6 +199,12 @@ namespace colt::lang
     static PTR<Expr> CreateExpr(QWORD value, PTR<const Type> type, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
 
     template<typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
+    /// @brief Creates a value of type 'T' and of value 'value'
+    /// @tparam T The type of the value (which is converted to a colt type)
+    /// @tparam  SFINAE helper
+    /// @param value The value from which to create a LiteralExpr
+    /// @param ctx The context to store the resulting expression
+    /// @return Pointer to the created expression
     static PTR<Expr> CreateValue(T value, COLTContext& ctx) noexcept;
   };
 
@@ -387,7 +393,11 @@ namespace colt::lang
     VarDeclExpr(PTR<const Type> type, StringView name, PTR<Expr> init_value, bool is_global, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_VAR_DECL, type, src_info), is_global_v(is_global), init_value(init_value), name(name) {}
 
+    /// @brief Get the initial value of the variable
+    /// @return Null or pointer to the initial value
     PTR<const Expr> get_value() const noexcept { return init_value; }
+    /// @brief Sets the initial value of the variable
+    /// @param ptr The new initial value of the expression
     void set_value(PTR<Expr> ptr) noexcept { init_value = ptr; }
 
     /// @brief Returns the name of the global variable
@@ -542,6 +552,12 @@ namespace colt::lang
     /// @return The local ID
     u64 unsafe_get_local_id() const noexcept { return local_ID; }
 
+    /// @brief Creates a VarWriteExpr
+    /// @param var The variable to read from which to extract information
+    /// @param value The value to write in \p var
+    /// @param src_info The source code information
+    /// @param ctx The COLTContext to store the resulting expression
+    /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(PTR<const VarReadExpr> var, PTR<Expr> value, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
@@ -610,6 +626,7 @@ namespace colt::lang
     /// @param type The function type
     /// @param name The name of the function
     /// @param arguments_name The arguments name
+    /// @param is_extern_v True if the function is extern
     /// @param src_info The source code information
     FnDeclExpr(PTR<const Type> type, StringView name, SmallVector<StringView, 4>&& arguments_name, bool is_extern_v, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_FN_DECL, type, src_info), arguments_name(std::move(arguments_name)), name(name), is_extern_v(is_extern_v)
@@ -651,6 +668,7 @@ namespace colt::lang
     /// @param type The type of the resulting expression
     /// @param name The name of the function
     /// @param arguments_name The arguments name
+    /// @param is_extern True if the function is extern
     /// @param src_info The source code information
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
@@ -787,7 +805,7 @@ namespace colt::lang
     ContiguousView<PTR<Expr>> get_arguments() const noexcept { return arguments.to_view(); }
 
     /// @brief Creates a function call
-    // @param decl The declaration of the function being called
+    /// @param decl The declaration of the function being called
     /// @param arguments The arguments to pass to the function
     /// @param src_info The source code information
     /// @param ctx The COLTContext to store the resulting expression
@@ -840,6 +858,11 @@ namespace colt::lang
     /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(Vector<PTR<Expr>>&& body, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
 
+    /// @brief Constructs a ScopeExpr from an initializer list
+    /// @param list The list whose expression to store in the scope
+    /// @param src_info The source code information
+    /// @param ctx The COLTContext to store the resulting expression
+    /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(std::initializer_list<PTR<Expr>> list, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
@@ -970,11 +993,16 @@ namespace colt::lang
     ~BreakContinueExpr() noexcept override = default;
     /// @brief Constructs a while loop expression
     /// @param type The type of the resulting expression
+    /// @param is_break_v True if break, false if continue
     /// @param src_info The source code information
     BreakContinueExpr(PTR<const Type> type, bool is_break_v, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_BREAK_CONTINUE, type, src_info), is_break_v(is_break_v) {}
 
+    /// @brief Returns true if the expression represents a break
+    /// @return True if break (or !is_continue)
     bool is_break() const noexcept { return is_break_v; }
+    /// @brief Returns true if the expression represents a continue
+    /// @return True if continue (or !is_break)
     bool is_continue() const noexcept { return !is_break_v; }
 
     /// @brief Constructs a while loop expression

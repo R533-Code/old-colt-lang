@@ -1,3 +1,7 @@
+/** @file mangle.cpp
+* Contains definition of functions declared in 'mangle.h'.
+*/
+
 #include "mangle.h"
 
 namespace colt::gen

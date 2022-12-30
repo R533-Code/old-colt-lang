@@ -1,3 +1,7 @@
+/** @file llvm_ir_gen.cpp
+* Contains definition of functions declared in 'llvm_ir_gen.h'.
+*/
+
 #include <code_gen/llvm_ir_gen.h>
 #include <ast/colt_ast.h>
 

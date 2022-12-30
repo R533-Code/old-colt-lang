@@ -1,3 +1,7 @@
+/** @file llvm_ir_gen.h
+* Contains utilities responsible of generating IR from an AST.
+*/
+
 #ifndef HG_LLVM_IR_GENERATOR
 #define HG_LLVM_IR_GENERATOR
 
