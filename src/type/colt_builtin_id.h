@@ -42,6 +42,26 @@ namespace colt::lang
     /// @brief Pointer to constant characters
     lstring,
   };
+
+  constexpr bool is_uint(BuiltInID id) noexcept
+  {
+    return id < I8;
+  }
+
+  constexpr bool is_int(BuiltInID id) noexcept
+  {
+    return U64 < id && id < F32;
+  }
+
+  constexpr bool is_integral(BuiltInID id) noexcept
+  {
+    return id < F32;
+  }
+
+  constexpr bool is_fpoint(BuiltInID id) noexcept
+  {
+    return id == F32 || id == F64;
+  }
 }
 
 #endif //!COLT_HG_BUILTIN_ID
