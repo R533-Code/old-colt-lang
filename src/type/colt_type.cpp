@@ -154,12 +154,38 @@ namespace colt::lang
   
   PTR<Type> FnType::CreateFn(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, bool is_vararg, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<FnType>(return_type, std::move(args_type), is_vararg, "fn"));
+    auto str = String{ "fn(" };
+    if (args_type.is_not_empty())
+      str += args_type.get_front()->get_name();
+    for (size_t i = 1; i < args_type.get_size(); i++)
+    {
+      str += ", ";
+      str += args_type.get_front()->get_name();
+    }
+    if (is_vararg)
+      str += "var_arg";
+    str += ")->";
+    str += return_type->get_name();
+    
+    return ctx.add_type(make_unique<FnType>(return_type, std::move(args_type),
+      is_vararg, ctx.add_str(std::move(str))));
   }
 
   PTR<Type> FnType::CreateFn(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<FnType>(return_type, std::move(args_type), false, "fn"));
+    auto str = String{ "fn(" };
+    if (args_type.is_not_empty())
+      str += args_type.get_front()->get_name();
+    for (size_t i = 1; i < args_type.get_size(); i++)
+    {
+      str += ", ";
+      str += args_type.get_front()->get_name();
+    }
+    str += ")->";
+    str += return_type->get_name();
+    
+    return ctx.add_type(make_unique<FnType>(return_type, std::move(args_type),
+      false, ctx.add_str(std::move(str))));
   }
   
   PTR<Type> ErrorType::CreateType(COLTContext& ctx) noexcept
