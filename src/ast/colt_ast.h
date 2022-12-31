@@ -288,11 +288,39 @@ namespace colt::lang
     
     /************* FOLDING HELPERS ************/
 
+    /// @brief Creates a binary expression, doing type checks and folding
+    /// @param expr_type The resulting expression type
+    /// @param lhs The left hand side of the expression
+    /// @param op The binary operator
+    /// @param rhs The right hand side of the expression
+    /// @param src_info The source information of the whole expression
+    /// @return BinaryExpr or ErrorExpr
     PTR<Expr> create_binary(PTR<const Type> expr_type, PTR<Expr> lhs, Token op, PTR<Expr> rhs, const SourceCodeExprInfo& src_info) noexcept;
     
+    /// @brief Creates a binary expression, doing type checks and folding.
+    /// This overload assume that the resulting expression will have the type
+    /// of 'lhs' (and 'rhs' as type checks forbid both types be different).
+    /// @param lhs The left hand side of the expression
+    /// @param op The binary operator
+    /// @param rhs The right hand side of the expression
+    /// @param src_info The source information of the whole expression
+    /// @return BinaryExpr or ErrorExpr
     PTR<Expr> create_binary(PTR<Expr> lhs, Token op, PTR<Expr> rhs, const SourceCodeExprInfo& src_info) noexcept;
 
-    PTR<Expr> constant_fold(PTR<LiteralExpr> a, BinaryOperator op, PTR<LiteralExpr> b, PTR<const BuiltInType> ret, const SourceCodeExprInfo& src_info) noexcept;
+    /// @brief Constant fold a binary expression.
+    /// Constant folding is the process of moving computations with literals
+    /// to the compilation. An expression like '10 + 5' is replaced by
+    /// '15'. While this is a very simple optimization that is done directly
+    /// by the backend, constant folding in the front-end allows better
+    /// diagnostics (reporting division by zero as errors), and will be
+    /// very useful for 'const' expressions.
+    /// @param a The left hand side of the expression
+    /// @param op The binary operator to fold
+    /// @param b The right hand side of the expression
+    /// @param ret The return type of the expression
+    /// @param src_info The source informations of the whole expression
+    /// @return LiteralExpr or ErrorExpr
+    PTR<Expr> constant_fold(PTR<const LiteralExpr> a, BinaryOperator op, PTR<const LiteralExpr> b, PTR<const BuiltInType> ret, const SourceCodeExprInfo& src_info) noexcept;
 
     /************* PEEKING HELPERS ************/
 

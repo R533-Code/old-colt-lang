@@ -1219,6 +1219,8 @@ namespace colt::lang
       return ErrorExpr::CreateExpr(ctx);
     }
 
+    //Check for division by zero and constant fold expression
+    //if possible.
     if (is_a<LiteralExpr>(rhs))
     {
       auto rhs_l = as<PTR<LiteralExpr>>(rhs);
@@ -1247,7 +1249,7 @@ namespace colt::lang
     return create_binary(lhs->get_type(), lhs, op, rhs, src_info);
   }
   
-  PTR<Expr> ASTMaker::constant_fold(PTR<LiteralExpr> a, BinaryOperator op, PTR<LiteralExpr> b, PTR<const BuiltInType> ret, const SourceCodeExprInfo& src_info) noexcept
+  PTR<Expr> ASTMaker::constant_fold(PTR<const LiteralExpr> a, BinaryOperator op, PTR<const LiteralExpr> b, PTR<const BuiltInType> ret, const SourceCodeExprInfo& src_info) noexcept
   {
     //If the expression is 2 lstring to add, create lstring
     //that represents the concatenation of both arguments
@@ -1259,6 +1261,8 @@ namespace colt::lang
       return LiteralExpr::CreateExpr(res, ret, src_info, ctx);
     }
 
+    //We take advantage of the interpreter's instructions.
+    //See "interpreter/qword_op.h"
     auto fn = op::getInstFromBinaryOperator(op);
     auto [res, err] = fn(a->get_value(), b->get_value(), a->get_type()->get_builtin_id());    
     
