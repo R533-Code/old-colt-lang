@@ -1227,7 +1227,7 @@ namespace colt::lang
         //Constant fold as both expression are known at compile-time
         //'constant_fold' also emits errors and warnings.
         return constant_fold(as<PTR<LiteralExpr>>(lhs), bin_op, rhs_l,
-          as<PTR<BuiltInType>>(expr_type), src_info);
+          as<PTR<const BuiltInType>>(expr_type), src_info);
       }
       //Detect division by zero
       else if ((bin_op == BinaryOperator::OP_DIV || bin_op == BinaryOperator::OP_MOD)
