@@ -26,25 +26,32 @@ namespace colt::io
 	constexpr void Print(fmt::format_string<Args...> fmt, Args&&... args);
 
 	template<bool new_line = true, typename... Args>
-	/// @brief Prints to the standard output
+	/// @brief Prints a message to 'stdout'
 	/// @tparam ...Args Pack of types to format
 	/// @param fmt The format string, using {fmt} syntax
 	/// @param ...args The arguments to format
 	constexpr void PrintMessage(fmt::format_string<Args...> fmt, Args&&... args);
 
 	template<bool new_line = true, typename... Args>
-	/// @brief Prints to the standard output
+	/// @brief Prints a warning message to 'stdout'
 	/// @tparam ...Args Pack of types to format
 	/// @param fmt The format string, using {fmt} syntax
 	/// @param ...args The arguments to format
 	constexpr void PrintWarning(fmt::format_string<Args...> fmt, Args&&... args);
 
 	template<bool new_line = true, typename... Args>
-	/// @brief Prints to the standard output
+	/// @brief Prints an error message to 'stdout'
 	/// @tparam ...Args Pack of types to format
 	/// @param fmt The format string, using {fmt} syntax
 	/// @param ...args The arguments to format
 	constexpr void PrintError(fmt::format_string<Args...> fmt, Args&&... args);
+
+	template<bool new_line = true, typename... Args>
+	/// @brief Prints a fatal error message to 'stdout'
+	/// @tparam ...Args Pack of types to format
+	/// @param fmt The format string, using {fmt} syntax
+	/// @param ...args The arguments to format
+	constexpr void PrintFatal(fmt::format_string<Args...> fmt, Args && ...args);
 
 	/// @brief Used to escape a character being printed.
 	/// Example: Print("{}", EscapeChar{'\\n'}) -> '\\n'
@@ -96,6 +103,19 @@ namespace colt::io
 		else
 			fmt::print("Error: ");
 			
+		fmt::print(fmt, std::forward<Args>(args)...);
+		if constexpr (new_line)
+			std::fputc('\n', stdout);
+	}
+
+	template<bool new_line, typename... Args>
+	constexpr void PrintFatal(fmt::format_string<Args...> fmt, Args && ...args)
+	{
+		if (args::GlobalArguments.colored_output)
+			fmt::print(bg(fmt::color::red) | fmt::emphasis::bold, "Fatal: ");
+		else
+			fmt::print("Fatal: ");
+
 		fmt::print(fmt, std::forward<Args>(args)...);
 		if constexpr (new_line)
 			std::fputc('\n', stdout);
