@@ -5,6 +5,8 @@
 #ifndef HG_COLT_TOKEN
 #define HG_COLT_TOKEN
 
+#include "util/colt_macro.h"
+
 namespace colt::lang
 {
 	/// @brief Represents the lexeme of the Colt language
@@ -229,6 +231,42 @@ namespace colt::lang
 		/// @brief \.
 		TKN_DOT		
 	};
+
+	/// @brief Check if a Token represents any assignment Token (=, +=, ...)
+	/// @param tkn The token to check for
+	/// @return True if the Token is an assignment Token
+	constexpr bool isAssignmentToken(Token tkn) noexcept
+	{
+		return TKN_EQUAL_EQUAL < tkn && tkn < TKN_COMMA;
+	}
+
+	/// @brief Check if Token represents any direct assignment (+=, -=, ...)
+	/// @param tkn The token to check for
+	/// @return True if the Token is an direct assignment Token
+	constexpr bool isDirectAssignmentToken(Token tkn) noexcept
+	{
+		return TKN_EQUAL < tkn && tkn < TKN_COMMA;
+	}
+
+	/// @brief Converts a direct assignment to its non-assigning equivalent.
+	/// Example: '+=' -> '+'
+	/// @param tkn The direct assignment Token
+	/// @return Non-assigning Token
+	/// @pre isDirectAssignmentToken(tkn)
+	constexpr Token DirectAssignToNonAssignToken(Token tkn) noexcept
+	{
+		assert_true(isDirectAssignmentToken(tkn), "Expected a Direct Assignment token!");
+		return static_cast<Token>(tkn - 19);
+	}
+
+	/// @brief Check if a Token represents any comparison Token (==, !=, ...)
+	/// '||' and '&&' are considered comparison tokens.
+	/// @param tkn The token to check for
+	/// @return True if the Token is a comparison Token
+	constexpr bool isComparisonToken(Token tkn) noexcept
+	{
+		return TKN_GREAT_GREAT < tkn && tkn < TKN_EQUAL;
+	}
 }
 
 #endif //!HG_COLT_TOKEN
