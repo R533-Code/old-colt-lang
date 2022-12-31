@@ -33,14 +33,6 @@ int main(int argc, const char** argv)
   //Initialize code generators
   InitializeBackend();
 
-  while (!std::cin.eof())
-  {
-    size_t a, b;
-    std::cin >> a >> b;
-    if (op::mul(a, b, lang::U8).second == op::UNSIGNED_OVERFLOW)
-      io::Print("Detected overflow!");
-  }
-
   if (args::GlobalArguments.file_in != nullptr)
     CompileFile(args::GlobalArguments.file_in);
   else
