@@ -12,6 +12,7 @@ namespace colt::lang
 {
 	/// @brief Possible unary operator
 	enum class UnaryOperator
+		: u8
 	{
 		/// @brief ++(Expr)
 		OP_PRE_INCREMENT,
@@ -43,6 +44,7 @@ namespace colt::lang
 
 	/// @brief Possible binary operators
 	enum class BinaryOperator
+		: u8
 	{
 		/*********** ARITHMETIC ***********/
 
@@ -119,6 +121,11 @@ namespace colt::lang
 	/// @param tkn The Token to convert
 	/// @return Assertion failure or a valid BinaryOperator
 	BinaryOperator TokenToBinaryOperator(Token tkn) noexcept;
+	
+	/// @brief Converts a binary operator to an 'lstring'
+	/// @param tkn The operator
+	/// @return 'lstring' representing the operator
+	const char* BinaryOperatorToString(BinaryOperator tkn) noexcept;
 }
 
 #endif //!HG_COLT_OPERATORS
