@@ -41,9 +41,8 @@ namespace colt::lang
     /// @brief Generates the next typename
     /// @return Next typename or None
     Optional<const StringView> next() noexcept
-    {
-      auto opt = types.next();
-      if (opt.is_value())
+    {      
+      if (auto opt = types.next(); opt.is_value())
         return opt.get_value()->get_name();
       return None;
     }
@@ -151,6 +150,10 @@ namespace colt::lang
     /// @brief Destructor
     ~ErrorExpr() noexcept override = default;
 
+    /// @brief Returns an error type
+    /// @return ErrorType
+    PTR<const ErrorType> get_type() const noexcept { return as<PTR<const ErrorType>>(Expr::get_type()); }
+
     /// @brief Creates an ErrorExpr
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
@@ -183,12 +186,16 @@ namespace colt::lang
     LiteralExpr(QWORD value, PTR<const Type> type, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_LITERAL, type, src_info), value(value)
     {
-      assert(type->is_builtin());
+      assert_true(type->is_builtin(), "Type of LiteralExpr should be BuiltInType");
     }
 
     /// @brief Returns the value of the literal expression
     /// @return QWORD representing the value
     QWORD get_value() const noexcept { return value; }
+
+    /// @brief Returns the built-in type of this expression
+    /// @return The built-in type of this expression
+    PTR<const BuiltInType> get_type() const noexcept { return as<PTR<const BuiltInType>>(Expr::get_type()); }
 
     /// @brief Creates a LiteralExpr
     /// @param value The value of the LiteralExpr
@@ -346,11 +353,23 @@ namespace colt::lang
     /// @param to_convert The expression to convert
     /// @param src_info The source code information
     ConvertExpr(PTR<const Type> type, PTR<Expr> to_convert, const SourceCodeExprInfo& src_info) noexcept
-      : Expr(EXPR_CONVERT, type, src_info), to_convert(to_convert) {}
+      : Expr(EXPR_CONVERT, type, src_info), to_convert(to_convert)
+    {
+      assert_true(type->is_builtin() && to_convert->get_type()->is_builtin(),
+        "Both type of ConvertExpr should be BuiltInTypes");
+    }
 
     /// @brief Get the expression to convert
     /// @return The expression to converse
     PTR<const Expr> get_child() const noexcept { return to_convert; }
+
+    /// @brief Returns the built-in type of the expression to convert
+    /// @return The built-in type of the expression to convert
+    PTR<const BuiltInType> get_child_type() const noexcept { return as<PTR<const BuiltInType>>(get_child()->get_type()); }
+
+    /// @brief Returns the built-in type of this expression
+    /// @return The built-in type of this expression
+    PTR<const BuiltInType> get_type() const noexcept { return as<PTR<const BuiltInType>>(Expr::get_type()); }
 
     /// @brief Creates a ConvertExpr
     /// @param type The type of the resulting expression
@@ -649,10 +668,10 @@ namespace colt::lang
     ContiguousView<StringView> get_params_name() const noexcept { return arguments_name.to_view(); }
     /// @brief Returns the parameter types
     /// @return View over the parameter types
-    ContiguousView<PTR<const Type>> get_params_type() const noexcept { return as<PTR<const FnType>>(get_type())->get_params_type(); }
+    ContiguousView<PTR<const Type>> get_params_type() const noexcept { return as<PTR<const FnType>>(Expr::get_type())->get_params_type(); }
     /// @brief Returns the return type of the function
     /// @return The return type of the function
-    PTR<const Type> get_return_type() const noexcept { return as<PTR<const FnType>>(get_type())->get_return_type(); }
+    PTR<const Type> get_return_type() const noexcept { return as<PTR<const FnType>>(Expr::get_type())->get_return_type(); }
     /// @brief Returns true if the function is externally defined
     /// @return True if function is externally defined
     bool is_extern() const noexcept { return is_extern_v; }
@@ -662,7 +681,11 @@ namespace colt::lang
     ArgNameIter args_name_iter() const noexcept { return arguments_name.to_iter(); }
     /// @brief Iterates over the typename of each arguments
     /// @return Iterator over the typenames of the arguments
-    TypeNameIter args_typename_iter() const noexcept { return as<PTR<const FnType>>(get_type())->get_params_type().to_iter(); }
+    TypeNameIter args_typename_iter() const noexcept { return as<PTR<const FnType>>(Expr::get_type())->get_params_type().to_iter(); }
+
+    /// @brief Returns the function type of this expression
+    /// @return FnType
+    PTR<const FnType> get_type() const noexcept { return as<PTR<const FnType>>(Expr::get_type()); }
 
     /// @brief Creates a FnDeclExpr
     /// @param type The type of the resulting expression
@@ -752,6 +775,10 @@ namespace colt::lang
     /// @brief Iterates over the typename of each arguments
     /// @return Iterator over the typenames of the arguments
     TypeNameIter args_typename_iter() const noexcept { return get_fn_decl()->args_typename_iter(); }
+
+    /// @brief Returns the function type of this expression
+    /// @return FnType
+    PTR<const FnType> get_type() const noexcept { return declaration->get_type(); }
 
     /// @brief Creates a FnDefExpr
     /// @param decl The declaration of the function
@@ -899,7 +926,7 @@ namespace colt::lang
     ConditionExpr(PTR<const Type> type, PTR<Expr> if_cond, PTR<Expr> if_stmt, PTR<Expr> else_stmt, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_CONDITION, type, src_info), if_cond(if_cond), if_stmt(if_stmt), else_stmt(else_stmt)
     {
-      assert(if_cond->get_type()->is_builtin());
+      assert_true(if_cond->get_type()->is_builtin(), "Type of 'if_cond' should be BuiltInType");
     }
 
     /// @brief Get the expression to convert
@@ -953,7 +980,7 @@ namespace colt::lang
     WhileLoopExpr(PTR<const Type> type, PTR<Expr> condition, PTR<Expr> body, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_WHILE_LOOP, type, src_info), condition(condition), body(body)
     {
-      assert(condition->get_type()->is_builtin());
+      assert_true(condition->get_type()->is_builtin(), "Type of 'condition' should be BuiltInType");
     }
 
     /// @brief Get the expression to convert
