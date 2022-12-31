@@ -117,6 +117,33 @@ namespace colt::op
     }
   }
 
+  const char* OpErrorToStrExplain(OpError err) noexcept
+  {
+    switch (err)
+    {
+    case NO_ERROR:
+      return "No errors detected!";
+    case DIV_BY_ZERO:
+      return "Integral division by zero!";
+    case SHIFT_BY_GRE_SIZEOF:
+      return "Shift by value greater than bits size!";
+    case UNSIGNED_OVERFLOW:
+      return "Unsigned overflow detected!";
+    case UNSIGNED_UNDERFLOW:
+      return "Unsigned underflow detected!";
+    case SIGNED_OVERFLOW:
+      return "Signed overflow detected!";
+    case SIGNED_UNDERFLOW:
+      return "Signed underflow detected!";
+    case WAS_NAN:
+      return "Floating point operation evaluates to NaN!";
+    case RET_NAN:
+      return "Floating point operation evaluates to NaN!";
+    default:
+      colt_unreachable("Invalid error!");
+    }
+  }
+
   ResultQWORD add(QWORD a, QWORD b, lang::BuiltInID id) noexcept
   {
     using namespace lang;
@@ -374,7 +401,243 @@ namespace colt::op
     QWORD result = a.as<u64>() << b.as<u64>();
     
     return { result, shift_sizeof_check(b, id) };
-  }  
+  }
+
+  ResultQWORD bool_and(QWORD a, QWORD b, lang::BuiltInID id) noexcept
+  {
+    assert_true(id == lang::BOOL, "Expected a bool type");
+    QWORD result = a.as<bool>() && b.as<bool>();
+    
+    return { result, NO_ERROR };
+  }
+
+  ResultQWORD bool_or(QWORD a, QWORD b, lang::BuiltInID id) noexcept
+  {
+    assert_true(id == lang::BOOL, "Expected a bool type");
+    QWORD result = a.as<bool>() || b.as<bool>();
+
+    return { result, NO_ERROR };
+  }
+
+  ResultQWORD eq(QWORD a, QWORD b, lang::BuiltInID id) noexcept
+  {
+    using namespace lang;
+
+    QWORD result;
+    switch (id)
+    {
+    case colt::lang::BOOL:
+    case colt::lang::CHAR:
+    case colt::lang::U8:
+    case colt::lang::U16:
+    case colt::lang::U32:
+    case colt::lang::U64:
+    case colt::lang::I8:
+    case colt::lang::I16:
+    case colt::lang::I32:
+    case colt::lang::I64:
+    case colt::lang::lstring: //compare pointers
+      result = a.as<u64>() == b.as<u64>();
+    break; case colt::lang::F32:
+      if (std::isnan(a.as<f32>()))
+        return { a, WAS_NAN };
+      if (std::isnan(b.as<f32>()))
+        return { b, WAS_NAN };
+      result = a.as<f32>() == b.as<f32>();
+      if (std::isnan(result.as<f32>()))
+        return { result, RET_NAN };
+    break; case colt::lang::F64:
+      if (std::isnan(a.as<f64>()))
+        return { a, WAS_NAN };
+      if (std::isnan(b.as<f64>()))
+        return { b, WAS_NAN };
+      result = a.as<f64>() == b.as<f64>();
+      if (std::isnan(result.as<f64>()))
+        return { result, RET_NAN };
+    break; default:
+      colt_unreachable("Invalid ID!");
+    }
+    return { result, NO_ERROR };
+  }
+
+  ResultQWORD neq(QWORD a, QWORD b, lang::BuiltInID id) noexcept
+  {
+    auto res = eq(a, b, id);
+    res.first = !res.first.as<bool>();
+    return res;
+  }
+
+  ResultQWORD le(QWORD a, QWORD b, lang::BuiltInID id) noexcept
+  {
+    using namespace lang;
+
+    QWORD result;
+    switch (id)
+    {
+    case colt::lang::CHAR:
+    case colt::lang::U8:
+    case colt::lang::U16:
+    case colt::lang::U32:
+    case colt::lang::U64:
+      result = a.as<u64>() < b.as<u64>();
+    break; case colt::lang::I8:
+      result = a.as<i8>() < b.as<i8>();
+    break; case colt::lang::I16:
+      result = a.as<i16>() < b.as<i16>();
+    break; case colt::lang::I32:
+      result = a.as<i32>() < b.as<i32>();
+    break; case colt::lang::I64:
+      result = a.as<i64>() < b.as<i64>();
+    break; case colt::lang::F32:
+      if (std::isnan(a.as<f32>()))
+        return { a, WAS_NAN };
+      if (std::isnan(b.as<f32>()))
+        return { b, WAS_NAN };
+      result = a.as<f32>() < b.as<f32>();
+      if (std::isnan(result.as<f32>()))
+        return { result, RET_NAN };
+    break; case colt::lang::F64:
+      if (std::isnan(a.as<f64>()))
+        return { a, WAS_NAN };
+      if (std::isnan(b.as<f64>()))
+        return { b, WAS_NAN };
+      result = a.as<f64>() < b.as<f64>();
+      if (std::isnan(result.as<f64>()))
+        return { result, RET_NAN };
+    break; default:
+      colt_unreachable("Invalid ID!");
+    }
+    return { result, NO_ERROR };
+  }
+
+  ResultQWORD leq(QWORD a, QWORD b, lang::BuiltInID id) noexcept
+  {
+    using namespace lang;
+
+    QWORD result;
+    switch (id)
+    {
+    case colt::lang::CHAR:
+    case colt::lang::U8:
+    case colt::lang::U16:
+    case colt::lang::U32:
+    case colt::lang::U64:
+      result = a.as<u64>() <= b.as<u64>();
+    break; case colt::lang::I8:
+      result = a.as<i8>() <= b.as<i8>();
+    break; case colt::lang::I16:
+      result = a.as<i16>() <= b.as<i16>();
+    break; case colt::lang::I32:
+      result = a.as<i32>() <= b.as<i32>();
+    break; case colt::lang::I64:
+      result = a.as<i64>() <= b.as<i64>();
+    break; case colt::lang::F32:
+      if (std::isnan(a.as<f32>()))
+        return { a, WAS_NAN };
+      if (std::isnan(b.as<f32>()))
+        return { b, WAS_NAN };
+      result = a.as<f32>() <= b.as<f32>();
+      if (std::isnan(result.as<f32>()))
+        return { result, RET_NAN };
+    break; case colt::lang::F64:
+      if (std::isnan(a.as<f64>()))
+        return { a, WAS_NAN };
+      if (std::isnan(b.as<f64>()))
+        return { b, WAS_NAN };
+      result = a.as<f64>() <= b.as<f64>();
+      if (std::isnan(result.as<f64>()))
+        return { result, RET_NAN };
+    break; default:
+      colt_unreachable("Invalid ID!");
+    }
+    return { result, NO_ERROR };
+  }
+
+  ResultQWORD ge(QWORD a, QWORD b, lang::BuiltInID id) noexcept
+  {
+    using namespace lang;
+
+    QWORD result;
+    switch (id)
+    {
+    case colt::lang::CHAR:
+    case colt::lang::U8:
+    case colt::lang::U16:
+    case colt::lang::U32:
+    case colt::lang::U64:
+      result = a.as<u64>() > b.as<u64>();
+    break; case colt::lang::I8:
+      result = a.as<i8>() > b.as<i8>();
+    break; case colt::lang::I16:
+      result = a.as<i16>() > b.as<i16>();
+    break; case colt::lang::I32:
+      result = a.as<i32>() > b.as<i32>();
+    break; case colt::lang::I64:
+      result = a.as<i64>() > b.as<i64>();
+    break; case colt::lang::F32:
+      if (std::isnan(a.as<f32>()))
+        return { a, WAS_NAN };
+      if (std::isnan(b.as<f32>()))
+        return { b, WAS_NAN };
+      result = a.as<f32>() > b.as<f32>();
+      if (std::isnan(result.as<f32>()))
+        return { result, RET_NAN };
+    break; case colt::lang::F64:
+      if (std::isnan(a.as<f64>()))
+        return { a, WAS_NAN };
+      if (std::isnan(b.as<f64>()))
+        return { b, WAS_NAN };
+      result = a.as<f64>() > b.as<f64>();
+      if (std::isnan(result.as<f64>()))
+        return { result, RET_NAN };
+    break; default:
+      colt_unreachable("Invalid ID!");
+    }
+    return { result, NO_ERROR };
+  }
+
+  ResultQWORD geq(QWORD a, QWORD b, lang::BuiltInID id) noexcept
+  {
+    using namespace lang;
+
+    QWORD result;
+    switch (id)
+    {
+    case colt::lang::CHAR:
+    case colt::lang::U8:
+    case colt::lang::U16:
+    case colt::lang::U32:
+    case colt::lang::U64:
+      result = a.as<u64>() >= b.as<u64>();
+    break; case colt::lang::I8:
+      result = a.as<i8>() >= b.as<i8>();
+    break; case colt::lang::I16:
+      result = a.as<i16>() >= b.as<i16>();
+    break; case colt::lang::I32:
+      result = a.as<i32>() >= b.as<i32>();
+    break; case colt::lang::I64:
+      result = a.as<i64>() >= b.as<i64>();
+    break; case colt::lang::F32:
+      if (std::isnan(a.as<f32>()))
+        return { a, WAS_NAN };
+      if (std::isnan(b.as<f32>()))
+        return { b, WAS_NAN };
+      result = a.as<f32>() >= b.as<f32>();
+      if (std::isnan(result.as<f32>()))
+        return { result, RET_NAN };
+    break; case colt::lang::F64:
+      if (std::isnan(a.as<f64>()))
+        return { a, WAS_NAN };
+      if (std::isnan(b.as<f64>()))
+        return { b, WAS_NAN };
+      result = a.as<f64>() >= b.as<f64>();
+      if (std::isnan(result.as<f64>()))
+        return { result, RET_NAN };
+    break; default:
+      colt_unreachable("Invalid ID!");
+    }
+    return { result, NO_ERROR };
+  }
   
   ResultQWORD neg(QWORD a, lang::BuiltInID id) noexcept
   {
@@ -412,5 +675,35 @@ namespace colt::op
   ResultQWORD cnv(QWORD a, lang::BuiltInID from, lang::BuiltInID to) noexcept
   {
     return ResultQWORD();
+  }
+  
+  QWORD_bin_ins_t getInstFromBinaryOperator(lang::BinaryOperator op) noexcept
+  {
+    constexpr QWORD_bin_ins_t op_array[] = {
+      &add, &sub, &mul, &div, &mod,
+      &bit_and, &bit_or, &bit_xor,
+      &shl, &shr, &bool_and, &bool_or
+    };
+    assert_true(op < lang::BinaryOperator::OP_EQUAL, "Invalid operator!");
+    return op_array[static_cast<u64>(op)];
+    switch (op)
+    {    
+    case colt::lang::BinaryOperator::OP_BOOL_AND:
+      break;
+    case colt::lang::BinaryOperator::OP_BOOL_OR:
+      break;
+    case colt::lang::BinaryOperator::OP_LESS:
+      break;
+    case colt::lang::BinaryOperator::OP_LESS_EQUAL:
+      break;
+    case colt::lang::BinaryOperator::OP_GREAT:
+      break;
+    case colt::lang::BinaryOperator::OP_GREAT_EQUAL:
+      break;
+    case colt::lang::BinaryOperator::OP_NOT_EQUAL:
+      break;
+    default:
+      colt_unreachable("Invalid ID!");
+    }
   }
 }
