@@ -21,12 +21,15 @@ namespace colt
     }
   }
 
-  void InitializeBackend() noexcept
+  void InitializeCOLT() noexcept
   {
 #if defined(COLT_MSVC) && defined(COLT_DEBUG)
     //Print memory leaks
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF /*| _CRTDBG_CHECK_ALWAYS_DF*/);
 #endif
+    colt::memory::RegisterOnNULLFn([]() noexcept {
+      io::PrintFatal("Not enough memory to continue execution! Aborting...");
+      });
 
 #ifndef COLT_NO_LLVM
     //Initialize targets of current machine

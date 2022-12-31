@@ -26,8 +26,9 @@
 
 namespace colt
 {
-  /// @brief Initializes the backend (code generator) of Colt
-  void InitializeBackend() noexcept;
+  /// @brief Initializes the backend (code generator) of Colt,
+  ///        and inserts error message for global allocator
+  void InitializeCOLT() noexcept;
 
   /// @brief Enters REPL (Read Eval Print Loop) of Colt
   void REPL() noexcept;
