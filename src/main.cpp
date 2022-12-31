@@ -1,5 +1,7 @@
 #include <main_util.h> //include every colt related functionality
+#include <interpreter/qword_op.h>
 #include <random> //for _ColtRand
+#include <iostream>
 
 using namespace colt;
 
@@ -30,6 +32,14 @@ int main(int argc, const char** argv)
   args::ParseArguments(argc, argv);
   //Initialize code generators
   InitializeBackend();
+
+  while (!std::cin.eof())
+  {
+    size_t a, b;
+    std::cin >> a >> b;
+    if (op::mul(a, b, lang::U8).second == op::UNSIGNED_OVERFLOW)
+      io::Print("Detected overflow!");
+  }
 
   if (args::GlobalArguments.file_in != nullptr)
     CompileFile(args::GlobalArguments.file_in);

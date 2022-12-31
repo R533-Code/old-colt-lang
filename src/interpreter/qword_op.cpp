@@ -86,6 +86,37 @@ namespace colt::op
     }
   }
 
+  OpError shift_sizeof_check(QWORD sh_by, lang::BuiltInID id) noexcept
+  {
+    using namespace lang;
+
+    switch (id)
+    {
+    case colt::lang::U8:
+    case colt::lang::I8:
+      if (sh_by.as<u64>() >= sizeof(u8))
+        return SHIFT_BY_GRE_SIZEOF;
+      return NO_ERROR;
+    case colt::lang::U16:
+    case colt::lang::I16:
+      if (sh_by.as<u64>() >= sizeof(u16))
+        return SHIFT_BY_GRE_SIZEOF;
+      return NO_ERROR;
+    case colt::lang::U32:
+    case colt::lang::I32:
+      if (sh_by.as<u64>() >= sizeof(u32))
+        return SHIFT_BY_GRE_SIZEOF;
+      return NO_ERROR;
+    case colt::lang::U64:
+    case colt::lang::I64:
+      if (sh_by.as<u64>() >= sizeof(u64))
+        return SHIFT_BY_GRE_SIZEOF;
+      return NO_ERROR;
+    break; default:
+      colt_unreachable("Expected integral!");
+    }
+  }
+
   ResultQWORD add(QWORD a, QWORD b, lang::BuiltInID id) noexcept
   {
     using namespace lang;
@@ -284,7 +315,7 @@ namespace colt::op
     break; case I64:
       result = a.as<i64>() % b.as<i64>();
     break; default:
-      colt_unreachable("Invalid type for 'div'!");
+      colt_unreachable("Invalid type for 'mod'!");
     }
     return { result, NO_ERROR };
   }
@@ -327,17 +358,55 @@ namespace colt::op
   
   ResultQWORD shr(QWORD a, QWORD b, lang::BuiltInID id) noexcept
   {
-    return ResultQWORD();
+    using namespace lang;
+
+    assert_true(is_integral(id), "Expected an integer!");
+    QWORD result = a.as<u64>() >> b.as<u64>();    
+    
+    return { result, shift_sizeof_check(b, id) };
   }
   
   ResultQWORD shl(QWORD a, QWORD b, lang::BuiltInID id) noexcept
   {
-    return ResultQWORD();
+    using namespace lang;
+
+    assert_true(is_integral(id), "Expected an integer!");
+    QWORD result = a.as<u64>() << b.as<u64>();
+    
+    return { result, shift_sizeof_check(b, id) };
   }  
   
   ResultQWORD neg(QWORD a, lang::BuiltInID id) noexcept
   {
-    return ResultQWORD();
+    using namespace lang;
+
+    QWORD result;
+    switch (id)
+    {
+    break; case I8:
+      result = -a.as<i8>();
+    break; case I16:
+      result = -a.as<i16>();
+    break; case I32:
+      result = -a.as<i32>();
+    break; case I64:
+      result = -a.as<i64>();
+    break; case F32:
+      if (std::isnan(a.as<f32>()))
+        return { a, WAS_NAN };
+      result = -a.as<f32>();
+      if (std::isnan(result.as<f32>()))
+        return { result, RET_NAN };
+    break; case F64:
+      if (std::isnan(a.as<f64>()))
+        return { a, WAS_NAN };
+      result = -a.as<f64>();
+      if (std::isnan(result.as<f64>()))
+        return { result, RET_NAN };
+    break; default:
+      colt_unreachable("Invalid type for 'neg'!");
+    }
+    return { result, NO_ERROR };
   }
 
   ResultQWORD cnv(QWORD a, lang::BuiltInID from, lang::BuiltInID to) noexcept
