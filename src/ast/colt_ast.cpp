@@ -43,17 +43,7 @@ namespace colt::lang
     if (tkn < TKN_MINUS_GREAT)
       return operator_precedence_table[tkn];
     return 255;
-  }
-
-  bool isAssignmentToken(Token tkn) noexcept
-  {
-    return TKN_EQUAL_EQUAL < tkn && tkn < TKN_COMMA;
-  }
-
-  bool isComparisonToken(Token tkn) noexcept
-  {
-    return TKN_GREAT_GREAT < tkn && tkn < TKN_EQUAL;
-  }
+  }  
 
   bool isTerminatedExpr(PTR<const Expr> expr) noexcept
   {
@@ -194,7 +184,7 @@ namespace colt::lang
         line_state.to_src_info(), ctx);
     break; case TKN_CHAR_L:
       consume_current_tkn();
-      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateChar(false,  ctx),
+      to_ret = LiteralExpr::CreateExpr(lexer.get_parsed_value(), BuiltInType::CreateChar(false, ctx),
         line_state.to_src_info(), ctx);
     break; case TKN_STRING_L:
     {
@@ -205,7 +195,7 @@ namespace colt::lang
         line_state.to_src_info(), ctx);
     }
 
-      break;
+    break;
     case TKN_AND:          // &(var)
     case TKN_PLUS_PLUS:    // ++(var)
     case TKN_MINUS_MINUS:  // --(var)
@@ -248,8 +238,6 @@ namespace colt::lang
     PTR<Expr> lhs = parse_primary();
     //Save the current binary operators
     Token binary_op = current_tkn;
-    //Source code informations of the operator
-    auto binary_op_info = get_expr_info();
 
     //As assignment operators are right associative, they are handled
     //in a different function
@@ -272,27 +260,13 @@ namespace colt::lang
       //Consume the operator
       consume_current_tkn();
       //Recurse: 10 + 5 + 8 -> (10 + (5 + 8))
-      PTR<Expr> rhs = parse_binary(GetOpPrecedence(binary_op));
-
-      if (!rhs->get_type()->is_equal(lhs->get_type()))
-      {
-        generate_any<report_as::ERROR>(line_state.to_src_info(), &ASTMaker::panic_consume_semicolon,
-          "Operands should be of same type!");
-        return ErrorExpr::CreateExpr(ctx);
-      }
-      else if (is_a<BuiltInType>(rhs->get_type())
-        && !as<PTR<const BuiltInType>>(rhs->get_type())->supports(TokenToBinaryOperator(binary_op)))
-      {
-        generate_any<report_as::ERROR>(line_state.to_src_info(), &ASTMaker::panic_consume_semicolon,
-          "Type '{}' does not support operator '{}'!", rhs->get_type()->get_name(), binary_op_info.expression);
-        return ErrorExpr::CreateExpr(ctx);
-      }
+      PTR<Expr> rhs = parse_binary(GetOpPrecedence(binary_op));      
 
       //Pratt's parsing, which allows operators priority
-      lhs = BinaryExpr::CreateExpr(
+      lhs = create_binary(
         isComparisonToken(binary_op) ? BuiltInType::CreateBool(false, ctx) : lhs->get_type(),
         lhs, binary_op, rhs,
-        line_state.to_src_info(), ctx);
+        line_state.to_src_info());
 
       //Update the Token
       binary_op = current_tkn;
@@ -320,7 +294,7 @@ namespace colt::lang
     }
 
     if (op == TKN_PLUS_PLUS || op == TKN_MINUS_MINUS)
-    {      
+    {
       if (PTR<Expr> read = parse_primary();
         !is_a<VarReadExpr>(read))
       {
@@ -409,7 +383,7 @@ namespace colt::lang
     auto fn_name = lexer.get_parsed_identifier();
 
     if (check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_fn_decl,
-        "Expected an identifier, not '{}'!", lexer.get_current_lexeme()))
+      "Expected an identifier, not '{}'!", lexer.get_current_lexeme()))
       return ErrorExpr::CreateExpr(ctx);
     if (check_and_consume(TKN_LEFT_PAREN, &ASTMaker::panic_consume_fn_decl,
       "Expected a '('!"))
@@ -449,10 +423,10 @@ namespace colt::lang
     }
 
     if (check_and_consume(TKN_RIGHT_PAREN, &ASTMaker::panic_consume_fn_decl,
-        "Expected a ')'!"))
+      "Expected a ')'!"))
       return ErrorExpr::CreateExpr(ctx);
     if (check_and_consume(TKN_MINUS_GREAT, &ASTMaker::panic_consume_fn_decl,
-        "Expected a '->'!"))
+      "Expected a '->'!"))
       return ErrorExpr::CreateExpr(ctx);
 
     //The return type of the function
@@ -461,7 +435,7 @@ namespace colt::lang
       return ErrorExpr::CreateExpr(ctx);
 
     PTR<const Type> fn_ptr_t = FnType::CreateFn(return_t, std::move(args_type), is_vararg, ctx);
-    PTR<FnDeclExpr> declaration = as<PTR<FnDeclExpr>>(FnDeclExpr::CreateExpr(fn_ptr_t, fn_name, std::move(args_name), is_extern, line_state.to_src_info(), ctx));    
+    PTR<FnDeclExpr> declaration = as<PTR<FnDeclExpr>>(FnDeclExpr::CreateExpr(fn_ptr_t, fn_name, std::move(args_name), is_extern, line_state.to_src_info(), ctx));
 
     //Set the current function being parsed
     current_function = declaration;
@@ -788,53 +762,15 @@ namespace colt::lang
 
     if (assignment_tkn == TKN_EQUAL)
       return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs), rhs, line_state.to_src_info(), ctx);
-
-    //Expands VAR += VALUE as VAR = VAR + VALUE
-    switch (assignment_tkn)
-    {
-    case colt::lang::TKN_PLUS_EQUAL:
-      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
-        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_PLUS, rhs, line_state.to_src_info(), ctx),
-        line_state.to_src_info(), ctx);
-    case colt::lang::TKN_MINUS_EQUAL:
-      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
-        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_MINUS, rhs, line_state.to_src_info(), ctx),
-        line_state.to_src_info(), ctx);
-    case colt::lang::TKN_STAR_EQUAL:
-      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
-        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_STAR, rhs, line_state.to_src_info(), ctx),
-        line_state.to_src_info(), ctx);
-    case colt::lang::TKN_SLASH_EQUAL:
-      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
-        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_SLASH, rhs, line_state.to_src_info(), ctx),
-        line_state.to_src_info(), ctx);
-    case colt::lang::TKN_PERCENT_EQUAL:
-      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
-        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_PERCENT, rhs, line_state.to_src_info(), ctx),
-        line_state.to_src_info(), ctx);
-    case colt::lang::TKN_AND_EQUAL:
-      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
-        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_AND, rhs, line_state.to_src_info(), ctx),
-        line_state.to_src_info(), ctx);
-    case colt::lang::TKN_OR_EQUAL:
-      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
-        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_OR, rhs, line_state.to_src_info(), ctx),
-        line_state.to_src_info(), ctx);
-    case colt::lang::TKN_CARET_EQUAL:
-      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
-        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_CARET, rhs, line_state.to_src_info(), ctx),
-        line_state.to_src_info(), ctx);
-    case colt::lang::TKN_LESS_LESS_EQUAL:
-      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
-        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_LESS_LESS, rhs, line_state.to_src_info(), ctx),
-        line_state.to_src_info(), ctx);
-    case colt::lang::TKN_GREAT_GREAT_EQUAL:
-      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
-        BinaryExpr::CreateExpr(lhs->get_type(), lhs, TKN_GREAT_GREAT, rhs, line_state.to_src_info(), ctx),
-        line_state.to_src_info(), ctx);
-    default:
-      colt_unreachable("Invalid assignment token!");
-    }
+    
+    //The value to write
+    auto write_val = create_binary(lhs->get_type(), lhs,
+      DirectAssignToNonAssignToken(assignment_tkn),
+      rhs, line_state.to_src_info());
+    
+    //Expand the direct assignment operator
+    return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
+        write_val, line_state.to_src_info(), ctx);
   }
 
   PTR<Expr> ASTMaker::parse_conversion(PTR<Expr> lhs, const SavedExprInfo& line_state) noexcept
@@ -929,7 +865,6 @@ namespace colt::lang
     case TKN_KEYWORD_PTR:
     {
       consume_current_tkn();
-      //TODO: pass strategy to consume
       if (!check_and_consume(TKN_LESS, panic, "Expected a '<'!"))
       {
         PTR<const Type> ptr_to = parse_typename(panic);
@@ -1118,9 +1053,9 @@ namespace colt::lang
         "'{}' is a global variable, not a function!", identifier);
       return ErrorExpr::CreateExpr(ctx);
     }
-    
+
     if (ptr->second.get_size() == 1)
-    {      
+    {
       if (auto decl = as<PTR<FnDefExpr>>(ptr->second.get_front())->get_fn_decl();
         validate_fn_call(arguments, decl, identifier, fn_call))
         return FnCallExpr::CreateExpr(decl, std::move(arguments), fn_call, ctx);
@@ -1266,6 +1201,81 @@ namespace colt::lang
     ptr->second.push_back(expr);
   }
 
+  PTR<Expr> ASTMaker::create_binary(PTR<const Type> expr_type, PTR<Expr> lhs, Token op, PTR<Expr> rhs, const SourceCodeExprInfo& src_info) noexcept
+  {
+    BinaryOperator bin_op = TokenToBinaryOperator(op);
+    //Type checks, and supported operators check
+    if (!rhs->get_type()->is_equal(lhs->get_type()))
+    {
+      generate_any<report_as::ERROR>(src_info, &ASTMaker::panic_consume_semicolon,
+        "Operands should be of same type!");
+      return ErrorExpr::CreateExpr(ctx);
+    }
+    else if (is_a<BuiltInType>(rhs->get_type())
+      && !as<PTR<const BuiltInType>>(rhs->get_type())->supports(bin_op))
+    {
+      generate_any<report_as::ERROR>(src_info, &ASTMaker::panic_consume_semicolon,
+        "Type '{}' does not support operator '{}'!", rhs->get_type()->get_name(), BinaryOperatorToString(bin_op));
+      return ErrorExpr::CreateExpr(ctx);
+    }
+
+    if (is_a<LiteralExpr>(rhs))
+    {
+      auto rhs_l = as<PTR<LiteralExpr>>(rhs);
+      if (is_a<LiteralExpr>(lhs))
+      {
+        //Constant fold as both expression are known at compile-time
+        //'constant_fold' also emits errors and warnings.
+        return constant_fold(as<PTR<LiteralExpr>>(lhs), bin_op, rhs_l,
+          as<PTR<BuiltInType>>(expr_type), src_info);
+      }
+      //Detect division by zero
+      else if ((bin_op == BinaryOperator::OP_DIV || bin_op == BinaryOperator::OP_MOD)
+        && rhs_l->get_value().as<u64>() == 0
+        && rhs_l->get_type()->is_integral())
+      {
+        generate_any<report_as::ERROR>(src_info, nullptr,
+          "Integral division by zero is not allowed!");
+        return ErrorExpr::CreateExpr(ctx);
+      }
+    }
+    return BinaryExpr::CreateExpr(expr_type, lhs, op, rhs, src_info, ctx);
+  }
+
+  PTR<Expr> ASTMaker::create_binary(PTR<Expr> lhs, Token op, PTR<Expr> rhs, const SourceCodeExprInfo& src_info) noexcept
+  {
+    return create_binary(lhs->get_type(), lhs, op, rhs, src_info);
+  }
+  
+  PTR<Expr> ASTMaker::constant_fold(PTR<LiteralExpr> a, BinaryOperator op, PTR<LiteralExpr> b, PTR<const BuiltInType> ret, const SourceCodeExprInfo& src_info) noexcept
+  {
+    //If the expression is 2 lstring to add, create lstring
+    //that represents the concatenation of both arguments
+    if (ret->is_lstring() && op == BinaryOperator::OP_SUM)
+    {
+      String concat = { *a->get_value().as<PTR<String>>() };
+      concat += *b->get_value().as<PTR<String>>();
+      QWORD res = str_table.insert(std::move(concat)).first;
+      return LiteralExpr::CreateExpr(res, ret, src_info, ctx);
+    }
+
+    auto fn = op::getInstFromBinaryOperator(op);
+    auto [res, err] = fn(a->get_value(), b->get_value(), a->get_type()->get_builtin_id());    
+    
+    if (err == op::DIV_BY_ZERO)
+    {
+      generate_any<report_as::ERROR>(src_info, nullptr,
+        "Integral division by zero is not allowed!");
+      return ErrorExpr::CreateExpr(ctx);
+    }
+    else if (err != op::NO_ERROR)
+    {
+      generate_any<report_as::WARNING>(src_info, nullptr,
+        "{}", op::OpErrorToStrExplain(err));
+    }
+    return LiteralExpr::CreateExpr(res, ret, src_info, ctx);
+  }
+
   void ASTMaker::panic_consume_semicolon() noexcept
   {
     while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY
@@ -1313,5 +1323,5 @@ namespace colt::lang
   {
     while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_PAREN && current_tkn != TKN_EOF)
       consume_current_tkn();
-  }  
+  }
 }

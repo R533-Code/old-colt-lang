@@ -9,6 +9,7 @@
 #include "colt_expr.h"
 #include "colt_context.h"
 #include "parsing/colt_lexer.h"
+#include "interpreter/qword_op.h"
 
 namespace colt::lang
 {
@@ -18,16 +19,6 @@ namespace colt::lang
   /// @param tkn The Token whose precedence to check
   /// @return Precedence or 255 if not an operator
   u8 GetOpPrecedence(Token tkn) noexcept;
-
-  /// @brief Check if a Token represents any assignment Token (=, +=, ...)
-  /// @param tkn The token to check for
-  /// @return True if the Token is an assignment Token
-  bool isAssignmentToken(Token tkn) noexcept;
-  /// @brief Check if a Token represents any comparison Token (==, !=, ...)
-  /// '||' and '&&' are considered comparison tokens.
-  /// @param tkn The token to check for
-  /// @return True if the Token is a comparison Token
-  bool isComparisonToken(Token tkn) noexcept;
 
   /// @brief Check if 'expr' is a terminating expression.
   /// A terminating expression is a 'return', a scope whose last
@@ -294,6 +285,14 @@ namespace colt::lang
 
     /// @brief Registers a function to the global table
     void add_fn_to_global_table(PTR<FnDefExpr> expr) noexcept;
+    
+    /************* FOLDING HELPERS ************/
+
+    PTR<Expr> create_binary(PTR<const Type> expr_type, PTR<Expr> lhs, Token op, PTR<Expr> rhs, const SourceCodeExprInfo& src_info) noexcept;
+    
+    PTR<Expr> create_binary(PTR<Expr> lhs, Token op, PTR<Expr> rhs, const SourceCodeExprInfo& src_info) noexcept;
+
+    PTR<Expr> constant_fold(PTR<LiteralExpr> a, BinaryOperator op, PTR<LiteralExpr> b, PTR<const BuiltInType> ret, const SourceCodeExprInfo& src_info) noexcept;
 
     /************* PEEKING HELPERS ************/
 
