@@ -111,12 +111,10 @@ namespace colt::io
 	template<bool new_line, typename... Args>
 	constexpr void PrintFatal(fmt::format_string<Args...> fmt, Args && ...args)
 	{
-		if (args::GlobalArguments.colored_output)
-			fmt::print(bg(fmt::color::red) | fmt::emphasis::bold, "Fatal: ");
-		else
-			fmt::print("Fatal: ");
-
+		fmt::print("{}Fatal:{}{} ", io::BrightRedB, io::Reset, io::BrightRedF);
 		fmt::print(fmt, std::forward<Args>(args)...);
+		fmt::print("{}", io::Reset);
+
 		if constexpr (new_line)
 			std::fputc('\n', stdout);
 	}
