@@ -28,7 +28,6 @@ COLT_EXPORT void _ColtPrintlstring(lstring a) { io::Print("{}", a); }
 
 int main(int argc, const char** argv)
 {
-  io::PrintFatal("Not enough memory to continue execution! Aborting...");
   //Populates the GlobalArguments
   args::ParseArguments(argc, argv);
   //Initialize code generators
