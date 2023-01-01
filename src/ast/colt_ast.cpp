@@ -208,7 +208,11 @@ namespace colt::lang
     if (isAssignmentToken(binary_op))
       return parse_assignment(lhs, line_state);
     if (current_tkn == TKN_KEYWORD_AS) // EXPR as TYPE <- conversion
-      return parse_conversion(lhs, line_state);
+    {
+      lhs = parse_conversion(lhs, line_state);
+      //Update 'binary_op'
+      binary_op = current_tkn;
+    }
 
     //The current operator's precedence
     u8 op_precedence = GetOpPrecedence(binary_op);
@@ -609,6 +613,11 @@ namespace colt::lang
 
     PTR<Expr> condition = parse_bin_cond();
     PTR<Expr> body = parse_scope();
+    if (isTerminatedExpr(body))
+    {
+      generate_any<report_as::WARNING>(body->get_src_code(), nullptr,
+        "Loop body is terminated!");
+    }
 
     //Restore loop state
     is_parsing_loop = old_is_loop;
