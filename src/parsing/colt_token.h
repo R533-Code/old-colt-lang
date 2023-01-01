@@ -9,10 +9,19 @@
 
 namespace colt::lang
 {
-	/// @brief Represents the lexeme of the Colt language
+	/// @brief Represents the lexeme of the Colt language.
+	/// To optimize switch and category checks, the Token
+	/// is a bit complex in its layout and order.
+	/// Comments explains how to add new Tokens without
+	/// causing problems with `is*Token` functions.
 	enum Token
 		: uint8_t
-	{		
+	{
+		/********* BEGINNING OF BINARY OPERATORS *******/
+		/// While not all symbols in this section are binary
+		/// operators, some are considered as such to simplify
+		/// Pratt's Parsing in the AST.
+
 		/// @brief +
 		TKN_PLUS,
 		/// @brief -
@@ -34,6 +43,10 @@ namespace colt::lang
 		/// @brief >>
 		TKN_GREAT_GREAT,
 		
+		/// The TKN_GREAT_GREAT is used as a delimiter for comparison
+		/// operators: do not add non comparison operators tokens
+		/// after it.
+
 		/// @brief &&
 		TKN_AND_AND,
 		/// @brief ||
@@ -53,6 +66,19 @@ namespace colt::lang
 		TKN_BANG_EQUAL,
 		/// @brief ==
 		TKN_EQUAL_EQUAL,
+
+		/// The TKN_EQUAL_EQUAL is used as a delimiter for assignment
+		/// operators: do not add non assignment operators tokens
+		/// after it.
+
+		/********* BEGINNING OF ASSIGNMENT OPERATORS *******/
+
+		/// The TKN_EQUAL is used as a delimiter for direct assignment
+		/// operators: do not add non direct assignment operators tokens
+		/// after it.
+		/// The TKN_EQUAL is also used as a delimiter for comparison
+		/// operators: do not add non comparison operators tokens
+		/// before it.
 
 		/// @brief =
 		TKN_EQUAL,
@@ -77,6 +103,12 @@ namespace colt::lang
 		/// @brief >>=
 		TKN_GREAT_GREAT_EQUAL,
 
+		/********* END OF ASSIGNMENT OPERATORS *******/
+
+		/// The TKN_COMMA is used as a delimiter for assignment
+		/// operators and direct assignment operators: do not add
+		/// non (direct) assignment operators tokens before it.
+
 		/// @brief ,
 		TKN_COMMA,
 		/// @brief ;
@@ -90,12 +122,16 @@ namespace colt::lang
 		/// @brief (
 		TKN_LEFT_PAREN,
 
+
 		/// @brief :
 		TKN_COLON,
 		/// @brief }
 		TKN_RIGHT_CURLY,
 		/// @brief {
 		TKN_LEFT_CURLY,
+
+		/********* END OF BINARY OPERATORS *******/
+
 		/// @brief ->
 		TKN_MINUS_GREAT,
 		/// @brief =>
@@ -115,6 +151,8 @@ namespace colt::lang
 		/// @brief ]
 		TKN_RIGHT_SQUARE,		
 		
+		/********* BEGINNING OF LITERAL TOKENS *******/
+
 		/// @brief true/false
 		TKN_BOOL_L,
 		/// @brief '.'
@@ -141,6 +179,12 @@ namespace colt::lang
 		TKN_DOUBLE_L,
 		/// @brief "..."
 		TKN_STRING_L,
+		
+		/********* END OF LITERAL TOKENS *******/
+		/********* DO NOT ADD KEYWORDS HERE *******/
+		/// The TKN_KEYWORD_EXTERN is used as a delimiter
+		/// for literal tokens: do not add non-literal tokens
+		/// before it.
 
 		/// @brief extern
 		TKN_KEYWORD_EXTERN,
@@ -155,8 +199,15 @@ namespace colt::lang
 		/// @brief return
 		TKN_KEYWORD_RETURN,
 		
+		/// The TKN_KEYWORD_VAR is used as a delimiter for built-in
+		/// types tokens: do not add non-built-in types tokens
+		/// after it.
+
 		/// @brief var
 		TKN_KEYWORD_VAR,
+
+		/********* BEGINNING OF BUILTIN TYPES *******/
+
 		/// @brief void
 		TKN_KEYWORD_VOID,
 		/// @brief bool
@@ -187,8 +238,14 @@ namespace colt::lang
 		TKN_KEYWORD_LSTRING,
 		/// @brief mut
 		TKN_KEYWORD_MUT,
-		/// @brief ptr
+		/// @brief PTR
 		TKN_KEYWORD_PTR,
+
+		/********* END OF BUILTIN TYPES *******/
+
+		/// The TKN_KEYWORD_FOR is used as a delimiter for built-in
+		/// types tokens: do not add non-built-in types tokens
+		/// before it.
 
 		/// @brief for
 		TKN_KEYWORD_FOR,
@@ -226,6 +283,9 @@ namespace colt::lang
 		/// @brief goto
 		TKN_KEYWORD_GOTO,
 
+		/********* ADD NEW KEYWORDS BEGINNING HERE *******/
+
+
 		/// @brief any identifier
 		TKN_IDENTIFIER,
 		/// @brief \.
@@ -237,7 +297,8 @@ namespace colt::lang
 	/// @return True if the Token is an assignment Token
 	constexpr bool isAssignmentToken(Token tkn) noexcept
 	{
-		return TKN_EQUAL_EQUAL < tkn && tkn < TKN_COMMA;
+		return TKN_EQUAL_EQUAL < tkn
+			&& tkn < TKN_COMMA;
 	}
 
 	/// @brief Check if Token represents any direct assignment (+=, -=, ...)
@@ -245,7 +306,8 @@ namespace colt::lang
 	/// @return True if the Token is an direct assignment Token
 	constexpr bool isDirectAssignmentToken(Token tkn) noexcept
 	{
-		return TKN_EQUAL < tkn && tkn < TKN_COMMA;
+		return TKN_EQUAL < tkn
+			&& tkn < TKN_COMMA;
 	}
 
 	/// @brief Converts a direct assignment to its non-assigning equivalent.
@@ -265,7 +327,17 @@ namespace colt::lang
 	/// @return True if the Token is a comparison Token
 	constexpr bool isComparisonToken(Token tkn) noexcept
 	{
-		return TKN_GREAT_GREAT < tkn && tkn < TKN_EQUAL;
+		return TKN_GREAT_GREAT < tkn
+			&& tkn < TKN_EQUAL;
+	}
+
+	/// @brief Check if a Token represents any literal token ('.', "...", ...)
+	/// @param tkn The token to check for
+	/// @return True if the Token is a literal token
+	constexpr bool isLiteralToken(Token tkn) noexcept
+	{
+		return TKN_RIGHT_SQUARE < tkn
+			&& tkn < TKN_KEYWORD_EXTERN;
 	}
 }
 
