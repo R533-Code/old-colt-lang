@@ -413,9 +413,17 @@ namespace colt::lang
   };
 
   template<typename T>
+  /// @brief Check if a runtime colt type is equivalent to 'T'
+  /// @tparam T The type to compare against
+  /// @param type The type to compare
+  /// @return True if 'T' and 'type' are equivalent
   constexpr bool is_cpp_equivalent(PTR<const Type> type) noexcept;
 
   template<typename T>
+  /// @brief Creates a runtime colt type matching 'T'
+  /// @tparam T The type to convert to a colt type
+  /// @param ctx The context in which to store the result
+  /// @return Pointer to the equivalent type
   constexpr PTR<const Type> from_cpp_equivalent(COLTContext& ctx) noexcept;
 
   namespace details
@@ -485,11 +493,7 @@ namespace colt::lang
     }
   }
 
-  template<typename T>
-  /// @brief Check if a runtime colt type is equivalent to 'T'
-  /// @tparam T The type to compare against
-  /// @param type The type to compare
-  /// @return True if 'T' and 'type' are equivalent
+  template<typename T>  
   constexpr bool is_cpp_equivalent(PTR<const Type> type) noexcept
   {
     if constexpr (std::is_function_v<T> && !std::is_pointer_v<T>)
@@ -547,11 +551,7 @@ namespace colt::lang
     colt_unreachable("Unknown type!");
   }
 
-  template<typename T>
-  /// @brief Creates a runtime colt type matching 'T'
-  /// @tparam T The type to convert to a colt type
-  /// @param ctx The context in which to store the result
-  /// @return Pointer to the equivalent type
+  template<typename T>  
   constexpr PTR<const Type> from_cpp_equivalent(COLTContext& ctx) noexcept
   {
     if constexpr (std::is_function_v<T> && !std::is_pointer_v<T>)
