@@ -11,6 +11,30 @@ namespace colt::lang
   {
     return ctx.add_expr(make_unique<LiteralExpr>(value, type, src_info));
   }
+
+  PTR<Expr> LiteralExpr::CreateExpr(QWORD value, Token tkn, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
+  {
+    assert_true(isLiteralToken(tkn), "Expected a Literal token!");
+    PTR<const Type> type;
+    switch (tkn)
+    {
+    break; case TKN_BOOL_L:   type = BuiltInType::CreateBool(false, ctx);
+    break; case TKN_CHAR_L:   type = BuiltInType::CreateChar(false, ctx);
+    break; case TKN_I8_L:     type = BuiltInType::CreateI8(false, ctx);
+    break; case TKN_U8_L:     type = BuiltInType::CreateU8(false, ctx);
+    break; case TKN_I16_L:    type = BuiltInType::CreateI16(false, ctx);
+    break; case TKN_U16_L:    type = BuiltInType::CreateU16(false, ctx);
+    break; case TKN_I32_L:    type = BuiltInType::CreateI32(false, ctx);
+    break; case TKN_U32_L:    type = BuiltInType::CreateU32(false, ctx);
+    break; case TKN_I64_L:    type = BuiltInType::CreateI64(false, ctx);
+    break; case TKN_U64_L:    type = BuiltInType::CreateU64(false, ctx);
+    break; case TKN_FLOAT_L:  type = BuiltInType::CreateF32(false, ctx);
+    break; case TKN_DOUBLE_L: type = BuiltInType::CreateF64(false, ctx);
+    break; case TKN_STRING_L: type = BuiltInType::CreateLString(ctx);
+    break; default: colt_unreachable("Invalid Literal Token!");
+    }
+    return ctx.add_expr(make_unique<LiteralExpr>(value, type, src_info));
+  }
   
   PTR<Expr> UnaryExpr::CreateExpr(PTR<const Type> type, Token tkn, PTR<Expr> child, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {

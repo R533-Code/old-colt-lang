@@ -205,6 +205,15 @@ namespace colt::lang
     /// @return Pointer to the created expression
     static PTR<Expr> CreateExpr(QWORD value, PTR<const Type> type, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
 
+    /// @brief Creates a LiteralExpr
+    /// @param value The value of the LiteralExpr
+    /// @param tkn The Token representing the parsed value
+    /// @param src_info The source code information
+    /// @param ctx The COLTContext to store the resulting expression
+    /// @return Pointer to the created expression
+    /// @pre isLiteralToken(tkn)
+    static PTR<Expr> CreateExpr(QWORD value, Token tkn, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+
     template<typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
     /// @brief Creates a value of type 'T' and of value 'value'
     /// @tparam T The type of the value (which is converted to a colt type)
