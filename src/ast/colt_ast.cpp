@@ -902,22 +902,31 @@ namespace colt::lang
 
     SourceCodeExprInfo identifier_location = line_state.to_src_info();
 
-    SmallVector<PTR<Expr>, 4> arguments;
-    parse_parenthesis(&ASTMaker::parse_fn_call_args, arguments);
+    Vector<PTR<Expr>> outer_scope = {};
 
-    return handle_function_call(identifier, std::move(arguments),
+    SmallVector<PTR<Expr>, 4> arguments;
+    parse_parenthesis(&ASTMaker::parse_fn_call_args, arguments, outer_scope);
+
+    auto call_expr = handle_function_call(identifier, std::move(arguments),
       identifier_location, line_state.to_src_info());
+    if (is_a<ErrorExpr>(call_expr))
+      return call_expr;
+    outer_scope.push_back(call_expr);
+    return ScopeExpr::CreateExpr(std::move(outer_scope),
+      line_state.to_src_info(), ctx);
   }
 
-  void ASTMaker::parse_fn_call_args(SmallVector<PTR<Expr>, 4>& arguments) noexcept
+  void ASTMaker::parse_fn_call_args(SmallVector<PTR<Expr>, 4>& arguments, Vector<PTR<Expr>>& scope) noexcept
   {
     if (current_tkn != TKN_RIGHT_PAREN)
     {
       auto expr = parse_binary();
+      //Print(hello()) with Print(void) and hello()->void
+      //becomes: hello(); Print();
       if (expr->get_type()->is_void())
-        generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
-          "Parameter cannot evaluate to 'void'!");
-      arguments.push_back(expr);
+        scope.push_back(expr);
+      else
+        arguments.push_back(expr);
     }
     while (current_tkn != TKN_RIGHT_PAREN)
     {
@@ -926,9 +935,9 @@ namespace colt::lang
 
       auto expr = parse_binary();
       if (expr->get_type()->is_void())
-        generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
-          "Parameter cannot evaluate to 'void'!");
-      arguments.push_back(expr);
+        scope.push_back(expr);
+      else
+        arguments.push_back(expr);
     }
   }
 
