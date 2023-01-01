@@ -263,6 +263,10 @@ namespace colt::lang
     /// FnReturnExpr or ErrorExpr
     PTR<Expr> parse_return() noexcept;
 
+    /// @brief Parses a binary expression of type bool
+    /// @return BinaryExpr of type bool or ErrorExpr
+    PTR<Expr> parse_bin_cond() noexcept;
+
     /// @brief Parses the function call's arguments
     /// @param arguments The argument vector in which to push the arguments
     void parse_fn_call_args(SmallVector<PTR<Expr>, 4>& arguments, Vector<PTR<Expr>>& scope) noexcept;

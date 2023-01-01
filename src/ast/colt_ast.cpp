@@ -574,17 +574,7 @@ namespace colt::lang
 
     consume_current_tkn(); //consume if
 
-    PTR<Expr> if_cond = parse_binary(); //if condition
-    if (!if_cond->get_type()->is_equal(BuiltInType::CreateBool(false, ctx)))
-      generate_any<report_as::ERROR>(if_cond->get_src_code(), nullptr,
-        "Expression should be of type 'bool'!");
-    //If the expression is not a comparison, but is of type bool
-    //(read from boolean variable, ...), transform it
-    //into a comparison with 'true'
-    else if (!is_a<BinaryExpr>(if_cond))
-      if_cond = create_binary(if_cond->get_type(), if_cond, TKN_EQUAL_EQUAL,
-        LiteralExpr::CreateValue(true, ctx), if_cond->get_src_code());
-
+    PTR<Expr> if_cond = parse_bin_cond(); //if condition    
     PTR<Expr> if_body = parse_scope(); //if body
 
     if (current_tkn == TKN_KEYWORD_ELIF)
@@ -617,17 +607,7 @@ namespace colt::lang
 
     consume_current_tkn(); //consume while
 
-    PTR<Expr> condition = parse_binary();
-    if (!condition->get_type()->is_equal(BuiltInType::CreateBool(false, ctx)))
-      generate_any<report_as::ERROR>(condition->get_src_code(), nullptr,
-        "Expression should be of type 'bool'!");
-    //If the expression is not a comparison, but is of type bool
-    //(read from boolean variable, ...), transform it
-    //into a comparison with 'true'
-    else if (!is_a<BinaryExpr>(condition))
-      condition = create_binary(condition->get_type(), condition, TKN_EQUAL_EQUAL,
-        LiteralExpr::CreateValue(true, ctx), condition->get_src_code());
-
+    PTR<Expr> condition = parse_bin_cond();
     PTR<Expr> body = parse_scope();
 
     //Restore loop state
@@ -1269,6 +1249,26 @@ namespace colt::lang
   {
     while (current_tkn != TKN_KEYWORD_VAR && current_tkn != TKN_KEYWORD_FN && current_tkn != TKN_EOF)
       consume_current_tkn();
+  }
+
+  PTR<Expr> colt::lang::ASTMaker::parse_bin_cond() noexcept
+  {
+    PTR<Expr> condition = parse_binary();
+    if (!condition->get_type()->is_equal(BuiltInType::CreateBool(false, ctx)))
+    {
+      generate_any<report_as::ERROR>(condition->get_src_code(), nullptr,
+        "Expression should be of type 'bool'!");
+      return ErrorExpr::CreateExpr(ctx);
+    }
+    //If the expression is not a comparison, but is of type bool
+    //(read from boolean variable, ...), transform it
+    //into a comparison with 'true'
+    else if (!is_a<BinaryExpr>(condition))
+    {
+      condition = create_binary(condition->get_type(), condition, TKN_EQUAL_EQUAL,
+        LiteralExpr::CreateValue(true, ctx), condition->get_src_code());
+    }
+    return condition;
   }
 
   void ASTMaker::panic_consume_return() noexcept
