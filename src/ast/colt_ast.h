@@ -255,7 +255,7 @@ namespace colt::lang
     /// @param identifier The function name
     /// @param line_state The line state from of the function calling this function
     /// @return FnCallExpr, or ErrorExpr
-    PTR<Expr> parse_function_call(StringView identifier, const SavedExprInfo& line_state) noexcept;
+    PTR<Expr> parse_fn_call(StringView identifier, const SavedExprInfo& line_state) noexcept;
 
     /// @brief Parses a 'return' statement.
     /// Precondition: current_tkn == TKN_KEYWORD_RETURN.

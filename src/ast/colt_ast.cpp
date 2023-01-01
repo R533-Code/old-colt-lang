@@ -865,7 +865,7 @@ namespace colt::lang
     SourceCodeExprInfo identifier_info = line_state.to_src_info();
 
     if (current_tkn == TKN_LEFT_PAREN) // function call
-      return parse_function_call(identifier, line_state);
+      return parse_fn_call(identifier, line_state);
 
     if (current_function != nullptr) //if parsing a function
     {
@@ -896,7 +896,7 @@ namespace colt::lang
     }
   }
 
-  PTR<Expr> ASTMaker::parse_function_call(StringView identifier, const SavedExprInfo& line_state) noexcept
+  PTR<Expr> ASTMaker::parse_fn_call(StringView identifier, const SavedExprInfo& line_state) noexcept
   {
     assert(current_tkn == TKN_LEFT_PAREN);
 
