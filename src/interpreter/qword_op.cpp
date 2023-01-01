@@ -682,28 +682,10 @@ namespace colt::op
     constexpr QWORD_bin_ins_t op_array[] = {
       &add, &sub, &mul, &div, &mod,
       &bit_and, &bit_or, &bit_xor,
-      &shl, &shr, &bool_and, &bool_or
+      &shl, &shr, &bool_and, &bool_or,
+      &le, &leq, &ge, &geq, &eq, &neq
     };
-    assert_true(op < lang::BinaryOperator::OP_EQUAL, "Invalid operator!");
-    return op_array[static_cast<u64>(op)];
-    switch (op)
-    {    
-    case colt::lang::BinaryOperator::OP_BOOL_AND:
-      break;
-    case colt::lang::BinaryOperator::OP_BOOL_OR:
-      break;
-    case colt::lang::BinaryOperator::OP_LESS:
-      break;
-    case colt::lang::BinaryOperator::OP_LESS_EQUAL:
-      break;
-    case colt::lang::BinaryOperator::OP_GREAT:
-      break;
-    case colt::lang::BinaryOperator::OP_GREAT_EQUAL:
-      break;
-    case colt::lang::BinaryOperator::OP_NOT_EQUAL:
-      break;
-    default:
-      colt_unreachable("Invalid ID!");
-    }
+    assert_true(op < lang::BinaryOperator::OP_ASSIGN, "Invalid operator!");
+    return op_array[static_cast<u64>(op)];    
   }
 }
