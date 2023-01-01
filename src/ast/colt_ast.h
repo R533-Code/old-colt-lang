@@ -265,7 +265,7 @@ namespace colt::lang
 
     /// @brief Parses the function call's arguments
     /// @param arguments The argument vector in which to push the arguments
-    void parse_function_call_arguments(SmallVector<PTR<Expr>, 4>& arguments) noexcept;
+    void parse_fn_call_args(SmallVector<PTR<Expr>, 4>& arguments) noexcept;
 
     /// @brief Validates a function call by doing type checking
     /// @param arguments The arguments passed to the function

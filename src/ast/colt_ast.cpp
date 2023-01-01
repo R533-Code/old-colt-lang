@@ -903,13 +903,13 @@ namespace colt::lang
     SourceCodeExprInfo identifier_location = line_state.to_src_info();
 
     SmallVector<PTR<Expr>, 4> arguments;
-    parse_parenthesis(&ASTMaker::parse_function_call_arguments, arguments);
+    parse_parenthesis(&ASTMaker::parse_fn_call_args, arguments);
 
     return handle_function_call(identifier, std::move(arguments),
       identifier_location, line_state.to_src_info());
   }
 
-  void ASTMaker::parse_function_call_arguments(SmallVector<PTR<Expr>, 4>& arguments) noexcept
+  void ASTMaker::parse_fn_call_args(SmallVector<PTR<Expr>, 4>& arguments) noexcept
   {
     if (current_tkn != TKN_RIGHT_PAREN)
     {
@@ -1040,9 +1040,9 @@ namespace colt::lang
         overload_set.push_back(fn);
     }
     PTR<const FnDefExpr> best = nullptr;
-    for (auto i : overload_set)
+    for (auto fn_o : overload_set)
     {
-      auto fn = as<PTR<const FnDefExpr>>(i);
+      auto fn = as<PTR<const FnDefExpr>>(fn_o);
       for (size_t i = 0; i < fn->get_params_count(); i++)
       {
         if (!arguments[i]->get_type()->is_equal(fn->get_params_type()[i]))
