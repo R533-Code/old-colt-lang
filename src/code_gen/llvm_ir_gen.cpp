@@ -197,16 +197,45 @@ namespace colt::gen
 
     switch (ptr->get_operation())
     {
-    break; case UnaryOperator::OP_PRE_INCREMENT:     
-    break; case UnaryOperator::OP_POST_INCREMENT:
-    
+    case UnaryOperator::OP_INCREMENT:
+    case UnaryOperator::OP_DECREMENT:
+    {
+      auto var_read = as<PTR<const VarReadExpr>>(ptr);
+      PTR<Constant> val_one;
+      if (as<const PTR<BuiltInType>>(var_read->get_type())->is_integral())
+        val_one = ConstantInt::get(type_to_llvm(var_read->get_type()), 1);
+      else //floating point
+        val_one = ConstantFP::get(type_to_llvm(var_read->get_type()), 1.0);
+            
+      if (!var_read->is_global())
+      {
+        builder.CreateStore(val_one,
+          local_vars[var_read->get_local_ID()], false);
+        returned_value = builder.CreateLoad(
+          local_vars[var_read->get_local_ID()]->getAllocatedType(), local_vars[var_read->get_local_ID()]
+        );
+      }
+      else
+      {
+        auto gptr = global_vars.find(var_read->get_name())->second;
+        builder.CreateStore(val_one, global_vars.find(var_read->get_name())->second);
+        returned_value = builder.CreateLoad(gptr->getValueType(), gptr);
+      }
+    }
+    break; case UnaryOperator::OP_ADDRESSOF:
+    {
+      auto var_read = as<PTR<const VarReadExpr>>(ptr);
+      if (!var_read->is_global())
+        returned_value = local_vars[var_read->get_local_ID()];
+      else
+        returned_value = global_vars.find(var_read->get_name())->second;
+    }
     break; case UnaryOperator::OP_NEGATE:
       returned_value = builder.CreateNeg(child);
-    break; case UnaryOperator::OP_BIT_NOT:
+    break;
+    case UnaryOperator::OP_BIT_NOT:
+    case UnaryOperator::OP_BOOL_NOT:
       returned_value = builder.CreateNot(child);
-    break; case UnaryOperator::OP_BOOL_NOT:
-      returned_value = builder.CreateIsNull(child);
-    break; case UnaryOperator::OP_ADDRESSOF:
       
     break; default:
       colt_unreachable("Not implemented!");
