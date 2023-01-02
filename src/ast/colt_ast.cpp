@@ -192,7 +192,8 @@ namespace colt::lang
   {
     if (precedence == 255) //token was not an operator: error
     {
-      generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_semicolon, "Expected a binary operator!");
+      generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_semicolon,
+        "Expected a binary operator!");
       return ErrorExpr::CreateExpr(ctx);
     }
     //Save current expression state
@@ -221,7 +222,8 @@ namespace colt::lang
     {
       if (op_precedence == 255) //token was not an operator: error
       {
-        generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_semicolon, "Expected a ';'!");
+        generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_semicolon,
+          "Expected a binary operator!");
         return ErrorExpr::CreateExpr(ctx);
       }
 
