@@ -25,6 +25,7 @@ COLT_EXPORT void _ColtPrintf32(f32 a)         { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintf64(f64 a)         { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintchar(char a)       { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintlstring(lstring a) { io::Print("{}", a); }
+COLT_EXPORT void _ColtPrintPTR(PTR<void> a)   { io::Print("{}", a); }
 
 int main(int argc, const char** argv)
 {
