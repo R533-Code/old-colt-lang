@@ -38,14 +38,9 @@ namespace colt::lang
   
   PTR<Expr> UnaryExpr::CreateExpr(PTR<const Type> type, Token tkn, PTR<Expr> child, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<UnaryExpr>(type, tkn, child, false, src_info));
+    return ctx.add_expr(make_unique<UnaryExpr>(type, tkn, child, src_info));
   }
 
-  PTR<Expr> UnaryExpr::CreateExpr(PTR<const Type> type, Token tkn, bool is_post, PTR<Expr> child, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
-  {
-    return ctx.add_expr(make_unique<UnaryExpr>(type, tkn, child, is_post, src_info));
-  }
-  
   PTR<Expr> BinaryExpr::CreateExpr(PTR<const Type> type, PTR<Expr> lhs, Token op, PTR<Expr> rhs, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
     return ctx.add_expr(make_unique<BinaryExpr>(type, lhs, op, rhs, src_info));

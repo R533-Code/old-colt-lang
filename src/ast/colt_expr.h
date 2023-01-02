@@ -249,10 +249,9 @@ namespace colt::lang
     /// @param type The type of the resulting expression
     /// @param tkn_op The unary operator of the expression
     /// @param child The expression on which the operator is applied
-    /// @param is_post For TKN_PLUS_PLUS/TKN_MINUS_MINUS specifies if the operator is pre/post
     /// @param src_info The source code information
-    UnaryExpr(PTR<const Type> type, Token tkn_op, PTR<Expr> child, bool is_post, const SourceCodeExprInfo& src_info) noexcept
-      : Expr(EXPR_UNARY, type, src_info), operation(TokenToUnaryOperator(tkn_op, is_post)), child(child) {}
+    UnaryExpr(PTR<const Type> type, Token tkn_op, PTR<Expr> child, const SourceCodeExprInfo& src_info) noexcept
+      : Expr(EXPR_UNARY, type, src_info), operation(TokenToUnaryOperator(tkn_op)), child(child) {}
 
 
     /// @brief Returns the child of the unary expression
@@ -271,15 +270,6 @@ namespace colt::lang
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the expression
     static PTR<Expr> CreateExpr(PTR<const Type> type, Token tkn, PTR<Expr> child, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
-    /// @brief Creates a UnaryExpr
-    /// @param type The type of the resulting expression
-    /// @param tkn The unary operator of the expression
-    /// @param is_post For TKN_PLUS_PLUS/TKN_MINUS_MINUS specifies if the operator is pre/post
-    /// @param child The expression on which the operator is applied
-    /// @param src_info The source code information
-    /// @param ctx The COLTContext to store the resulting expression
-    /// @return Pointer to the expression
-    static PTR<Expr> CreateExpr(PTR<const Type> type, Token tkn, bool is_post, PTR<Expr> child, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a binary operation applied on two expressions
