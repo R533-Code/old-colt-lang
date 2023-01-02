@@ -22,12 +22,19 @@ namespace colt::lang
 		/// operators, some are considered as such to simplify
 		/// Pratt's Parsing in the AST.
 
+		/// The TKN_PLUS is used as a delimiter for unary
+		/// operators: do not add anything before it.
+
 		/// @brief +
 		TKN_PLUS,
 		/// @brief -
 		TKN_MINUS,
 		/// @brief *
-		TKN_STAR,		
+		TKN_STAR,
+
+		/// The TKN_SLASH is used as a delimiter for unary
+		/// operators: do not add anything before it.
+		
 		/// @brief /
 		TKN_SLASH,		
 		/// @brief %
@@ -338,6 +345,19 @@ namespace colt::lang
 	{
 		return TKN_RIGHT_SQUARE < tkn
 			&& tkn < TKN_KEYWORD_EXTERN;
+	}
+
+	/// @brief Check if a Token represents any unary operator (&, ++, ...)
+	/// @param tkn The token to check for
+	/// @return True if the Token is a unary operator token
+	constexpr bool isUnaryToken(Token tkn) noexcept
+	{
+		return (TKN_PLUS <= tkn && tkn < TKN_SLASH)
+			|| tkn == TKN_AND
+			|| tkn == TKN_PLUS_PLUS
+			|| tkn == TKN_MINUS_MINUS
+			|| tkn == TKN_TILDE
+			|| tkn == TKN_BANG;
 	}
 }
 
