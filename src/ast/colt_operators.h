@@ -15,13 +15,9 @@ namespace colt::lang
 		: u8
 	{
 		/// @brief ++(Expr)
-		OP_PRE_INCREMENT,
+		OP_INCREMENT,
 		/// @brief (Expr)++
-		OP_POST_INCREMENT,
-		/// @brief --(Expr)
-		OP_PRE_DECREMENT,
-		/// @brief (Expr)--
-		OP_POST_DECREMENT,
+		OP_DECREMENT,
 		/// @brief +(Expr)
 		OP_PLUS,
 		/// @brief -(Expr)
@@ -38,9 +34,8 @@ namespace colt::lang
 
 	/// @brief Converts a Token to a UnaryOperator
 	/// @param tkn The Token to convert
-	/// @param is_post Specify if the Token is a pre/post increment/decrement
 	/// @return Assertion failure or a valid UnaryOperator
-	UnaryOperator TokenToUnaryOperator(Token tkn, bool is_post) noexcept;
+	UnaryOperator TokenToUnaryOperator(Token tkn) noexcept;
 
 	/// @brief Possible binary operators
 	enum class BinaryOperator
