@@ -221,6 +221,10 @@ namespace colt::lang
     /// @brief Returns the built-in ID
     /// @return BuiltInID of the current type
     constexpr BuiltInID get_builtin_id() const noexcept { return builtin_ID; }
+    
+    /// @brief Check if the current type is any of the signed/unsigned built-in integers
+    /// @return True if built-in integer
+    constexpr bool is_pure_integral() const noexcept { return CHAR < builtin_ID && builtin_ID < F32; }
     /// @brief Check if the current type is any of the signed/unsigned built-in integers
     /// @return True if built-in integer
     constexpr bool is_integral() const noexcept { return builtin_ID < F32; }
@@ -233,6 +237,10 @@ namespace colt::lang
     /// @brief Check if the current type is any of the signed built-in integers
     /// @return True if built-in signed integer
     constexpr bool is_signed_int() const noexcept { return U64 < builtin_ID && builtin_ID < F32; }
+    /// @brief Check if the current type is any of the signed built-in integers
+    ///        or floating point types.
+    /// @return True if built-in signed integer
+    constexpr bool is_signed() const noexcept { return U64 < builtin_ID && builtin_ID < lstring; }
     /// @brief Check if the current type is any of the unsigned built-in integers
     /// @return True if built-in unsigned integer
     constexpr bool is_unsigned_int() const noexcept { return builtin_ID < I8; }
