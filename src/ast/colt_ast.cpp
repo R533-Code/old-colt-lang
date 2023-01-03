@@ -134,6 +134,8 @@ namespace colt::lang
     //Save current expression state
     SavedExprInfo line_state = { *this };
 
+    PTR<Expr> to_ret;
+
     if (isLiteralToken(current_tkn))
     {
       //Literal tokens: 10.0, "Hello World"...
@@ -155,15 +157,15 @@ namespace colt::lang
       //Consume the literal token
       consume_current_tkn();
 
-      return LiteralExpr::CreateExpr(value, literal_tkn,
+      to_ret = LiteralExpr::CreateExpr(value, literal_tkn,
         line_state.to_src_info(), ctx);
     }
     else if (current_tkn == TKN_IDENTIFIER)
-      return parse_identifier(line_state);
+      to_ret = parse_identifier(line_state);
     else if (isUnaryToken(current_tkn))
-      return parse_unary();
+      to_ret = parse_unary();
     else if (current_tkn == TKN_LEFT_PAREN)
-      return parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0));
+      to_ret = parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0));
     else if (current_tkn == TKN_ERROR)
     {
       //TKN_ERROR is an invalid lexeme (usually literal)
@@ -171,15 +173,19 @@ namespace colt::lang
       //the error, now just register this as being an error.
       consume_current_tkn();
       ++error_count; //register as error
-      return ErrorExpr::CreateExpr(ctx);
+      to_ret = ErrorExpr::CreateExpr(ctx);
     }
     else
     {
       //Invalid primary expression.
       generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_semicolon,
         "Expected an expression!");
-      return ErrorExpr::CreateExpr(ctx);
+      to_ret = ErrorExpr::CreateExpr(ctx);
     }
+
+    if (current_tkn == TKN_KEYWORD_AS) // EXPR as TYPE <- conversion
+      return parse_conversion(to_ret, line_state);
+    return to_ret;
   }
 
   PTR<Expr> ASTMaker::parse_binary(u8 precedence) noexcept
@@ -201,17 +207,12 @@ namespace colt::lang
     //As assignment operators are right associative, they are handled
     //in a different function
     if (isAssignmentToken(binary_op))
-      return parse_assignment(lhs, line_state);
-    if (current_tkn == TKN_KEYWORD_AS) // EXPR as TYPE <- conversion
-    {
-      lhs = parse_conversion(lhs, line_state);
-      //Update 'binary_op'
-      binary_op = current_tkn;
-    }
+      return parse_assignment(lhs, line_state);    
 
     //The current operator's precedence
     u8 op_precedence = GetOpPrecedence(binary_op);
 
+    //TODO: recheck possibility of returning 0 instead of 255
     while (op_precedence > precedence)
     {
       if (op_precedence == 255) //token was not an operator: error
@@ -806,6 +807,10 @@ namespace colt::lang
 
     consume_current_tkn();
     PTR<const Type> cnv_type = parse_typename();
+
+    //Propagate error
+    if (is_a<ErrorExpr>(lhs))
+      return lhs;
 
     return ConvertExpr::CreateExpr(cnv_type, lhs,
       line_state.to_src_info(), ctx);
