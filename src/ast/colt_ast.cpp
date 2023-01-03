@@ -657,6 +657,10 @@ namespace colt::lang
       consume_current_tkn(); //consume else
       else_body = parse_scope(); // else body
     }
+    //Propagate error
+    if (is_a<ErrorExpr>(if_cond))
+      return if_cond;
+
     return ConditionExpr::CreateExpr(if_cond, if_body, else_body,
       line_state.to_src_info(), ctx);
   }
@@ -682,6 +686,10 @@ namespace colt::lang
 
     //Restore loop state
     is_parsing_loop = old_is_loop;
+
+    //Propagate error
+    if (is_a<ErrorExpr>(condition))
+      return condition;
 
     return WhileLoopExpr::CreateExpr(condition, body,
       line_state.to_src_info(), ctx);
@@ -1321,7 +1329,7 @@ namespace colt::lang
       consume_current_tkn();
   }
 
-  PTR<Expr> colt::lang::ASTMaker::parse_bin_cond() noexcept
+  PTR<Expr> ASTMaker::parse_bin_cond() noexcept
   {
     PTR<Expr> condition = parse_binary();
     if (!condition->get_type()->is_equal(BuiltInType::CreateBool(false, ctx)))
