@@ -200,9 +200,9 @@ namespace colt::gen
     case UnaryOperator::OP_INCREMENT:
     case UnaryOperator::OP_DECREMENT:
     {
-      auto var_read = as<PTR<const VarReadExpr>>(ptr);
+      auto var_read = as<PTR<const VarReadExpr>>(ptr->get_child());
       PTR<Constant> val_one;
-      if (as<const PTR<BuiltInType>>(var_read->get_type())->is_integral())
+      if (as<PTR<const BuiltInType>>(var_read->get_type())->is_integral())
         val_one = ConstantInt::get(type_to_llvm(var_read->get_type()), 1);
       else //floating point
         val_one = ConstantFP::get(type_to_llvm(var_read->get_type()), 1.0);
@@ -224,7 +224,7 @@ namespace colt::gen
     }
     break; case UnaryOperator::OP_ADDRESSOF:
     {
-      auto var_read = as<PTR<const VarReadExpr>>(ptr);
+      auto var_read = as<PTR<const VarReadExpr>>(ptr->get_child());
       if (!var_read->is_global())
         returned_value = local_vars[var_read->get_local_ID()];
       else
