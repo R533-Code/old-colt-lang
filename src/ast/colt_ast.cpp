@@ -37,12 +37,11 @@ namespace colt::lang
       3, 2,  // '&&' '||'
       9, 9, 9, 9, 10, 10, // < <= > >= != ==
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // = += -= *= /= %= &= |= ^= <<= >>=
-      0, 0, 0, 0, 0, 0, 0, 0, 0 // , ; EOF ERROR ) ( : } {
     };
     assert_true(static_cast<size_t>(tkn) >= 0, "Token should be greater or equal to 0!");
-    if (tkn < TKN_MINUS_GREAT)
+    if (tkn < TKN_COMMA)
       return operator_precedence_table[tkn];
-    return 255;
+    return 0;
   }  
 
   bool isTerminatedExpr(PTR<const Expr> expr) noexcept
@@ -212,16 +211,8 @@ namespace colt::lang
     //The current operator's precedence
     u8 op_precedence = GetOpPrecedence(binary_op);
 
-    //TODO: recheck possibility of returning 0 instead of 255
     while (op_precedence > precedence)
     {
-      if (op_precedence == 255) //token was not an operator: error
-      {
-        generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_semicolon,
-          "Expected a binary operator!");
-        return ErrorExpr::CreateExpr(ctx);
-      }
-
       //Consume the operator
       consume_current_tkn();
       //Recurse: 10 + 5 + 8 -> (10 + (5 + 8))

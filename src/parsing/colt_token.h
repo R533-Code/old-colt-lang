@@ -111,6 +111,7 @@ namespace colt::lang
 		TKN_GREAT_GREAT_EQUAL,
 
 		/********* END OF ASSIGNMENT OPERATORS *******/
+		/********* END OF BINARY OPERATORS *******/
 
 		/// The TKN_COMMA is used as a delimiter for assignment
 		/// operators and direct assignment operators: do not add
@@ -136,8 +137,6 @@ namespace colt::lang
 		TKN_RIGHT_CURLY,
 		/// @brief {
 		TKN_LEFT_CURLY,
-
-		/********* END OF BINARY OPERATORS *******/
 
 		/// @brief ->
 		TKN_MINUS_GREAT,
