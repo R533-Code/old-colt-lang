@@ -197,6 +197,9 @@ namespace colt::lang
   {
     if (this->is_error() || type->is_error())
       return true;
+    if (this->classof() != type->classof())
+      return false;
+
     switch (classof())
     {
     case TYPE_VOID:
