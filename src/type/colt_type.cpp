@@ -233,11 +233,4 @@ namespace colt::lang
       colt_unreachable("Invalid type comparison!");
     }
   }
-  
-  bool Type::is_equal_with_const(PTR<const Type> type) const noexcept
-  {    
-    if (this->is_const() != type->is_const())
-      return false;
-    return this->is_equal(type);
-  }
 }

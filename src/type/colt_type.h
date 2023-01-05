@@ -102,10 +102,6 @@ namespace colt::lang
     /// @param type The type to compare against
     /// @return True if both type are equivalent
     bool is_equal(PTR<const Type> type) const noexcept;
-    /// @brief Check if two types are equal (considering 'const')
-    /// @param type The type to compare against
-    /// @return True if both type are equivalent
-    bool is_equal_with_const(PTR<const Type> type) const noexcept;
   };
 
   /// @brief Represents an error.
