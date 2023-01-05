@@ -97,19 +97,19 @@ namespace colt::gen
 
     while (mangled_name.is_not_empty())
     {
-      //Will be a view over the names/typenames character sizes
-      auto digits_end = mangled_name.begin();
-      while (isdigit(*digits_end))
-        ++digits_end;
-      if (digits_end == mangled_name.begin())
-        return String{ copy };
-
       PARAMETER_TYPE type = TYPE;
       if (mangled_name.get_front() == 'P') //P for PTR
       {
         type = PTR_T;
         mangled_name.pop_front();
       }
+
+      //Will be a view over the names/typenames character sizes
+      auto digits_end = mangled_name.begin();
+      while (isdigit(*digits_end))
+        ++digits_end;
+      if (digits_end == mangled_name.begin())
+        return String{ copy };      
 
       size_t name_size;
       std::from_chars(mangled_name.begin(), digits_end, name_size);
