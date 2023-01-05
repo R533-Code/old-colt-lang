@@ -1,7 +1,6 @@
 #include <main_util.h> //include every colt related functionality
 #include <interpreter/qword_op.h>
 #include <random> //for _ColtRand
-#include <iostream>
 
 using namespace colt;
 
