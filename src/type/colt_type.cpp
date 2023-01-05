@@ -211,7 +211,7 @@ namespace colt::lang
     {
       auto a = as<PTR<const PtrType>>(type);
       auto b = as<PTR<const PtrType>>(this);      
-      return a->get_type_to()->is_equal_with_const(b->get_type_to());
+      return a->get_type_to()->is_equal(b->get_type_to());
     }
     case TYPE_FN:
     {
