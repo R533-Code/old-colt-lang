@@ -159,6 +159,12 @@ namespace colt::args
 		/// @param argv The array of arguments
 		/// @param current_arg The current argument
 		void run_main_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief Demangle main callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
+		void demangle_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+
 
 		/// @brief Contains all predefined valid arguments
 		constexpr std::array PredefinedArguments
@@ -180,6 +186,7 @@ namespace colt::args
 			Argument{ "opt-s", "Os", "Optimize for small code size instead of fast execution.\nUse: --opt-s/-Os", 0, &os_callback},
 			Argument{ "opt-z", "Oz", "Optimize for small code size at all cost.\nUse: --opt-z/-Oz", 0, &oz_callback},
 			Argument{ "run-main", "r", "Run 'main' function inside the compiler if it exists.\nUse: --run-main/-r", 0, &run_main_callback},
+			Argument{ "demangle", "", "Demangles a string.\nUse: --demangle <STRING>", 1, &demangle_callback},
 		};
 
 		/// @brief Handles an argument, searching for it and doing error handling

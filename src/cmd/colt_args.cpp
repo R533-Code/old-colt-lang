@@ -4,6 +4,7 @@
 
 #include "colt_args.h"
 #include "util/colt_print.h"
+#include "code_gen/mangle.h"
 
 namespace colt::args
 {    
@@ -57,7 +58,7 @@ namespace colt::args
 
       auto it = find_arg_in_predefined(argv[current_arg]);
       if (it == PredefinedArguments.end())
-        print_error_and_exit("Unknown argument!");
+        print_error_and_exit("Unknown argument for help!");
       io::Print("{}", it->help);
       std::exit(0);
     }
@@ -155,6 +156,14 @@ namespace colt::args
     void run_main_callback(int argc, const char** argv, size_t& current_arg) noexcept
     {
       global_args.jit_run_main = true;
+    }
+
+    void demangle_callback(int argc, const char** argv, size_t& current_arg) noexcept
+    {
+      if (current_arg != 1 || argc != 3)
+        print_error_and_exit("Invalid combination for argument '{}'!", argv[current_arg]);
+      io::Print("{} -> {}", argv[current_arg], gen::demangle(argv[current_arg]));
+      std::exit(0);
     }
 
     /*************************************
