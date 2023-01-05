@@ -28,7 +28,7 @@ namespace colt::lang
     return true;
   }
 
-  u8 GetOpPrecedence(Token tkn) noexcept
+  u8 getOpPrecedence(Token tkn) noexcept
   {
     static constexpr u8 operator_precedence_table[] =
     {
@@ -209,14 +209,14 @@ namespace colt::lang
       return parse_assignment(lhs, line_state);    
 
     //The current operator's precedence
-    u8 op_precedence = GetOpPrecedence(binary_op);
+    u8 op_precedence = getOpPrecedence(binary_op);
 
     while (op_precedence > precedence)
     {
       //Consume the operator
       consume_current_tkn();
       //Recurse: 10 + 5 + 8 -> (10 + (5 + 8))
-      PTR<Expr> rhs = parse_binary(GetOpPrecedence(binary_op));      
+      PTR<Expr> rhs = parse_binary(getOpPrecedence(binary_op));      
 
       //Pratt's parsing, which allows operators priority
       lhs = create_binary(
@@ -227,7 +227,7 @@ namespace colt::lang
       //Update the Token
       binary_op = current_tkn;
       //Update precedence
-      op_precedence = GetOpPrecedence(binary_op);
+      op_precedence = getOpPrecedence(binary_op);
     }
 
     return lhs;

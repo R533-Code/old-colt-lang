@@ -18,7 +18,7 @@ namespace colt::lang
   /// This simplifies Pratt's parsing in parse binary.
   /// @param tkn The Token whose precedence to check
   /// @return Precedence or 255 if not an operator
-  u8 GetOpPrecedence(Token tkn) noexcept;
+  u8 getOpPrecedence(Token tkn) noexcept;
 
   /// @brief Check if 'expr' is a terminating expression.
   /// A terminating expression is a 'return', a scope whose last
