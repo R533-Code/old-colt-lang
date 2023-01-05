@@ -217,10 +217,10 @@ namespace colt
   {    
 #ifdef COLT_DEBUG_BUILD
     // DYNAMIC CASTING CHECK
-    if constexpr (traits::is_dyn_castable_v<Input>
-      && traits::is_dyn_castable_v<Target>
-      && std::is_pointer_v<Target>
-      && std::is_pointer_v<Input>)
+    if constexpr (std::is_pointer_v<Target>
+      && std::is_pointer_v<std::decay_t<Input>>
+      && traits::is_dyn_castable_v<std::remove_pointer_t<std::decay_t<Input>>>
+      && traits::is_dyn_castable_v<std::remove_pointer_t<Target>>)
     {
       if (is_a<Target>(input))
         return static_cast<Target>(std::forward<Input>(input));
