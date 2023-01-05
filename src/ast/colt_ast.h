@@ -284,6 +284,8 @@ namespace colt::lang
 
     PTR<Expr> handle_function_call(StringView identifier, SmallVector<PTR<Expr>, 4>&& arguments, const SourceCodeExprInfo&  identifier_loc, const SourceCodeExprInfo& fn_call) noexcept;
 
+    PTR<Expr> save_var_decl(bool is_global, PTR<const Type> var_type, StringView var_name, PTR<Expr> var_init, const SourceCodeExprInfo& src_info) noexcept;
+
     /// @brief Consumes statement till a RIGHT_CURLY_BRACKET is hit and generates a warning
     void handle_unreachable_code() noexcept;
 

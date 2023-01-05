@@ -691,9 +691,11 @@ namespace colt::lang
   {
     SavedExprInfo line_state = { *this };
 
-    if (check_and_consume(TKN_KEYWORD_VAR, &ASTMaker::panic_consume_var_decl, "Expected a variable declaration!"))
+    if (check_and_consume(TKN_KEYWORD_VAR, &ASTMaker::panic_consume_var_decl,
+      "Expected a variable declaration!"))
       return ErrorExpr::CreateExpr(ctx);
-    if (check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_var_decl, "Expected an identifier!"))
+    if (check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_var_decl,
+      "Expected an identifier!"))
       return ErrorExpr::CreateExpr(ctx);
 
     StringView var_name = lexer.get_parsed_identifier();
@@ -709,19 +711,21 @@ namespace colt::lang
     if (current_tkn != TKN_SEMICOLON)
     {
       if (check_and_consume(TKN_EQUAL, &ASTMaker::panic_consume_var_decl, "Expected a '='!"))
-        return ErrorExpr::CreateExpr(ctx);
+        return save_var_decl(is_global, ErrorType::CreateType(ctx), var_name,
+          var_init, line_state.to_src_info());
       var_init = parse_binary();
     }
     else if (var_type == nullptr)
     {
       generate_any<report_as::ERROR>(line_state.to_src_info(), &ASTMaker::panic_consume_var_decl,
         "An uninitialized variable should specify its type!");
-      return ErrorExpr::CreateExpr(ctx);
+      return save_var_decl(is_global, ErrorType::CreateType(ctx), var_name,
+        var_init, line_state.to_src_info());
     }
     else //uninitialized variable with explicit type
     {
       consume_current_tkn();
-      goto GEN; //skip type conversions
+      goto SAVE; //skip type conversions
     }
 
     //If the type is not explicit, deduce it from left hand side
@@ -733,36 +737,12 @@ namespace colt::lang
         line_state.to_src_info(), ctx);
 
     if (check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_var_decl, "Expected a ';'!"))
-      return ErrorExpr::CreateExpr(ctx);
+      return save_var_decl(is_global, ErrorType::CreateType(ctx), var_name,
+        var_init, line_state.to_src_info());
 
-  GEN:
-    if (is_global)
-    {
-      auto var_expr = VarDeclExpr::CreateExpr(var_type, var_name, var_init, true,
-        line_state.to_src_info(), ctx);
-      if (auto gptr = global_map.find(var_name); gptr == nullptr)
-      {
-        SmallVector<PTR<Expr>> to_push;
-        to_push.push_back(var_expr);
-        //TODO: move
-        global_map.insert(var_name, to_push);
-        return var_expr;
-      }
-      else
-      {
-        if (is_a<FnDefExpr>(gptr->second.get_front()))
-          generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
-            "Function of name '{}' already exist!", var_name);
-        else
-          generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
-            "Global variable of name '{}' already exist!", var_name);
-        return ErrorExpr::CreateExpr(ctx);
-      }
-    }
-
-    local_var_table.push_back({ var_name, var_type });
-    return VarDeclExpr::CreateExpr(var_type, var_name, var_init, false,
-      line_state.to_src_info(), ctx);
+  SAVE:
+    return save_var_decl(is_global, var_type, var_name,
+      var_init, line_state.to_src_info());
   }
 
   PTR<Expr> ASTMaker::parse_assignment(PTR<Expr> lhs, const SavedExprInfo& line_state) noexcept
@@ -1158,6 +1138,37 @@ namespace colt::lang
       generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
         "Expected a 'return' statement, as path must return a value!");
     }
+  }
+
+  PTR<Expr> ASTMaker::save_var_decl(bool is_global, PTR<const Type> var_type, StringView var_name, PTR<Expr> var_init, const SourceCodeExprInfo& src_info) noexcept
+  {
+    if (is_global)
+    {
+      auto var_expr = VarDeclExpr::CreateExpr(var_type, var_name, var_init, true,
+        src_info, ctx);
+      if (auto gptr = global_map.find(var_name); gptr == nullptr)
+      {
+        SmallVector<PTR<Expr>> to_push;
+        to_push.push_back(var_expr);
+        //TODO: move
+        global_map.insert(var_name, to_push);
+        return var_expr;
+      }
+      else
+      {
+        if (is_a<FnDefExpr>(gptr->second.get_front()))
+          generate_any<report_as::ERROR>(src_info, nullptr,
+            "Function of name '{}' already exist!", var_name);
+        else
+          generate_any<report_as::ERROR>(src_info, nullptr,
+            "Global variable of name '{}' already exist!", var_name);
+        return ErrorExpr::CreateExpr(ctx);
+      }
+    }
+
+    local_var_table.push_back({ var_name, var_type });
+    return VarDeclExpr::CreateExpr(var_type, var_name, var_init, false,
+      src_info, ctx);
   }
 
   void ASTMaker::add_fn_to_global_table(PTR<FnDefExpr> expr) noexcept
