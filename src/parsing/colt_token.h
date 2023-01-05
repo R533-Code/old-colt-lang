@@ -116,6 +116,9 @@ namespace colt::lang
 		/// The TKN_COMMA is used as a delimiter for assignment
 		/// operators and direct assignment operators: do not add
 		/// non (direct) assignment operators tokens before it.
+		/// !!! TKN_COMMA also is a delimiter used in the `getOpPrecedence()`:
+		/// If adding any Token before it, modify and add its precedence
+		/// in the precedence table there!!!
 
 		/// @brief ,
 		TKN_COMMA,
