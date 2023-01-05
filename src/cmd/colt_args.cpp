@@ -62,7 +62,16 @@ namespace colt::args
     {
       io::Print("List of valid commands:");
       for (const auto& argument : PredefinedArguments)
-        io::Print("  --{}, -{}", argument.name, argument.abrv);
+      {
+        io::Print<false>("  --{}", argument.name, argument.abrv);
+        if (argument.abrv.is_not_empty())
+          io::Print<true>(", -{}:", argument.abrv);
+        else
+          io::Print<true>(":");
+        auto sz = argument.help.find('\n');
+        io::Print("      {}", sz == StringView::npos ?
+          argument.help : StringView{ argument.help.begin(), argument.help.begin() + sz});
+      }
       std::exit(0);
     }
 
