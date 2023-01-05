@@ -52,7 +52,7 @@ namespace colt::args
 
     void help_callback(int argc, const char** argv, size_t& current_arg) noexcept
     {
-      if (current_arg != 1 || argc != 3)
+      if (current_arg != 1)
         print_error_and_exit("Invalid combination for argument '{}'!", argv[current_arg]);
       ++current_arg; //Advance to the next argument
 
@@ -160,9 +160,12 @@ namespace colt::args
 
     void demangle_callback(int argc, const char** argv, size_t& current_arg) noexcept
     {
-      if (current_arg != 1 || argc != 3)
+      if (current_arg != 1)
         print_error_and_exit("Invalid combination for argument '{}'!", argv[current_arg]);
-      io::Print("{} -> {}", argv[current_arg], gen::demangle(argv[current_arg]));
+      io::Print("{}{}{} -> {}{}{}",
+        io::BrightBlueF, argv[current_arg + 1],
+        io::Reset, io::BrightGreenF,
+        gen::demangle(argv[current_arg + 1]), io::Reset);
       std::exit(0);
     }
 
