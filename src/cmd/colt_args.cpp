@@ -42,9 +42,6 @@ namespace colt::args
 
     void version_callback(int argc, const char** argv, size_t& current_arg) noexcept
     {
-      if (current_arg != 1)
-        print_error_and_exit("Invalid combination for argument '{}'!", argv[current_arg]);
-      
       io::Print("{}COLT{}{} v{} on {} ({})",
         io::SwitchFB, io::Reset, io::BrightMagentaF, COLT_VERSION_STRING, io::Reset, COLT_OS_STRING, COLT_CONFIG_STRING);
       std::exit(0);
@@ -52,8 +49,6 @@ namespace colt::args
 
     void help_callback(int argc, const char** argv, size_t& current_arg) noexcept
     {
-      if (current_arg != 1)
-        print_error_and_exit("Invalid combination for argument '{}'!", argv[current_arg]);
       ++current_arg; //Advance to the next argument
 
       auto it = find_arg_in_predefined(argv[current_arg]);
@@ -65,8 +60,6 @@ namespace colt::args
 
     void enum_callback(int argc, const char** argv, size_t& current_arg) noexcept
     {
-      if (current_arg != 1)
-        print_error_and_exit("Invalid combination for argument '{}'!", argv[current_arg]);
       io::Print("List of valid commands:");
       for (const auto& argument : PredefinedArguments)
         io::Print("  --{}, -{}", argument.name, argument.abrv);
