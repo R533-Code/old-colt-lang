@@ -151,7 +151,7 @@ namespace colt::gen
   {
     using namespace colt::lang;
 
-    switch (as<PTR<const lang::BuiltInType>>(ptr->get_type())->get_builtin_id())
+    switch (ptr->get_type()->get_builtin_id())
     {
     break; case U8:
       returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<u8>());
@@ -355,7 +355,7 @@ namespace colt::gen
 
     assert_true(ptr->get_type()->is_builtin(), "Type must be built-in!");
 
-    auto expr_t = as<PTR<const BuiltInType>>(ptr->get_type());
+    auto expr_t = ptr->get_type();
     auto child_t = as<PTR<const BuiltInType>>(ptr->get_child()->get_type());
 
     if (expr_t->get_builtin_id() == BOOL)

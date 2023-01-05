@@ -1020,16 +1020,16 @@ namespace colt::lang
       consume_current_tkn(); // consume ';'
       return FnReturnExpr::CreateExpr(nullptr, line_state.to_src_info(), ctx);
     }
-    PTR<Expr> ret_val = parse_binary();
-    if (!ret_val->get_type()->is_equal(current_function->get_return_type()))
+    PTR<Expr> ret_val = convert_to(parse_binary(),
+      current_function->get_return_type());
+    if (is_a<ErrorExpr>(ret_val))
     {
       generate_any<report_as::ERROR>(ret_val->get_src_code(), nullptr,
         "Type of return value does not match function return type!");
-      ret_val = ErrorExpr::CreateExpr(ctx);
+      return ret_val;
     }
-    else
-      ret_val = FnReturnExpr::CreateExpr(ret_val, line_state.to_src_info(), ctx);
-
+    //Return the FnReturnExpr
+    ret_val = FnReturnExpr::CreateExpr(ret_val, line_state.to_src_info(), ctx);
     check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_sttmnt,
       "Expected a ';'!");
     return ret_val;
@@ -1039,7 +1039,7 @@ namespace colt::lang
   {
     if (arguments.get_size() != decl->get_params_count())
     {
-      if (as<PTR<const FnType>>(decl->get_type())->is_varargs())
+      if (decl->get_type()->is_varargs())
       {
         if (arguments.get_size() < decl->get_params_count())
         {
@@ -1058,9 +1058,8 @@ namespace colt::lang
     bool ret = true;
     for (size_t i = 0; i < decl->get_params_count(); i++)
     {
-      if (!arguments[i]->get_type()->is_equal(decl->get_params_type()[i]))
+      if (is_a<ErrorExpr>(convert_to(arguments[i], decl->get_params_type()[i])))
       {
-        //TODO: checking for pointer types
         generate_any<report_as::ERROR>(arguments[i]->get_src_code(), nullptr,
           "Type of argument ('{}') does not match that of declaration ('{}')!",
           arguments[i]->get_type()->get_name(), decl->get_params_type()[i]->get_name());
@@ -1103,9 +1102,8 @@ namespace colt::lang
         overload_set.push_back(fn);
     }
     PTR<const FnDefExpr> best = nullptr;
-    for (auto fn_o : overload_set)
+    for (auto fn : overload_set)
     {
-      auto fn = as<PTR<const FnDefExpr>>(fn_o);
       for (size_t i = 0; i < fn->get_params_count(); i++)
       {
         if (!arguments[i]->get_type()->is_equal(fn->get_params_type()[i]))
@@ -1350,6 +1348,27 @@ namespace colt::lang
     while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF
       && current_tkn != TKN_KEYWORD_IF && current_tkn != TKN_KEYWORD_WHILE && current_tkn != TKN_KEYWORD_VAR)
       consume_current_tkn();
+  }
+
+  PTR<Expr> ASTMaker::convert_to(PTR<Expr> what, PTR<const Type> to) noexcept
+  {
+    PTR<const Type> from = what->get_type();
+    if (!from->is_equal(to))
+      return ErrorExpr::CreateExpr(ctx);
+    if (from->is_ptr()) //both are pointers
+    {
+      auto to_p = as<PTR<const PtrType>>(to);
+      auto from_p = as<PTR<const PtrType>>(from);
+      if (!to_p->get_type_to()->is_const()
+        && from_p->get_type_to()->is_const())
+      {
+        generate_any<report_as::ERROR>(what->get_src_code(), nullptr,
+          "Cannot convert from non-mutable '{}' to mutable pointer '{}'!",
+          from->get_name(), to->get_name());
+        return ErrorExpr::CreateExpr(ctx);
+      }
+    }
+    return what;
   }
 
   void ASTMaker::panic_consume_sttmnt() noexcept
