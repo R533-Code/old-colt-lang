@@ -839,11 +839,15 @@ namespace colt::lang
 				return TKN_KEYWORD_BREAK;
 			else if (temp_str == "bool")
 				return TKN_KEYWORD_BOOL;
+			else if (temp_str == "bit_as")
+				return TKN_KEYWORD_BIT_AS;
 		break; case 'c':
 			if (temp_str == "char")
 				return TKN_KEYWORD_CHAR;
 			else if (temp_str == "case")
-				return TKN_KEYWORD_CASE;			
+				return TKN_KEYWORD_CASE;
+			else if (temp_str == "const")
+				return TKN_KEYWORD_CONST;
 			else if (temp_str == "continue")
 				return TKN_KEYWORD_CONTINUE;
 		break; case 'd':

@@ -265,8 +265,8 @@ namespace colt::lang
 		/// @brief continue
 		TKN_KEYWORD_CONTINUE,
 
-		/// @brief compile_t
-		TKN_KEYWORD_COMPILE_T,
+		/// @brief const
+		TKN_KEYWORD_CONST,
 		/// @brief typeof
 		TKN_KEYWORD_TYPEOF,
 		
@@ -279,8 +279,8 @@ namespace colt::lang
 		
 		/// @brief as
 		TKN_KEYWORD_AS,
-		/// @brief reinterpret_as
-		TKN_KEYWORD_REINTERPRET_AS,
+		/// @brief bit_as
+		TKN_KEYWORD_BIT_AS,
 		
 		/// @brief switch
 		TKN_KEYWORD_SWITCH,
