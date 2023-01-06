@@ -69,7 +69,7 @@ namespace colt::args
         else
           io::Print<true>(":");
         auto sz = argument.help.find('\n');
-        io::Print("      {}", sz == StringView::npos ?
+        io::Print("      {}\n", sz == StringView::npos ?
           argument.help : StringView{ argument.help.begin(), argument.help.begin() + sz});
       }
       std::exit(0);
