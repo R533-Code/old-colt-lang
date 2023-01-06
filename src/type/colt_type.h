@@ -184,12 +184,12 @@ namespace colt::lang
       BinaryOperator::OP_BOOL_AND, BinaryOperator::OP_BOOL_OR,
     };
 
-    /// @brief BinaryOperator supported by boolean
+    /// @brief BinaryOperator supported by char
     static constexpr BinaryOperator CharSupported[] = {
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
     };
 
-    /// @brief BinaryOperator supported by boolean
+    /// @brief BinaryOperator supported by lstring
     static constexpr BinaryOperator lstringSupported[] = {
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
       BinaryOperator::OP_SUM,
