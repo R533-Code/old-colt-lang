@@ -182,7 +182,8 @@ namespace colt::lang
       to_ret = ErrorExpr::CreateExpr(ctx);
     }
 
-    if (current_tkn == TKN_KEYWORD_AS) // EXPR as TYPE <- conversion
+    if (current_tkn == TKN_KEYWORD_AS
+      || current_tkn == TKN_KEYWORD_BIT_AS) // EXPR as TYPE <- conversion
       return parse_conversion(to_ret, line_state);
     return to_ret;
   }
@@ -734,7 +735,7 @@ namespace colt::lang
       var_type = var_init->get_type();
     else
       var_init = ConvertExpr::CreateExpr(var_type, var_init,
-        line_state.to_src_info(), ctx);
+        TKN_KEYWORD_AS, line_state.to_src_info(), ctx);
 
     if (check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_var_decl, "Expected a ';'!"))
       return save_var_decl(is_global, ErrorType::CreateType(ctx), var_name,
@@ -774,7 +775,9 @@ namespace colt::lang
 
   PTR<Expr> ASTMaker::parse_conversion(PTR<Expr> lhs, const SavedExprInfo& line_state) noexcept
   {
-    assert(current_tkn == TKN_KEYWORD_AS);
+    assert(current_tkn == TKN_KEYWORD_AS || current_tkn == TKN_KEYWORD_BIT_AS);
+
+    auto cnv = current_tkn;
 
     consume_current_tkn();
     PTR<const Type> cnv_type = parse_typename();
@@ -784,7 +787,7 @@ namespace colt::lang
       return lhs;
 
     return ConvertExpr::CreateExpr(cnv_type, lhs,
-      line_state.to_src_info(), ctx);
+      cnv, line_state.to_src_info(), ctx);
   }
 
   PTR<const Type> ASTMaker::parse_typename(panic_consume_t panic) noexcept
