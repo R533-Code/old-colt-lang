@@ -365,6 +365,10 @@ namespace colt::lang
         "Both type of ConvertExpr should be BuiltInTypes");
     }
 
+    /// @brief Returns the conversion type of the expression
+    /// @return Either CNV_AS or CNV_BIT_AS
+    ConversionType get_conversion_type() const noexcept { return cnv; }
+
     /// @brief Get the expression to convert
     /// @return The expression to converse
     PTR<const Expr> get_child() const noexcept { return to_convert; }
