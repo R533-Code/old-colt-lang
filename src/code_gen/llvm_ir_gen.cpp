@@ -358,23 +358,34 @@ namespace colt::gen
     auto expr_t = ptr->get_type();
     auto child_t = as<PTR<const BuiltInType>>(ptr->get_child()->get_type());
 
-    if (expr_t->get_builtin_id() == BOOL)
-      returned_value = builder.CreateIsNotNull(returned_value, "to_bool");
-    if (child_t->is_floating() && expr_t->is_signed_int())
-      returned_value = builder.CreateFPToSI(returned_value, type_to_llvm(expr_t), "fp_to_si");
-    else if (child_t->is_floating() && expr_t->is_unsigned_int())
-      returned_value = builder.CreateFPToUI(returned_value, type_to_llvm(expr_t), "fp_to_ui");
-    else if (child_t->is_unsigned_int() && expr_t->is_floating())
-      returned_value = builder.CreateUIToFP(returned_value, type_to_llvm(expr_t), "ui_to_fp");
-    else if (child_t->is_signed_int() && expr_t->is_floating())
-      returned_value = builder.CreateSIToFP(returned_value, type_to_llvm(expr_t), "si_to_fp");
-    //Same types conversions
-    else if (child_t->is_integral())
-      returned_value = builder.CreateIntCast(returned_value, type_to_llvm(expr_t), child_t->is_bool() ? false : expr_t->is_signed_int(), "i_to_i");
-    else if (child_t->is_floating())
-      returned_value = builder.CreateFPCast(returned_value, type_to_llvm(expr_t), "fp_to_fp");
-    else
-      colt_unreachable("Invalid conversion!");
+    if (ptr->get_conversion_type() == ConvertExpr::CNV_AS)
+    {
+      if (expr_t->get_builtin_id() == BOOL)
+        returned_value = builder.CreateIsNotNull(returned_value, "to_bool");
+      if (child_t->is_floating() && expr_t->is_signed_int())
+        returned_value = builder.CreateFPToSI(returned_value, type_to_llvm(expr_t), "fp_to_si");
+      else if (child_t->is_floating() && expr_t->is_unsigned_int())
+        returned_value = builder.CreateFPToUI(returned_value, type_to_llvm(expr_t), "fp_to_ui");
+      else if (child_t->is_unsigned_int() && expr_t->is_floating())
+        returned_value = builder.CreateUIToFP(returned_value, type_to_llvm(expr_t), "ui_to_fp");
+      else if (child_t->is_signed_int() && expr_t->is_floating())
+        returned_value = builder.CreateSIToFP(returned_value, type_to_llvm(expr_t), "si_to_fp");
+      //Same types conversions
+      else if (child_t->is_integral())
+        returned_value = builder.CreateIntCast(returned_value, type_to_llvm(expr_t), child_t->is_bool() ? false : expr_t->is_signed_int(), "i_to_i");
+      else if (child_t->is_floating())
+        returned_value = builder.CreateFPCast(returned_value, type_to_llvm(expr_t), "fp_to_fp");
+      else
+        colt_unreachable("Invalid conversion!");
+    }
+    else // bit_as
+    {
+      auto alloc = builder.CreateAlloca(returned_value->getType());
+      builder.CreateStore(returned_value, alloc);
+      returned_value = builder.CreateBitCast(alloc,
+        llvm::PointerType::get(type_to_llvm(expr_t), 0));
+      returned_value = builder.CreateLoad(type_to_llvm(expr_t), returned_value);
+    }
   }
 
   void LLVMIRGenerator::gen_var_decl(PTR<const lang::VarDeclExpr> ptr) noexcept
