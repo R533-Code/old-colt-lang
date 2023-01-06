@@ -335,9 +335,16 @@ namespace colt::lang
     /// @brief Helper for dyn_cast and is_a
     static constexpr ExprID classof_v = EXPR_CONVERT;
 
+    enum ConversionType
+    {
+      CNV_AS, CNV_BIT_AS
+    };
+
   private:
     /// @brief The expression to convert
     PTR<Expr> to_convert;
+    /// @brief The conversion type
+    ConversionType cnv;
 
   public:
     //No default copy constructor 
@@ -351,8 +358,8 @@ namespace colt::lang
     /// @param type The new type of the expression
     /// @param to_convert The expression to convert
     /// @param src_info The source code information
-    ConvertExpr(PTR<const Type> type, PTR<Expr> to_convert, const SourceCodeExprInfo& src_info) noexcept
-      : Expr(EXPR_CONVERT, type, src_info), to_convert(to_convert)
+    ConvertExpr(PTR<const Type> type, PTR<Expr> to_convert, ConversionType cnv, const SourceCodeExprInfo& src_info) noexcept
+      : Expr(EXPR_CONVERT, type, src_info), to_convert(to_convert), cnv(cnv)
     {
       assert_true(type->is_builtin() && to_convert->get_type()->is_builtin(),
         "Both type of ConvertExpr should be BuiltInTypes");
@@ -373,10 +380,11 @@ namespace colt::lang
     /// @brief Creates a ConvertExpr
     /// @param type The type of the resulting expression
     /// @param to_convert The expression to convert
+    /// @param cnv Either TKN_KEYWORD_AS or TKN_KEYWORD_BIT_AS
     /// @param src_info The source code information
     /// @param ctx The COLTContext to store the resulting expression
     /// @return Pointer to the created expression
-    static PTR<Expr> CreateExpr(PTR<const Type> type, PTR<Expr> to_convert, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+    static PTR<Expr> CreateExpr(PTR<const Type> type, PTR<Expr> to_convert, Token cnv, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a declaration of a variable

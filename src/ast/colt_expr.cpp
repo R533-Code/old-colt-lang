@@ -46,9 +46,11 @@ namespace colt::lang
     return ctx.add_expr(make_unique<BinaryExpr>(type, lhs, op, rhs, src_info));
   }
   
-  PTR<Expr> ConvertExpr::CreateExpr(PTR<const Type> type, PTR<Expr> to_convert, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
+  PTR<Expr> ConvertExpr::CreateExpr(PTR<const Type> type, PTR<Expr> to_convert, Token cnv, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
-    return ctx.add_expr(make_unique<ConvertExpr>(type, to_convert, src_info));
+    assert_true(cnv == TKN_KEYWORD_AS || cnv == TKN_KEYWORD_BIT_AS, "Expected a conversion token!");
+    return ctx.add_expr(make_unique<ConvertExpr>(type, to_convert, 
+      cnv == TKN_KEYWORD_AS ? CNV_AS : CNV_BIT_AS, src_info));
   }
   
   PTR<Expr> VarDeclExpr::CreateExpr(PTR<const Type> type, StringView name, PTR<Expr> init_value, bool is_global, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
