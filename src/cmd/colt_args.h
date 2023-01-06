@@ -178,7 +178,7 @@ namespace colt::args
 			Argument{ "no-warn", "W", "Removes warning outputs.\nUse: --no-warn/-W", 0, &no_warning_callback},
 			Argument{ "no-message", "M", "Removes message outputs.\nUse: --no-message/-M", 0, &no_message_callback},
 			Argument{ "out", "o", "Specifies the output location.\nUse: --out/-o <PATH>", 1, &out_callback},
-			Argument{ "no-wait", "NW", "Specifies that the compiler should exit without user input.\nUse: --no-wait/-W", 0, &no_wait_callback},
+			Argument{ "no-wait", "", "Specifies that the compiler should exit without user input.\nUse: --no-wait/-W", 0, &no_wait_callback},
 			Argument{ "opt-0", "O0", "Disable most optimizations.\nUse: --opt-0/-O0", 0, &o0_callback},
 			Argument{ "opt-1", "O1", "Optimize quickly without hindering debuggability.\nUse: --opt-1/-O1", 0, &o1_callback},
 			Argument{ "opt-2", "O2", "Optimize for fast execution as much as possible without significantly increasing compile times.\nUse: --opt-2/-O2", 0, &o2_callback},
