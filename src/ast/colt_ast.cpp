@@ -746,25 +746,36 @@ namespace colt::lang
     consume_current_tkn(); //consume '='
     PTR<Expr> rhs = parse_binary();
 
-    if (!is_a<VarReadExpr>(lhs))
+    if (!(is_a<VarReadExpr>(lhs)
+      || (is_a<UnaryExpr>(lhs) && as<PTR<UnaryExpr>>(lhs)->get_operation() == UnaryOperator::OP_DEREFERENCE)))
     {
+      //No need to consume as the whole expression was already parsed.
       if (!is_a<ErrorExpr>(lhs))
         generate_any<report_as::ERROR>(lhs->get_src_code(), nullptr,
           "Left hand side of an assignment should be a variable!");
       return ErrorExpr::CreateExpr(ctx);
-    }
+    }    
 
     if (assignment_tkn == TKN_EQUAL)
-      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs), rhs, line_state.to_src_info(), ctx);
+    {
+      if (!is_a<UnaryExpr>(lhs))
+        return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs), rhs,
+          line_state.to_src_info(), ctx);
+      return create_binary(lhs, TKN_EQUAL, rhs, line_state.to_src_info());
+    }
     
-    //The value to write
+    //If not =, we transform the expression into an expanded version:
+    //i += 1 -> i = i + 1
     auto write_val = create_binary(lhs->get_type(), lhs,
       DirectAssignToNonAssignToken(assignment_tkn),
       rhs, line_state.to_src_info());
     
     //Expand the direct assignment operator
-    return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
-        write_val, line_state.to_src_info(), ctx);
+    if (!is_a<UnaryExpr>(lhs))
+      return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
+          write_val, line_state.to_src_info(), ctx);
+    return create_binary(lhs, TKN_EQUAL, write_val,
+      line_state.to_src_info());
   }
 
   PTR<Expr> ASTMaker::parse_conversion(PTR<Expr> lhs, const SavedExprInfo& line_state) noexcept
