@@ -754,15 +754,36 @@ namespace colt::lang
     consume_current_tkn(); //consume '='
     PTR<Expr> rhs = parse_binary();
 
-    if (!(is_a<VarReadExpr>(lhs)
-      || (is_a<UnaryExpr>(lhs) && as<PTR<UnaryExpr>>(lhs)->get_operation() == UnaryOperator::OP_DEREFERENCE)))
+    if (!is_a<ErrorExpr>(lhs))
+      return lhs;
+
+    if (is_a<VarReadExpr>(lhs))
+    {
+      if (lhs->get_type()->is_const())
+      {
+        generate_any<report_as::ERROR>(lhs->get_src_code(), nullptr,
+          "Cannot assign to a non-mutable variable!");
+        return ErrorExpr::CreateExpr(ctx);
+      }
+    }
+    else if (is_a<UnaryExpr>(lhs)
+      && as<PTR<UnaryExpr>>(lhs)->get_operation() == UnaryOperator::OP_DEREFERENCE)
+    {
+      if (lhs->get_type()->is_const())
+      {
+        generate_any<report_as::ERROR>(lhs->get_src_code(), nullptr,
+          "Cannot write through pointer to non-mutable type!");
+        return ErrorExpr::CreateExpr(ctx);
+      }
+    }
+    else
     {
       //No need to consume as the whole expression was already parsed.
-      if (!is_a<ErrorExpr>(lhs))
-        generate_any<report_as::ERROR>(lhs->get_src_code(), nullptr,
-          "Left hand side of an assignment should be a variable!");
+      generate_any<report_as::ERROR>(lhs->get_src_code(), nullptr,
+        "Left hand side of an assignment should be a variable!");
       return ErrorExpr::CreateExpr(ctx);
-    }    
+    }
+
 
     if (assignment_tkn == TKN_EQUAL)
     {
