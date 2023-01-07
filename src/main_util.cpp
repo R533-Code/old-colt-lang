@@ -172,21 +172,31 @@ namespace colt
   void RunMain(gen::GeneratedIR&& IR, bool print) noexcept
   {
     if (auto JITError = gen::ColtJIT::Create(); !JITError)
-      io::PrintError("Could not create JIT compiler!");
+    {
+      io::PrintFatal("Could not initialize JIT compiler!");
+      abort();
+    }
     else
     {
-      auto ColtJIT = std::move(*JITError);
+      const auto& ColtJIT = std::move(*JITError);
       if (auto AddError = ColtJIT->addModule(std::move(IR)); AddError)
-        io::PrintError("Could not add module!");
+      {
+        io::PrintFatal("Could not JIT compile the code!");
+        abort();
+      }
       else if (auto main = ColtJIT->lookup("main"))
       {
+        if (print)
+          io::PrintMessage("Running 'main' function...");
+        
         auto main_fn = reinterpret_cast<i64(*)()>(main->getValue());
         i64 ret = main_fn();
+        
         if (print)
-          io::PrintMessage("Main function returned '{}'!", ret);
+          io::PrintMessage("'main' function returned '{}'!", ret);
       }
       else if (print)
-        io::PrintWarning("Main function was not found!");
+        io::PrintWarning("'main' function was not found!");
     }
   }  
 #endif //!COLT_NO_LLVM
