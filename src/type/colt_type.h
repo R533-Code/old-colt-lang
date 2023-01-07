@@ -75,28 +75,56 @@ namespace colt::lang
     /// @brief Check if the type is const.
     /// For VoidType or FnType, returns false.
     /// @return True if the type is const
-    constexpr bool is_const() const noexcept { return is_const_v; }
+    bool is_const() const noexcept { return is_const_v; }
     /// @brief Check if the type is void
     /// @return True if is void
-    constexpr bool is_void() const noexcept { return ID == TYPE_VOID; }
+    bool is_void() const noexcept { return ID == TYPE_VOID; }
     /// @brief Check if the type is a pointer
     /// @return True if is pointer
-    constexpr bool is_ptr() const noexcept { return ID == TYPE_PTR; }
+    bool is_ptr() const noexcept { return ID == TYPE_PTR; }
+    /// @brief Check if the type is a pointer to void
+    /// @return True if the type is a pointer to void
+    bool is_ptr_to_void() const noexcept;
     /// @brief Check if the type is a function
     /// @return True if function
-    constexpr bool is_fn() const noexcept { return ID == TYPE_FN; }
+    bool is_fn() const noexcept { return ID == TYPE_FN; }
     /// @brief Check if the type is an array
     /// @return True if array
-    constexpr bool is_array() const noexcept { return ID == TYPE_ARRAY; }
+    bool is_array() const noexcept { return ID == TYPE_ARRAY; }
     /// @brief Check if the type is built-in
     /// @return True if built-in
-    constexpr bool is_builtin() const noexcept { return ID == TYPE_BUILTIN; }
+    bool is_builtin() const noexcept { return ID == TYPE_BUILTIN; }
     /// @brief Check if the type is error
     /// @return True if error
-    constexpr bool is_error() const noexcept { return ID == TYPE_ERROR; } 
+    bool is_error() const noexcept { return ID == TYPE_ERROR; }
+    /// @brief Check if the current type is any of the signed/unsigned built-in integers
+    /// @return True if built-in integer
+    bool is_semantically_integral() const noexcept;
+    /// @brief Check if the current type is any of the signed/unsigned built-in integers
+    /// @return True if built-in integer
+    bool is_integral() const noexcept;
+    /// @brief Check if the current type is bool
+    /// @return True if built-in boolean
+    bool is_bool() const noexcept;
+    /// @brief Check if the current type is an f32 or f64
+    /// @return True if f32 or f64
+    bool is_floating() const noexcept;
+    /// @brief Check if the current type is any of the signed built-in integers
+    /// @return True if built-in signed integer
+    bool is_signed_int() const noexcept;
+    /// @brief Check if the current type is any of the signed built-in integers
+    ///        or floating point types.
+    /// @return True if built-in signed integer
+    bool is_signed() const noexcept;
+    /// @brief Check if the current type is any of the unsigned built-in integers
+    /// @return True if built-in unsigned integer
+    bool is_unsigned_int() const noexcept;
+    /// @brief Check if the current type is 'lstring'
+    /// @return True if the type is an 'lstring'
+    bool is_lstring() const noexcept;
     /// @brief Returns the typename
     /// @return StringView over the typename
-    constexpr StringView get_name() const noexcept { return name; }
+    StringView get_name() const noexcept { return name; }
 
     /// @brief Check if two types are equal (without considering 'const')
     /// @param type The type to compare against
@@ -220,7 +248,7 @@ namespace colt::lang
     
     /// @brief Check if the current type is any of the signed/unsigned built-in integers
     /// @return True if built-in integer
-    constexpr bool is_pure_integral() const noexcept { return CHAR < builtin_ID && builtin_ID < F32; }
+    constexpr bool is_semantically_integral() const noexcept { return CHAR < builtin_ID && builtin_ID < F32; }
     /// @brief Check if the current type is any of the signed/unsigned built-in integers
     /// @return True if built-in integer
     constexpr bool is_integral() const noexcept { return builtin_ID < F32; }

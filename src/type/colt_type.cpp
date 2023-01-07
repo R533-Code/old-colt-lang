@@ -193,6 +193,79 @@ namespace colt::lang
     return ctx.add_type(make_unique<ErrorType>());
   }  
   
+  bool Type::is_ptr_to_void() const noexcept
+  {
+    return ID == TYPE_PTR && as<PTR<const PtrType>>(this)->get_type_to()->is_void();
+  }
+
+  bool Type::is_semantically_integral() const noexcept
+  {
+    if (!is_builtin())
+      return false;
+    auto ret = as<PTR<const BuiltInType>>(this);
+    return CHAR < ret->get_builtin_id()
+      && ret->get_builtin_id() < F32;
+  }
+
+  bool Type::is_integral() const noexcept
+  {
+    if (!is_builtin())
+      return false;
+    auto ret = as<PTR<const BuiltInType>>(this);
+    return ret->get_builtin_id() < F32;
+  }
+
+  bool Type::is_bool() const noexcept
+  {
+    if (!is_builtin())
+      return false;
+    auto ret = as<PTR<const BuiltInType>>(this);
+    return ret->get_builtin_id() == BOOL;
+  }
+
+  bool Type::is_floating() const noexcept
+  {
+    if (!is_builtin())
+      return false;
+    auto ret = as<PTR<const BuiltInType>>(this);
+    return ret->get_builtin_id() == F32
+      || ret->get_builtin_id() == F64;
+  }
+
+  bool Type::is_signed_int() const noexcept
+  {
+    if (!is_builtin())
+      return false;
+    auto ret = as<PTR<const BuiltInType>>(this);
+    return U64 < ret->get_builtin_id()
+      && ret->get_builtin_id() < F32;
+  }
+
+  bool Type::is_signed() const noexcept
+  {
+    if (!is_builtin())
+      return false;
+    auto ret = as<PTR<const BuiltInType>>(this);
+    return U64 < ret->get_builtin_id()
+      && ret->get_builtin_id() < lstring;
+  }
+
+  bool Type::is_unsigned_int() const noexcept
+  {
+    if (!is_builtin())
+      return false;
+    auto ret = as<PTR<const BuiltInType>>(this);
+    return ret->get_builtin_id() < I8;
+  }
+
+  bool Type::is_lstring() const noexcept
+  {
+    if (!is_builtin())
+      return false;
+    auto ret = as<PTR<const BuiltInType>>(this);
+    return ret->get_builtin_id() == lstring;
+  }
+
   bool Type::is_equal(PTR<const Type> type) const noexcept
   {
     if (this->is_error() || type->is_error())
