@@ -190,12 +190,6 @@ namespace colt::lang
 
   PTR<Expr> ASTMaker::parse_binary(u8 precedence) noexcept
   {
-    if (precedence == 255) //token was not an operator: error
-    {
-      generate_any_current<report_as::ERROR>(&ASTMaker::panic_consume_semicolon,
-        "Expected a binary operator!");
-      return ErrorExpr::CreateExpr(ctx);
-    }
     //Save current expression state
     SavedExprInfo line_state = { *this };
 
