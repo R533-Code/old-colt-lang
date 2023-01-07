@@ -230,9 +230,14 @@ namespace colt::gen
       else
         returned_value = global_vars.find(var_read->get_name())->second;
     }
+    //Here, dereference is a read, not a write
+    break; case UnaryOperator::OP_DEREFERENCE:
+    {
+      returned_value = builder.CreateLoad(returned_value->getType(), returned_value);
+    }
     break; case UnaryOperator::OP_NEGATE:
       returned_value = builder.CreateNeg(child);
-    break;
+    break;    
     case UnaryOperator::OP_BIT_NOT:
     case UnaryOperator::OP_BOOL_NOT:
       returned_value = builder.CreateNot(child);
@@ -244,12 +249,18 @@ namespace colt::gen
 
   void LLVMIRGenerator::gen_binary(PTR<const lang::BinaryExpr> ptr) noexcept
   {
-    gen_ir(ptr->get_LHS());
-    Value* lhs = returned_value;
-    gen_ir(ptr->get_RHS());
-    Value* rhs = returned_value;
-
-    assert_true(lhs && rhs, "Error generating binary expr!");
+    Value* lhs;
+    Value* rhs;
+    //If not a write to pointer
+    if (!(is_a<lang::UnaryExpr>(ptr->get_LHS())
+      && as<PTR<const lang::UnaryExpr>>(ptr->get_LHS())->is_write_to_ptr()))
+    {
+      gen_ir(ptr->get_LHS());
+      lhs = returned_value;
+      gen_ir(ptr->get_RHS());
+      rhs = returned_value;
+      assert_true(lhs && rhs, "Error generating binary expr!");
+    }
 
     using namespace colt::lang;
 
@@ -341,6 +352,15 @@ namespace colt::gen
         returned_value = builder.CreateICmpNE(lhs, rhs, "i_neq");
       else if (type_t->is_floating())
         returned_value = builder.CreateFCmpONE(lhs, rhs, "fp_neq");
+    break; case BinaryOperator::OP_ASSIGN:
+    {
+      assert_true(is_a<UnaryExpr>(ptr->get_LHS()) && ptr->get_LHS()->get_type()->is_ptr());
+      gen_ir(ptr->get_RHS());
+      auto value = returned_value;
+      gen_ir(as<PTR<const UnaryExpr>>(ptr->get_LHS()));
+      auto store = builder.CreateStore(value, returned_value);
+      returned_value = builder.CreateLoad(returned_value->getType(), store->getPointerOperand());
+    }
 
     break; default:
       colt_unreachable("Invalid operation!");
