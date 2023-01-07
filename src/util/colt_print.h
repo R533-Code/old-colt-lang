@@ -12,6 +12,11 @@
 #include <cmd/colt_args.h>
 #include <util/console_colors.h>
 
+namespace colt
+{
+	u64 rand(u64 a, u64 b) noexcept;
+}
+
 /// @brief Contains utilities for printing to console
 namespace colt::io
 {
@@ -59,6 +64,14 @@ namespace colt::io
 	{
 		/// @brief The char to escape
 		char chr;
+	};
+
+	/// @brief Used to print each character of a string in a color.
+	/// Example: Print("{}", ColorEachStrChar{ "COLT" })
+	struct ColorEachStrChar
+	{
+		/// @brief The string to color
+		const char* str;
 	};
 
 	template<bool new_line, typename... Args>
@@ -124,6 +137,9 @@ template<>
 /// @brief {fmt} specialization of EscapeChar
 struct fmt::formatter<colt::io::EscapeChar>
 {
+	template<typename ParseContext>
+	constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
+
 	template<typename FormatContext>
 	/// @brief fmt overload
 	/// @tparam FormatContext The context to write 
@@ -163,6 +179,36 @@ struct fmt::formatter<colt::io::EscapeChar>
 		if (ret == nullptr)
 			return fmt::format_to(ctx.out(), "'{}'", chr.chr);
 		return fmt::format_to(ctx.out(), "'{}'", ret);
+	}
+};
+
+template<>
+/// @brief {fmt} specialization of EscapeChar
+struct fmt::formatter<colt::io::ColorEachStrChar>
+{
+	template<typename ParseContext>
+	constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
+
+	template<typename FormatContext>
+	/// @brief fmt overload
+	/// @tparam FormatContext The context to write 
+	/// @param chr The char to write
+	/// @param ctx The context
+	/// @return context
+	auto format(const colt::io::ColorEachStrChar& chr, FormatContext& ctx)
+	{
+		if (!colt::args::GlobalArguments.colored_output)
+			return fmt::format_to(ctx.out(), "{}", chr.str);
+
+		colt::io::ColorEachStrChar cpy = chr;
+		auto iter = ctx.out();
+		while (*cpy.str != '\0')
+		{
+			iter = fmt::format_to(iter, "{}{}", CONSOLE_COLORS[colt::rand(2, 16)], *cpy.str);
+			++cpy.str;
+		}
+		iter = fmt::format_to(iter, "\x1B[0m");
+		return iter;
 	}
 };
 

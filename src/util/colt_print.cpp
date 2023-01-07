@@ -1,4 +1,5 @@
 #include "colt_print.h"
+#include <random>
 #include <cstdio>
 #ifndef COLT_WINDOWS
 #include <termios.h>
@@ -6,6 +7,16 @@
 #else
 #include <conio.h>
 #endif //COLT_WINDOWS
+
+namespace colt
+{
+  u64 rand(u64 a, u64 b) noexcept
+  {
+    static std::mt19937 generator(std::random_device{}());
+    std::uniform_int_distribution<u64> distr(a, b);
+    return distr(generator);
+  }
+}
 
 namespace colt::io
 {
@@ -24,5 +35,5 @@ namespace colt::io
     (void)_getch();
 #endif //!COLT_WINDOWS
     fputc('\n', stdout);
-  }
+  }  
 }
