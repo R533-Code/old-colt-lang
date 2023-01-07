@@ -42,8 +42,8 @@ namespace colt::args
 
     void version_callback(int argc, const char** argv, size_t& current_arg) noexcept
     {
-      io::Print("{}COLT{}{} v{} on {} ({})",
-        io::SwitchFB, io::Reset, io::BrightMagentaF, COLT_VERSION_STRING, io::Reset, COLT_OS_STRING, COLT_CONFIG_STRING);
+      io::Print("{} v{} on {} ({})",
+        io::ColorEachStrChar{ "COLT "}, COLT_VERSION_STRING, COLT_OS_STRING, COLT_CONFIG_STRING);
       std::exit(0);
     }
 
