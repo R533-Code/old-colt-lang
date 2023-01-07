@@ -18,8 +18,6 @@ namespace colt::lang
 		OP_INCREMENT,
 		/// @brief (Expr)++
 		OP_DECREMENT,
-		/// @brief +(Expr)
-		OP_PLUS,
 		/// @brief -(Expr)
 		OP_NEGATE,
 		/// @brief *(Expr)
