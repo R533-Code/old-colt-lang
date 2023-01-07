@@ -151,41 +151,41 @@ namespace colt::gen
   {
     using namespace colt::lang;
 
-    switch (ptr->get_type()->get_builtin_id())
-    {
-    break; case U8:
-      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<u8>());
-    break; case U16:
-      returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().as<u16>());
-    break; case U32:
-      returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().as<u32>());
-    break; case U64:
-      returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().as<u64>());
-    break; case U128:
-      returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().as<u64>());
-    break; case I8:
-      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<i8>());
-    break; case I16:
-      returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().as<i16>());
-    break; case I32:
-      returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().as<i32>());
-    break; case I64:
-      returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().as<i64>());
-    break; case I128:
-      returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().as<i64>());
-    break; case F32:
-      returned_value = ConstantFP::get(llvm::Type::getFloatTy(context), ptr->get_value().as<f32>());
-    break; case F64:
-      returned_value = ConstantFP::get(llvm::Type::getDoubleTy(context), ptr->get_value().as<f64>());
-    break; case BOOL:
-      returned_value = ConstantInt::get(llvm::Type::getInt1Ty(context), ptr->get_value().as<bool>());
-    break; case CHAR:
-      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<char>());
-    break; case lang::lstring:
-      returned_value = builder.CreateGlobalStringPtr(ToStringRef(*ptr->get_value().as<PTR<String>>()), "GlobStr", 0U, &module);
-    break; default:
-      colt_unreachable("Invalid literal expr!");
-    }
+switch (ptr->get_type()->get_builtin_id())
+{
+break; case U8:
+  returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<u8>());
+break; case U16:
+  returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().as<u16>());
+break; case U32:
+  returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().as<u32>());
+break; case U64:
+  returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().as<u64>());
+break; case U128:
+  returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().as<u64>());
+break; case I8:
+  returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<i8>());
+break; case I16:
+  returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().as<i16>());
+break; case I32:
+  returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().as<i32>());
+break; case I64:
+  returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().as<i64>());
+break; case I128:
+  returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().as<i64>());
+break; case F32:
+  returned_value = ConstantFP::get(llvm::Type::getFloatTy(context), ptr->get_value().as<f32>());
+break; case F64:
+  returned_value = ConstantFP::get(llvm::Type::getDoubleTy(context), ptr->get_value().as<f64>());
+break; case BOOL:
+  returned_value = ConstantInt::get(llvm::Type::getInt1Ty(context), ptr->get_value().as<bool>());
+break; case CHAR:
+  returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<char>());
+break; case lang::lstring:
+  returned_value = builder.CreateGlobalStringPtr(ToStringRef(*ptr->get_value().as<PTR<String>>()), "GlobStr", 0U, &module);
+break; default:
+  colt_unreachable("Invalid literal expr!");
+}
   }
 
   void LLVMIRGenerator::gen_unary(PTR<const lang::UnaryExpr> ptr) noexcept
@@ -206,7 +206,7 @@ namespace colt::gen
         val_one = ConstantInt::get(type_to_llvm(var_read->get_type()), 1);
       else //floating point
         val_one = ConstantFP::get(type_to_llvm(var_read->get_type()), 1.0);
-            
+
       if (!var_read->is_global())
       {
         builder.CreateStore(val_one,
@@ -233,15 +233,15 @@ namespace colt::gen
     //Here, dereference is a read, not a write
     break; case UnaryOperator::OP_DEREFERENCE:
     {
-      returned_value = builder.CreateLoad(returned_value->getType(), returned_value);
+      returned_value = builder.CreateLoad(type_to_llvm(ptr->get_type()), returned_value);
     }
     break; case UnaryOperator::OP_NEGATE:
       returned_value = builder.CreateNeg(child);
-    break;    
+      break;
     case UnaryOperator::OP_BIT_NOT:
     case UnaryOperator::OP_BOOL_NOT:
       returned_value = builder.CreateNot(child);
-      
+
     break; default:
       colt_unreachable("Not implemented!");
     }
@@ -249,18 +249,23 @@ namespace colt::gen
 
   void LLVMIRGenerator::gen_binary(PTR<const lang::BinaryExpr> ptr) noexcept
   {
-    Value* lhs;
-    Value* rhs;
-    //If not a write to pointer
-    if (!(is_a<lang::UnaryExpr>(ptr->get_LHS())
-      && as<PTR<const lang::UnaryExpr>>(ptr->get_LHS())->is_write_to_ptr()))
-    {
-      gen_ir(ptr->get_LHS());
-      lhs = returned_value;
+    if (is_a<lang::UnaryExpr>(ptr->get_LHS())
+      && as<PTR<const lang::UnaryExpr>>(ptr->get_LHS())->is_write_to_ptr())
+    {      
       gen_ir(ptr->get_RHS());
-      rhs = returned_value;
-      assert_true(lhs && rhs, "Error generating binary expr!");
+      auto value = returned_value;
+      gen_ir(as<PTR<const lang::UnaryExpr>>(ptr->get_LHS())->get_child());
+      auto store = builder.CreateStore(value, returned_value);
+      returned_value = builder.CreateLoad(returned_value->getType(), store->getPointerOperand());
+      return;
     }
+
+    gen_ir(ptr->get_LHS());
+    Value* lhs = returned_value;
+    gen_ir(ptr->get_RHS());
+    Value* rhs = returned_value;
+    
+    assert_true(lhs && rhs, "Error generating binary expr!");    
 
     using namespace colt::lang;
 
@@ -352,15 +357,6 @@ namespace colt::gen
         returned_value = builder.CreateICmpNE(lhs, rhs, "i_neq");
       else if (type_t->is_floating())
         returned_value = builder.CreateFCmpONE(lhs, rhs, "fp_neq");
-    break; case BinaryOperator::OP_ASSIGN:
-    {
-      assert_true(is_a<UnaryExpr>(ptr->get_LHS()) && ptr->get_LHS()->get_type()->is_ptr());
-      gen_ir(ptr->get_RHS());
-      auto value = returned_value;
-      gen_ir(as<PTR<const UnaryExpr>>(ptr->get_LHS()));
-      auto store = builder.CreateStore(value, returned_value);
-      returned_value = builder.CreateLoad(returned_value->getType(), store->getPointerOperand());
-    }
 
     break; default:
       colt_unreachable("Invalid operation!");
