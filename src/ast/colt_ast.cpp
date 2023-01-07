@@ -951,7 +951,7 @@ namespace colt::lang
 
     auto call_expr = handle_function_call(identifier, std::move(arguments),
       identifier_location, line_state.to_src_info());
-    if (is_a<ErrorExpr>(call_expr))
+    if (is_a<ErrorExpr>(call_expr) || outer_scope.is_empty())
       return call_expr;
     outer_scope.push_back(call_expr);
     return ScopeExpr::CreateExpr(std::move(outer_scope),
@@ -1260,7 +1260,7 @@ namespace colt::lang
         "Operands should be of same type!");
       return ErrorExpr::CreateExpr(ctx);
     }
-    else if (is_a<BuiltInType>(rhs->get_type())
+    else if (bin_op != BinaryOperator::OP_ASSIGN && is_a<BuiltInType>(rhs->get_type())
       && !as<PTR<const BuiltInType>>(rhs->get_type())->supports(bin_op))
     {
       generate_any<report_as::ERROR>(src_info, &ASTMaker::panic_consume_semicolon,
