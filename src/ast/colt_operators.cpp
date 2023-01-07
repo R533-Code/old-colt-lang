@@ -14,8 +14,6 @@ namespace colt::lang
       return UnaryOperator::OP_ADDRESSOF;
     case TKN_STAR:
       return UnaryOperator::OP_DEREFERENCE;
-    case TKN_PLUS:
-      return UnaryOperator::OP_PLUS;
     case TKN_MINUS:
       return UnaryOperator::OP_NEGATE;
     case TKN_BANG:
