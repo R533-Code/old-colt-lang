@@ -230,7 +230,7 @@ namespace colt::lang
     /// @brief Parses a variable declaration (global or local)
     /// @param is_global True if the variable declaration should is global
     /// @return VarDeclExpr or ErrorExpr
-    PTR<Expr> parse_variable_decl(bool is_global) noexcept;
+    PTR<Expr> parse_var_decl(bool is_global) noexcept;
 
     /// @brief Parses an assignment (=, or any self assignment)
     /// @param lhs The left hand side of the assignment

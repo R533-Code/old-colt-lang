@@ -368,7 +368,7 @@ namespace colt::lang
     else if (current_tkn == TKN_KEYWORD_VAR)
     {
       //Global Variable
-      return parse_variable_decl(true);
+      return parse_var_decl(true);
     }
     //Most likely an invalid character
     else if (current_tkn == TKN_ERROR)
@@ -567,7 +567,7 @@ namespace colt::lang
     switch (current_tkn)
     {
     case TKN_KEYWORD_VAR:
-      return parse_variable_decl(false);
+      return parse_var_decl(false);
     case TKN_LEFT_CURLY:
       return parse_scope(false);
     case TKN_KEYWORD_IF:
@@ -682,7 +682,7 @@ namespace colt::lang
       line_state.to_src_info(), ctx);
   }
 
-  PTR<Expr> ASTMaker::parse_variable_decl(bool is_global) noexcept
+  PTR<Expr> ASTMaker::parse_var_decl(bool is_global) noexcept
   {
     SavedExprInfo line_state = { *this };
 
