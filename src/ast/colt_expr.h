@@ -253,7 +253,9 @@ namespace colt::lang
     UnaryExpr(PTR<const Type> type, Token tkn_op, PTR<Expr> child, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_UNARY, type, src_info), operation(TokenToUnaryOperator(tkn_op)), child(child) {}
 
-
+    /// @brief Check if the operation of the unary expression is a dereference
+    /// @return True if the operation is OP_DEREFERENCE
+    bool is_write_to_ptr() const noexcept { return operation == UnaryOperator::OP_DEREFERENCE; }
     /// @brief Returns the child of the unary expression
     /// @return Pointer to the child
     PTR<const Expr> get_child() const noexcept { return child; }
