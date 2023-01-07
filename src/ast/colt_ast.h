@@ -11,6 +11,28 @@
 #include "parsing/colt_lexer.h"
 #include "interpreter/qword_op.h"
 
+namespace colt
+{
+  template<typename T>
+  class ScopedSave
+  {
+    T restore;
+    T& ref;
+
+  public:
+    constexpr ScopedSave(T& ref, T new_val) noexcept
+      : restore(ref), ref(ref)
+    {
+      ref = new_val;
+    }
+
+    ~ScopedSave() noexcept
+    {
+      ref = restore;
+    }
+  };
+}
+
 namespace colt::lang
 {
   /// @brief Returns the precedence of an operator or 255 if the token is not an operator.
@@ -68,6 +90,8 @@ namespace colt::lang
     Token current_tkn;
     /// @brief True if parsing body of loop
     bool is_parsing_loop = false;
+    /// @brief True if parsing a PTR
+    bool is_parsing_ptr = false;
     /// @brief The table storing local variables informations
     Vector<std::pair<StringView, PTR<const Type>>> local_var_table = {};
     /// @brief The current expression informations

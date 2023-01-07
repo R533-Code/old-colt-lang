@@ -274,7 +274,8 @@ namespace colt::lang
       }
       else if (!read->get_type()->is_builtin()
         //if is not integral nor floating
-        && as<PTR<const BuiltInType>>(read->get_type())->is_lstring())
+        && !as<PTR<const BuiltInType>>(read->get_type())->is_integral()
+        && !as<PTR<const BuiltInType>>(read->get_type())->is_floating())
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Increment/Decrement operator can only be applied on floating points and integrals types!");
@@ -296,10 +297,11 @@ namespace colt::lang
           "Dereference operator '*' can only be applied on variables!");
         return ErrorExpr::CreateExpr(ctx);
       }
-      if (!expr->get_type()->is_ptr())
+      if (!expr->get_type()->is_ptr()
+        && expr->get_type()->is_ptr_to_void())
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
-          "Dereference operator '*' can only be applied on pointer types!");
+          "Dereference operator '*' can only be applied on non-void pointer types!");
         return ErrorExpr::CreateExpr(ctx);
       }
       return UnaryExpr::CreateExpr(as<PTR<const PtrType>>(expr->get_type())->get_type_to(),
@@ -325,7 +327,7 @@ namespace colt::lang
       auto expr = parse_primary();
       //pure integral: uint or int (without bool/char)
       if (expr->get_type()->is_builtin()
-        && !as<PTR<const BuiltInType>>(expr->get_type())->is_pure_integral())
+        && !as<PTR<const BuiltInType>>(expr->get_type())->is_semantically_integral())
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
          "Bit NOT '~' can only be applied on integral types!");
@@ -689,6 +691,12 @@ namespace colt::lang
     if (check_and_consume(TKN_KEYWORD_VAR, &ASTMaker::panic_consume_var_decl,
       "Expected a variable declaration!"))
       return ErrorExpr::CreateExpr(ctx);
+    bool is_var_mut = false;
+    if (current_tkn == TKN_KEYWORD_MUT)
+    {
+      is_var_mut = true;
+      consume_current_tkn();
+    }
     if (check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_var_decl,
       "Expected an identifier!"))
       return ErrorExpr::CreateExpr(ctx);
@@ -817,7 +825,7 @@ namespace colt::lang
     {
     case TKN_KEYWORD_VOID:
     {
-      if (!is_const)
+      if (!is_const && !is_parsing_ptr)
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), panic,
           "'void' typename cannot be marked as mutable!");
@@ -878,6 +886,8 @@ namespace colt::lang
       consume_current_tkn();
       if (!check_and_consume(TKN_LESS, panic, "Expected a '<'!"))
       {
+        ScopedSave sv(is_parsing_ptr, true);
+        
         PTR<const Type> ptr_to = parse_typename(panic);
         if (current_tkn == TKN_GREAT_GREAT) // '>>' is parsed as '>' '>'
           current_tkn = TKN_GREAT;
@@ -1272,7 +1282,7 @@ namespace colt::lang
     //if possible.
     if (is_a<LiteralExpr>(rhs))
     {
-      auto rhs_l = as<PTR<LiteralExpr>>(rhs);
+      auto rhs_l = as<PTR<const LiteralExpr>>(rhs);
       if (is_a<LiteralExpr>(lhs))
       {
         //Constant fold as both expression are known at compile-time
