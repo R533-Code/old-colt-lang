@@ -689,10 +689,10 @@ namespace colt::lang
     if (check_and_consume(TKN_KEYWORD_VAR, &ASTMaker::panic_consume_var_decl,
       "Expected a variable declaration!"))
       return ErrorExpr::CreateExpr(ctx);
-    bool is_var_mut = false;
+    bool is_var_const = true;
     if (current_tkn == TKN_KEYWORD_MUT)
     {
-      is_var_mut = true;
+      is_var_const = false;
       consume_current_tkn();
     }
     if (check_and_consume(TKN_IDENTIFIER, &ASTMaker::panic_consume_var_decl,
@@ -733,11 +733,16 @@ namespace colt::lang
     //else convert left hand side to explicit type
     if (var_type == nullptr)
       var_type = var_init->get_type();
+    
+    if (is_var_const)
+      var_type = var_init->get_type()->clone_as_const(ctx);
     else
-      var_init = as_convert_to(var_init, var_type);
+      var_type = var_init->get_type()->clone_as_mut(ctx);
+
+    var_init = as_convert_to(var_init, var_type);
 
     if (check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_var_decl, "Expected a ';'!"))
-      return save_var_decl(is_global, ErrorType::CreateType(ctx), var_name,
+      return save_var_decl(is_global, var_type, var_name,
         var_init, line_state.to_src_info());
 
   SAVE:
@@ -1435,7 +1440,7 @@ namespace colt::lang
     {
       auto to_p = as<PTR<const PtrType>>(to);
       auto from_p = as<PTR<const PtrType>>(from);
-      if (from_p->get_type_to()->is_equal(to_p->get_type_to()))
+      if (!from_p->get_type_to()->is_equal(to_p->get_type_to()))
       {
         generate_any<report_as::ERROR>(what->get_src_code(), nullptr,
           "Cannot convert from '{}' to '{}'!",
