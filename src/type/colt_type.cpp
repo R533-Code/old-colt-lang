@@ -311,6 +311,22 @@ namespace colt::lang
       || ret->get_builtin_id() == F64;
   }
 
+  bool Type::is_f32() const noexcept
+  {
+    if (!is_builtin())
+      return false;
+    auto ret = as<PTR<const BuiltInType>>(this);
+    return ret->get_builtin_id() == F32;
+  }
+
+  bool Type::is_f64() const noexcept
+  {
+    if (!is_builtin())
+      return false;
+    auto ret = as<PTR<const BuiltInType>>(this);
+    return ret->get_builtin_id() == F64;
+  }
+
   bool Type::is_signed_int() const noexcept
   {
     if (!is_builtin())

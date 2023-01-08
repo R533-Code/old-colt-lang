@@ -117,6 +117,12 @@ namespace colt::lang
     /// @brief Check if the current type is an f32 or f64
     /// @return True if f32 or f64
     bool is_floating() const noexcept;
+    /// @brief Check if the current type is an f32
+    /// @return True if f32
+    bool is_f32() const noexcept;
+    /// @brief Check if the current type is an f64
+    /// @return True if f64
+    bool is_f64() const noexcept;
     /// @brief Check if the current type is any of the signed built-in integers
     /// @return True if built-in signed integer
     bool is_signed_int() const noexcept;
