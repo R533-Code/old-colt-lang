@@ -93,7 +93,11 @@ namespace colt::lang
       /// @brief BreakContinueExpr
       EXPR_BREAK_CONTINUE,
       /// @brief NoOpExpr
-      EXPR_NOP
+      EXPR_NOP,
+      /// @brief PtrStoreExpr
+      EXPR_PTR_STORE,
+      /// @brief PtrLoadExpr
+      EXPR_PTR_LOAD
     };
 
     /// @brief Helper for dyn_cast and is_a
@@ -253,9 +257,6 @@ namespace colt::lang
     UnaryExpr(PTR<const Type> type, Token tkn_op, PTR<Expr> child, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_UNARY, type, src_info), operation(TokenToUnaryOperator(tkn_op)), child(child) {}
 
-    /// @brief Check if the operation of the unary expression is a dereference
-    /// @return True if the operation is OP_DEREFERENCE
-    bool is_write_to_ptr() const noexcept { return operation == UnaryOperator::OP_DEREFERENCE; }
     /// @brief Returns the child of the unary expression
     /// @return Pointer to the child
     PTR<const Expr> get_child() const noexcept { return child; }
@@ -1054,7 +1055,7 @@ namespace colt::lang
     static PTR<Expr> CreateExpr(bool is_break, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
 
-  /// @brief Represents a while loop
+  /// @brief Represents a no op expression
   class NoOpExpr
     final : public Expr
   {
@@ -1073,12 +1074,61 @@ namespace colt::lang
     /// @param src_info The source code information
     NoOpExpr(PTR<const Type> type, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_NOP, type, src_info) {}
-
-    /// @brief Constructs a while loop expression
-    /// @param src_info The source code information
-    /// @param ctx The COLTContext to store the resulting expression
-    /// @return Pointer to the created expression
+    
     static PTR<Expr> CreateExpr(const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+  };
+
+  class PtrStoreExpr
+    final : public Expr
+  {
+    PTR<Expr> to_where;
+    PTR<Expr> to_write;
+  
+  public:
+    /// @brief Helper for dyn_cast and is_a
+    static constexpr ExprID classof_v = EXPR_PTR_STORE;
+
+    //No default copy constructor 
+    PtrStoreExpr(const PtrStoreExpr&) = delete;
+    //No default constructor
+    PtrStoreExpr() = delete;
+    /// @brief Destructor
+    ~PtrStoreExpr() noexcept override = default;
+
+    PtrStoreExpr(PTR<const PtrType> ptr_type, PTR<Expr> where, PTR<Expr> value, const SourceCodeExprInfo& src_info) noexcept
+      : Expr(EXPR_PTR_STORE, ptr_type->get_type_to(), src_info), to_where(where), to_write(value) {}
+
+    PTR<const PtrType> get_ptr_type() const noexcept { return as<PTR<const PtrType>>(to_where->get_type()); }
+    
+    PTR<Expr> get_where() const noexcept { return to_where; }
+    PTR<Expr> get_value() const noexcept { return to_write; }
+
+    static PTR<Expr> CreateExpr(PTR<Expr> where, PTR<Expr> value, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
+  };
+
+  class PtrLoadExpr
+    final : public Expr
+  {
+    PTR<Expr> from;
+
+  public:
+    /// @brief Helper for dyn_cast and is_a
+    static constexpr ExprID classof_v = EXPR_PTR_LOAD;
+
+    //No default copy constructor 
+    PtrLoadExpr(const PtrLoadExpr&) = delete;
+    //No default constructor
+    PtrLoadExpr() = delete;
+    /// @brief Destructor
+    ~PtrLoadExpr() noexcept override = default;
+
+    PtrLoadExpr(PTR<const PtrType> ptr_type, PTR<Expr> from, const SourceCodeExprInfo& src_info) noexcept
+      : Expr(EXPR_PTR_LOAD, ptr_type->get_type_to(), src_info), from(from) {}
+
+    PTR<const PtrType> get_ptr_type() const noexcept { return as<PTR<const PtrType>>(from->get_type()); }
+    PTR<Expr> get_where() const noexcept { return from; }
+
+    static PTR<Expr> CreateExpr(PTR<Expr> where, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept;
   };
   
   template<typename T, typename>

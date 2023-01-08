@@ -158,5 +158,24 @@ namespace colt::lang
     return ctx.add_expr(make_unique<NoOpExpr>(
       ctx.add_type(make_unique<VoidType>()), src_info
       ));
-  }  
+  }
+  
+  PTR<Expr> PtrStoreExpr::CreateExpr(PTR<Expr> where, PTR<Expr> value, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
+  {
+    assert_true(where->get_type()->is_ptr(), "Expected a pointer type!");
+    assert_true(!as<PTR<const PtrType>>(where->get_type())->get_type_to()->is_const(),
+      "Cannot write to pointer to const type!");
+    
+    return ctx.add_expr(make_unique<PtrStoreExpr>(
+      as<PTR<const PtrType>>(where->get_type()), where, value, src_info
+      ));
+  }
+  
+  PTR<Expr> PtrLoadExpr::CreateExpr(PTR<Expr> where, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
+  {
+    assert_true(where->get_type()->is_ptr(), "Expected a pointer type!");
+    return ctx.add_expr(make_unique<PtrStoreExpr>(
+      as<PTR<const PtrType>>(where->get_type()), where, src_info
+      ));
+  }
 }
