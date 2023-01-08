@@ -155,41 +155,41 @@ namespace colt::gen
   {
     using namespace colt::lang;
 
-switch (ptr->get_type()->get_builtin_id())
-{
-break; case U8:
-  returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<u8>());
-break; case U16:
-  returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().as<u16>());
-break; case U32:
-  returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().as<u32>());
-break; case U64:
-  returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().as<u64>());
-break; case U128:
-  returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().as<u64>());
-break; case I8:
-  returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<i8>());
-break; case I16:
-  returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().as<i16>());
-break; case I32:
-  returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().as<i32>());
-break; case I64:
-  returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().as<i64>());
-break; case I128:
-  returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().as<i64>());
-break; case F32:
-  returned_value = ConstantFP::get(llvm::Type::getFloatTy(context), ptr->get_value().as<f32>());
-break; case F64:
-  returned_value = ConstantFP::get(llvm::Type::getDoubleTy(context), ptr->get_value().as<f64>());
-break; case BOOL:
-  returned_value = ConstantInt::get(llvm::Type::getInt1Ty(context), ptr->get_value().as<bool>());
-break; case CHAR:
-  returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<char>());
-break; case lang::lstring:
-  returned_value = builder.CreateGlobalStringPtr(ToStringRef(*ptr->get_value().as<PTR<String>>()), "GlobStr", 0U, &module);
-break; default:
-  colt_unreachable("Invalid literal expr!");
-}
+    switch (ptr->get_type()->get_builtin_id())
+    {
+    break; case U8:
+      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<u8>());
+    break; case U16:
+      returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().as<u16>());
+    break; case U32:
+      returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().as<u32>());
+    break; case U64:
+      returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().as<u64>());
+    break; case U128:
+      returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().as<u64>());
+    break; case I8:
+      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<i8>());
+    break; case I16:
+      returned_value = ConstantInt::get(llvm::Type::getInt16Ty(context), ptr->get_value().as<i16>());
+    break; case I32:
+      returned_value = ConstantInt::get(llvm::Type::getInt32Ty(context), ptr->get_value().as<i32>());
+    break; case I64:
+      returned_value = ConstantInt::get(llvm::Type::getInt64Ty(context), ptr->get_value().as<i64>());
+    break; case I128:
+      returned_value = ConstantInt::get(llvm::Type::getInt128Ty(context), ptr->get_value().as<i64>());
+    break; case F32:
+      returned_value = ConstantFP::get(llvm::Type::getFloatTy(context), ptr->get_value().as<f32>());
+    break; case F64:
+      returned_value = ConstantFP::get(llvm::Type::getDoubleTy(context), ptr->get_value().as<f64>());
+    break; case BOOL:
+      returned_value = ConstantInt::get(llvm::Type::getInt1Ty(context), ptr->get_value().as<bool>());
+    break; case CHAR:
+      returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<char>());
+    break; case lang::lstring:
+      returned_value = builder.CreateGlobalStringPtr(ToStringRef(*ptr->get_value().as<PTR<String>>()), "GlobStr", 0U, &module);
+    break; default:
+      colt_unreachable("Invalid literal expr!");
+    }
   }
 
   void LLVMIRGenerator::gen_unary(PTR<const lang::UnaryExpr> ptr) noexcept
