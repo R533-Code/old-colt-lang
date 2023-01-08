@@ -201,31 +201,6 @@ namespace colt::gen
 
     switch (ptr->get_operation())
     {
-    case UnaryOperator::OP_INCREMENT:
-    case UnaryOperator::OP_DECREMENT:
-    {
-      auto var_read = as<PTR<const VarReadExpr>>(ptr->get_child());
-      PTR<Constant> val_one;
-      if (as<PTR<const BuiltInType>>(var_read->get_type())->is_integral())
-        val_one = ConstantInt::get(type_to_llvm(var_read->get_type()), 1);
-      else //floating point
-        val_one = ConstantFP::get(type_to_llvm(var_read->get_type()), 1.0);
-
-      if (!var_read->is_global())
-      {
-        builder.CreateStore(val_one,
-          local_vars[var_read->get_local_ID()], false);
-        returned_value = builder.CreateLoad(
-          local_vars[var_read->get_local_ID()]->getAllocatedType(), local_vars[var_read->get_local_ID()]
-        );
-      }
-      else
-      {
-        auto gptr = global_vars.find(var_read->get_name())->second;
-        builder.CreateStore(val_one, global_vars.find(var_read->get_name())->second);
-        returned_value = builder.CreateLoad(gptr->getValueType(), gptr);
-      }
-    }
     break; case UnaryOperator::OP_ADDRESSOF:
     {
       auto var_read = as<PTR<const VarReadExpr>>(ptr->get_child());
