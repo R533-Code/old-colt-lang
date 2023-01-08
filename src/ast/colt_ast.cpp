@@ -752,7 +752,7 @@ namespace colt::lang
     consume_current_tkn(); //consume '='
     PTR<Expr> rhs = parse_binary();
 
-    if (!is_a<ErrorExpr>(lhs))
+    if (is_a<ErrorExpr>(lhs))
       return lhs;
 
     if (is_a<VarReadExpr>(lhs))
@@ -772,7 +772,8 @@ namespace colt::lang
       if (read->get_type()->is_const())
       {
         generate_any<report_as::ERROR>(lhs->get_src_code(), nullptr,
-          "Cannot write through pointer to non-mutable type!");
+          "Cannot write through pointer ('{}') to non-mutable type!",
+          read->get_ptr_type()->get_name());
         return ErrorExpr::CreateExpr(ctx);
       }
     }
@@ -787,10 +788,11 @@ namespace colt::lang
 
     if (assignment_tkn == TKN_EQUAL)
     {
-      if (!is_a<UnaryExpr>(lhs))
+      if (!is_a<PtrLoadExpr>(lhs))
         return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs), rhs,
           line_state.to_src_info(), ctx);
-      return create_binary(lhs, TKN_EQUAL, rhs, line_state.to_src_info());
+      return PtrStoreExpr::CreateExpr(as<PTR<PtrLoadExpr>>(lhs)->get_where(), rhs,
+        line_state.to_src_info(), ctx);
     }
     
     //If not =, we transform the expression into an expanded version:
