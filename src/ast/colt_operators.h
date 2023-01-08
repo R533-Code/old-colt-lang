@@ -20,8 +20,6 @@ namespace colt::lang
 		OP_DECREMENT,
 		/// @brief -(Expr)
 		OP_NEGATE,
-		/// @brief *(Expr)
-		OP_DEREFERENCE,
 		/// @brief &(Expr)
 		OP_ADDRESSOF,
 		/// @brief !(Expr)
