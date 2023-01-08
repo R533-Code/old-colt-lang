@@ -174,7 +174,7 @@ namespace colt::lang
   PTR<Expr> PtrLoadExpr::CreateExpr(PTR<Expr> where, const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
     assert_true(where->get_type()->is_ptr(), "Expected a pointer type!");
-    return ctx.add_expr(make_unique<PtrStoreExpr>(
+    return ctx.add_expr(make_unique<PtrLoadExpr>(
       as<PTR<const PtrType>>(where->get_type()), where, src_info
       ));
   }
