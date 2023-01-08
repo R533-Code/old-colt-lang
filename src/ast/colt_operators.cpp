@@ -18,10 +18,6 @@ namespace colt::lang
       return UnaryOperator::OP_BOOL_NOT;
     case TKN_TILDE:
       return UnaryOperator::OP_BIT_NOT;
-    case TKN_PLUS_PLUS:
-      return UnaryOperator::OP_INCREMENT;
-    case TKN_MINUS_MINUS:
-      return UnaryOperator::OP_DECREMENT;
     default:
       colt_unreachable("Invalid Unary Operator!");
     }

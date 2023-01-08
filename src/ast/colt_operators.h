@@ -14,10 +14,6 @@ namespace colt::lang
 	enum class UnaryOperator
 		: u8
 	{
-		/// @brief ++(Expr)
-		OP_INCREMENT,
-		/// @brief (Expr)++
-		OP_DECREMENT,
 		/// @brief -(Expr)
 		OP_NEGATE,
 		/// @brief &(Expr)
