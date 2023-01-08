@@ -266,6 +266,14 @@ namespace colt::lang
     return ret->get_builtin_id() == lstring;
   }
 
+  bool Type::is_char() const noexcept
+  {
+    if (!is_builtin())
+      return false;
+    auto ret = as<PTR<const BuiltInType>>(this);
+    return ret->get_builtin_id() == CHAR;
+  }
+
   bool Type::is_equal(PTR<const Type> type) const noexcept
   {
     if (this->is_error() || type->is_error())

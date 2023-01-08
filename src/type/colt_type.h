@@ -122,6 +122,9 @@ namespace colt::lang
     /// @brief Check if the current type is 'lstring'
     /// @return True if the type is an 'lstring'
     bool is_lstring() const noexcept;
+    /// @brief Check if the current type is 'char'
+    /// @return True if the type is an 'char'
+    bool is_char() const noexcept;
     /// @brief Returns the typename
     /// @return StringView over the typename
     StringView get_name() const noexcept { return name; }
