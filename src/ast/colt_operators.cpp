@@ -6,22 +6,22 @@
 
 namespace colt::lang
 {
-    UnaryOperator TokenToUnaryOperator(Token tkn) noexcept
-    {
-    switch (tkn)
-    {
-    case TKN_AND:
-      return UnaryOperator::OP_ADDRESSOF;
-    case TKN_MINUS:
-      return UnaryOperator::OP_NEGATE;
-    case TKN_BANG:
-      return UnaryOperator::OP_BOOL_NOT;
-    case TKN_TILDE:
-      return UnaryOperator::OP_BIT_NOT;
-    default:
-      colt_unreachable("Invalid Unary Operator!");
-    }
-    }
+  UnaryOperator TokenToUnaryOperator(Token tkn) noexcept
+  {
+  switch (tkn)
+  {
+  case TKN_AND:
+    return UnaryOperator::OP_ADDRESSOF;
+  case TKN_MINUS:
+    return UnaryOperator::OP_NEGATE;
+  case TKN_BANG:
+    return UnaryOperator::OP_BOOL_NOT;
+  case TKN_TILDE:
+    return UnaryOperator::OP_BIT_NOT;
+  default:
+    colt_unreachable("Invalid Unary Operator!");
+  }
+  }
   
   BinaryOperator TokenToBinaryOperator(Token tkn) noexcept
   {
