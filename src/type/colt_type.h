@@ -71,9 +71,17 @@ namespace colt::lang
     /// @brief Returns the actual type of the Expr
     /// @return The ExprID of the current expression
     constexpr TypeID classof() const noexcept { return ID; }
+    
+    /// @brief Set the const-ness of the type
+    /// @param value The new value
+    PTR<const Type> clone_as_const(COLTContext& ctx) const noexcept;
+
+    /// @brief Set the const-ness of the type
+    /// @param value The new value
+    PTR<const Type> clone_as_mut(COLTContext& ctx) const noexcept;
 
     /// @brief Check if the type is const.
-    /// For VoidType or FnType, returns false.
+    /// For FnType or ErrorType, returns false.
     /// @return True if the type is const
     bool is_const() const noexcept { return is_const_v; }
     /// @brief Check if the type is void
@@ -166,8 +174,10 @@ namespace colt::lang
     static constexpr TypeID classof_v = TYPE_VOID;
 
     /// @brief No default constructor
-    constexpr VoidType() noexcept
-      : Type(TYPE_VOID, false, "void") {}
+    constexpr VoidType() = delete;
+    
+    constexpr VoidType(bool is_const) noexcept
+      : Type(TYPE_VOID, is_const, "mut void" + 4 * as<size_t>(is_const)) {}
     
     /// @brief Destructor
     ~VoidType() noexcept override = default;
@@ -176,6 +186,8 @@ namespace colt::lang
     /// @param ctx The COLTContext to store the resulting type
     /// @return Pointer to the created expression
     static PTR<Type> CreateType(COLTContext& ctx) noexcept;
+
+    static PTR<Type> CreateType(bool is_const, COLTContext& ctx) noexcept;
   };  
 
   /// @brief Built in types
@@ -279,6 +291,14 @@ namespace colt::lang
     /// @param op The operator to check for
     /// @return True if the current type supports 'op'
     bool supports(BinaryOperator op) const noexcept;
+
+    /// @brief Set the const-ness of the type
+    /// @param value The new value
+    PTR<const Type> clone_as_const(COLTContext& ctx) const noexcept;
+
+    /// @brief Set the const-ness of the type
+    /// @param value The new value
+    PTR<const Type> clone_as_mut(COLTContext& ctx) const noexcept;
 
     /// @brief Creates a U8 type
     /// @param is_const True if const

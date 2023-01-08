@@ -9,7 +9,12 @@ namespace colt::lang
 {
   PTR<Type> VoidType::CreateType(COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<VoidType>());
+    return ctx.add_type(make_unique<VoidType>(true));
+  }
+
+  PTR<Type> VoidType::CreateType(bool is_const, COLTContext& ctx) noexcept
+  {
+    return ctx.add_type(make_unique<VoidType>(is_const));
   }
   
   bool BuiltInType::supports(BinaryOperator op) const noexcept
@@ -20,6 +25,32 @@ namespace colt::lang
         return true;
     }
     return false;
+  }
+
+  PTR<const Type> BuiltInType::clone_as_const(COLTContext& ctx) const noexcept
+  {
+    using fn_ptr = PTR<Type>(*)(bool, COLTContext&) noexcept;
+    constexpr fn_ptr table[] = {
+      &CreateBool, &CreateChar,
+      &CreateU8, &CreateU16, &CreateU32, &CreateU64, &CreateU128,
+      &CreateI8, &CreateI16, &CreateI32, &CreateI64, &CreateI128,
+      &CreateF32, &CreateF64
+    };
+    assert_true(builtin_ID < lstring, "Invalid built-in ID!");
+    return table[builtin_ID](true, ctx);
+  }
+
+  PTR<const Type> BuiltInType::clone_as_mut(COLTContext& ctx) const noexcept
+  {
+    using fn_ptr = PTR<Type>(*)(bool, COLTContext&) noexcept;
+    constexpr fn_ptr table[] = {
+      &CreateBool, &CreateChar,
+      &CreateU8, &CreateU16, &CreateU32, &CreateU64, &CreateU128,
+      &CreateI8, &CreateI16, &CreateI32, &CreateI64, &CreateI128,
+      &CreateF32, &CreateF64
+    };
+    assert_true(builtin_ID < lstring, "Invalid built-in ID!");
+    return table[builtin_ID](false, ctx);
   }
 
   PTR<Type> BuiltInType::CreateU8(bool is_const, COLTContext& ctx) noexcept
@@ -193,6 +224,54 @@ namespace colt::lang
     return ctx.add_type(make_unique<ErrorType>());
   }  
   
+  PTR<const Type> Type::clone_as_const(COLTContext& ctx) const noexcept
+  {
+    if (is_const())
+      return this;
+    
+    switch (ID)
+    {
+    case Type::TYPE_ERROR:
+      return this;
+    case Type::TYPE_VOID:
+      return VoidType::CreateType(true, ctx);
+    case Type::TYPE_BUILTIN:
+      return as<PTR<const BuiltInType>>(this)->clone_as_const(ctx);
+    case Type::TYPE_PTR:
+      return PtrType::CreatePtr(true,
+        as<PTR<const PtrType>>(this)->get_type_to(), ctx);
+
+    case Type::TYPE_ARRAY:
+    case Type::TYPE_CLASS:
+    default:
+      colt_unreachable("Invalid conversion!");
+    }
+  }
+
+  PTR<const Type> Type::clone_as_mut(COLTContext& ctx) const noexcept
+  {
+    if (!is_const())
+      return this;
+
+    switch (ID)
+    {
+    case Type::TYPE_ERROR:
+      return this;
+    case Type::TYPE_VOID:
+      return VoidType::CreateType(false, ctx);
+    case Type::TYPE_BUILTIN:
+      return as<PTR<const BuiltInType>>(this)->clone_as_mut(ctx);
+    case Type::TYPE_PTR:
+      return PtrType::CreatePtr(false,
+        as<PTR<const PtrType>>(this)->get_type_to(), ctx);
+
+    case Type::TYPE_ARRAY:
+    case Type::TYPE_CLASS:
+    default:
+      colt_unreachable("Invalid conversion!");
+    }
+  }
+
   bool Type::is_ptr_to_void() const noexcept
   {
     return ID == TYPE_PTR && as<PTR<const PtrType>>(this)->get_type_to()->is_void();
