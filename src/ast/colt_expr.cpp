@@ -156,7 +156,7 @@ namespace colt::lang
   PTR<Expr> NoOpExpr::CreateExpr(const SourceCodeExprInfo& src_info, COLTContext& ctx) noexcept
   {
     return ctx.add_expr(make_unique<NoOpExpr>(
-      ctx.add_type(make_unique<VoidType>()), src_info
+      VoidType::CreateType(ctx), src_info
       ));
   }
   
