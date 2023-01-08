@@ -166,6 +166,11 @@ namespace colt::gen
 		/// @param ptr The expression for which to generate the IR
 		void gen_while_loop(PTR<const lang::WhileLoopExpr> ptr) noexcept;
 
+		void gen_ptr_load(PTR<const lang::PtrLoadExpr> ptr) noexcept;
+		
+		void gen_ptr_store(PTR<const lang::PtrStoreExpr> ptr) noexcept;
+		
+
 		/// @brief Converts a Colt type to an LLVM type
 		/// @param type The type to convert
 		/// @return Converted type

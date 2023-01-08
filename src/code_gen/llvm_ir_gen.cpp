@@ -136,11 +136,15 @@ namespace colt::gen
       gen_scope(as<PTR<const ScopeExpr>>(ptr));
     break; case Expr::EXPR_CONDITION:
       gen_condition(as<PTR<const ConditionExpr>>(ptr));
-    break; case Expr::EXPR_NOP:
-      returned_value = builder.CreateIntrinsic(llvm::Intrinsic::donothing, {}, {}, nullptr);
-    break; case Expr::EXPR_FOR_LOOP:
     break; case Expr::EXPR_WHILE_LOOP:
       gen_while_loop(as<PTR<const WhileLoopExpr>>(ptr));
+    break; case Expr::EXPR_NOP:
+      returned_value = builder.CreateIntrinsic(llvm::Intrinsic::donothing, {}, {}, nullptr);
+    break; case Expr::EXPR_PTR_LOAD:
+      gen_ptr_load(as<PTR<const PtrLoadExpr>>(ptr));
+    break; case Expr::EXPR_PTR_STORE:
+      gen_ptr_store(as<PTR<const PtrStoreExpr>>(ptr));
+    break; case Expr::EXPR_FOR_LOOP:
     break; case Expr::EXPR_BREAK_CONTINUE:    
     break; default:
       colt_unreachable("Generating invalid expression!");
@@ -229,12 +233,7 @@ break; default:
         returned_value = local_vars[var_read->get_local_ID()];
       else
         returned_value = global_vars.find(var_read->get_name())->second;
-    }
-    //Here, dereference is a read, not a write
-    break; case UnaryOperator::OP_DEREFERENCE:
-    {
-      returned_value = builder.CreateLoad(type_to_llvm(ptr->get_type()), returned_value);
-    }
+    }    
     break; case UnaryOperator::OP_NEGATE:
       returned_value = builder.CreateNeg(child);
       break;
@@ -249,17 +248,6 @@ break; default:
 
   void LLVMIRGenerator::gen_binary(PTR<const lang::BinaryExpr> ptr) noexcept
   {
-    if (is_a<lang::UnaryExpr>(ptr->get_LHS())
-      && as<PTR<const lang::UnaryExpr>>(ptr->get_LHS())->is_write_to_ptr())
-    {      
-      gen_ir(ptr->get_RHS());
-      auto value = returned_value;
-      gen_ir(as<PTR<const lang::UnaryExpr>>(ptr->get_LHS())->get_child());
-      auto store = builder.CreateStore(value, returned_value);
-      returned_value = builder.CreateLoad(returned_value->getType(), store->getPointerOperand());
-      return;
-    }
-
     gen_ir(ptr->get_LHS());
     Value* lhs = returned_value;
     gen_ir(ptr->get_RHS());
@@ -638,6 +626,23 @@ break; default:
     
     //Set insertion to after loop body
     builder.SetInsertPoint(end);
+  }
+
+  void LLVMIRGenerator::gen_ptr_load(PTR<const lang::PtrLoadExpr> ptr) noexcept
+  {
+    gen_ir(ptr->get_where());
+    returned_value = builder.CreateLoad(type_to_llvm(ptr->get_type()),
+      returned_value);
+  }
+  
+  void LLVMIRGenerator::gen_ptr_store(PTR<const lang::PtrStoreExpr> ptr) noexcept
+  {
+    gen_ir(ptr->get_value());
+    auto value = returned_value;
+    gen_ir(ptr->get_where());
+    auto store = builder.CreateStore(value, returned_value);
+    returned_value = builder.CreateLoad(returned_value->getType(),
+      store->getPointerOperand());
   }
 
   PTR<llvm::Type> LLVMIRGenerator::type_to_llvm(PTR<const lang::Type> type) noexcept
