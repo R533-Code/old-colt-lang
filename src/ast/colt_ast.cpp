@@ -201,7 +201,7 @@ namespace colt::lang
     //As assignment operators are right associative, they are handled
     //in a different function
     if (isAssignmentToken(binary_op))
-      return parse_assignment(lhs, line_state);    
+      return parse_assignment(lhs, line_state);
 
     //The current operator's precedence
     u8 op_precedence = getOpPrecedence(binary_op);
@@ -734,8 +734,7 @@ namespace colt::lang
     if (var_type == nullptr)
       var_type = var_init->get_type();
     else
-      var_init = ConvertExpr::CreateExpr(var_type, var_init,
-        TKN_KEYWORD_AS, line_state.to_src_info(), ctx);
+      var_init = as_convert_to(var_init, var_type);
 
     if (check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_var_decl, "Expected a ';'!"))
       return save_var_decl(is_global, ErrorType::CreateType(ctx), var_name,
@@ -817,13 +816,16 @@ namespace colt::lang
 
     consume_current_tkn();
     PTR<const Type> cnv_type = parse_typename();
-
+    
     //Propagate error
     if (is_a<ErrorExpr>(lhs))
       return lhs;
+    
+    if (cnv == TKN_KEYWORD_BIT_AS)
+      return ConvertExpr::CreateExpr(cnv_type, lhs, TKN_KEYWORD_BIT_AS,
+        lhs->get_src_code(), ctx);
 
-    return ConvertExpr::CreateExpr(cnv_type, lhs,
-      cnv, line_state.to_src_info(), ctx);
+    return as_convert_to(lhs, cnv_type);
   }
 
   PTR<const Type> ASTMaker::parse_typename(panic_consume_t panic) noexcept
@@ -1041,7 +1043,7 @@ namespace colt::lang
       consume_current_tkn(); // consume ';'
       return FnReturnExpr::CreateExpr(nullptr, line_state.to_src_info(), ctx);
     }
-    PTR<Expr> ret_val = convert_to(parse_binary(),
+    PTR<Expr> ret_val = as_convert_to(parse_binary(),
       current_function->get_return_type());
     if (is_a<ErrorExpr>(ret_val))
     {
@@ -1079,7 +1081,7 @@ namespace colt::lang
     bool ret = true;
     for (size_t i = 0; i < decl->get_params_count(); i++)
     {
-      if (is_a<ErrorExpr>(convert_to(arguments[i], decl->get_params_type()[i])))
+      if (is_a<ErrorExpr>(as_convert_to(arguments[i], decl->get_params_type()[i])))
       {
         generate_any<report_as::ERROR>(arguments[i]->get_src_code(), nullptr,
           "Type of argument ('{}') does not match that of declaration ('{}')!",
@@ -1402,15 +1404,44 @@ namespace colt::lang
       consume_current_tkn();
   }
 
-  PTR<Expr> ASTMaker::convert_to(PTR<Expr> what, PTR<const Type> to) noexcept
+  PTR<Expr> ASTMaker::as_convert_to(PTR<Expr> what, PTR<const Type> to) noexcept
   {
     PTR<const Type> from = what->get_type();
-    if (!from->is_equal(to))
-      return ErrorExpr::CreateExpr(ctx);
-    if (from->is_ptr()) //both are pointers
+    if (from->is_lstring() && !to->is_builtin())
+    {
+      if (!as<PTR<const PtrType>>(to)->get_type_to()->is_char())
+      {
+        generate_any<report_as::ERROR>(what->get_src_code(), nullptr,
+          "'lstring' can only be converted to a 'PTR<char>', not '{}'!", to->get_name());
+        return ErrorExpr::CreateExpr(ctx);
+      }
+      return what;
+    }
+    if (from->is_builtin() && to->is_builtin())
+    {
+      if (from->is_equal(to))
+        return what;
+      if (from->is_lstring() || to->is_lstring())
+      {
+        generate_any<report_as::ERROR>(what->get_src_code(), nullptr,
+          "Cannot convert '{}' to 'lstring'!", from->get_name());
+        return ErrorExpr::CreateExpr(ctx);
+      }
+      //Create conversion.
+      return ConvertExpr::CreateExpr(to, what, TKN_KEYWORD_AS,
+        what->get_src_code(), ctx);
+    }
+    if (from->is_ptr() && to->is_ptr()) //both are pointers
     {
       auto to_p = as<PTR<const PtrType>>(to);
       auto from_p = as<PTR<const PtrType>>(from);
+      if (from_p->get_type_to()->is_equal(to_p->get_type_to()))
+      {
+        generate_any<report_as::ERROR>(what->get_src_code(), nullptr,
+          "Cannot convert from '{}' to '{}'!",
+          from->get_name(), to->get_name());
+        return ErrorExpr::CreateExpr(ctx);
+      }
       if (!to_p->get_type_to()->is_const()
         && from_p->get_type_to()->is_const())
       {

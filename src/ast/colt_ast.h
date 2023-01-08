@@ -308,6 +308,8 @@ namespace colt::lang
 
     PTR<Expr> save_var_decl(bool is_global, PTR<const Type> var_type, StringView var_name, PTR<Expr> var_init, const SourceCodeExprInfo& src_info) noexcept;
 
+    //PTR<Expr> generate_move();
+
     /// @brief Consumes statement till a RIGHT_CURLY_BRACKET is hit and generates a warning
     void handle_unreachable_code() noexcept;
 
@@ -354,7 +356,7 @@ namespace colt::lang
     /// @param what The expression to convert
     /// @param to The type to convert to
     /// @return Converted expression or ErrorExpr on errors
-    PTR<Expr> convert_to(PTR<Expr> what, PTR<const Type> to) noexcept;
+    PTR<Expr> as_convert_to(PTR<Expr> what, PTR<const Type> to) noexcept;
 
     /************* PEEKING HELPERS ************/
 
