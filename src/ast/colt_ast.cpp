@@ -278,9 +278,27 @@ namespace colt::lang
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "'++' and '--' operator can only be applied on floating points and integrals types!");
       }
+      else if (read->get_type()->is_const())
+      {
+        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+          "'++' and '--' operator can only be applied on mutable variables!");
+      }
       else //no error
       {
-        return UnaryExpr::CreateExpr(read->get_type(), op, read,
+        QWORD value = {};
+        if (read->get_type()->is_integral())
+          value = 1;
+        else if (read->get_type()->is_f32())
+          value = 1.0f;
+        else if (read->get_type()->is_f64())
+          value = 1.0;
+        //Generate an increment/decrement by reading the variable,
+        //adding 1, then writing.
+        return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(read),
+          BinaryExpr::CreateExpr(read->get_type(), read,
+          op == TKN_PLUS_PLUS ? TKN_PLUS : TKN_MINUS,
+          LiteralExpr::CreateExpr(value, read->get_type(), line_state.to_src_info(), ctx),
+            line_state.to_src_info(), ctx),
           line_state.to_src_info(), ctx);
       }
       return ErrorExpr::CreateExpr(ctx);
