@@ -35,11 +35,9 @@ namespace colt
 
 namespace colt::lang
 {
-  /// @brief Returns the precedence of an operator or 255 if the token is not an operator.
-  /// This function also returns a valid precedence for ')' or ',' or ';' or 'TKN_ERROR'.
-  /// This simplifies Pratt's parsing in parse binary.
+  /// @brief Returns the precedence of an operator or 0 if the token is not an operator.
   /// @param tkn The Token whose precedence to check
-  /// @return Precedence or 255 if not an operator
+  /// @return Precedence or 0 if not an operator
   u8 getOpPrecedence(Token tkn) noexcept;
 
   /// @brief Check if 'expr' is a terminating expression.
@@ -205,7 +203,7 @@ namespace colt::lang
 
     /// @brief Parses a LiteralExpr, VarReadExpr, FnCallExpr, or a UnaryExpr.
     /// @return Resulting expression or ErrorExpr on errors
-    PTR<Expr> parse_primary() noexcept;
+    PTR<Expr> parse_primary(bool cnv = true) noexcept;
 
     /// @brief Parses a BinaryExpr, or a 'primary_expr'.
     /// @return Resulting expression or ErrorExpr on errors

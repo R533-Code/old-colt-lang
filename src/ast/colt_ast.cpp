@@ -128,7 +128,7 @@ namespace colt::lang
     current_tkn = lexer.get_next_token();
   }
 
-  PTR<Expr> ASTMaker::parse_primary() noexcept
+  PTR<Expr> ASTMaker::parse_primary(bool cnv) noexcept
   {
     //Save current expression state
     SavedExprInfo line_state = { *this };
@@ -182,8 +182,8 @@ namespace colt::lang
       to_ret = ErrorExpr::CreateExpr(ctx);
     }
 
-    if (current_tkn == TKN_KEYWORD_AS
-      || current_tkn == TKN_KEYWORD_BIT_AS) // EXPR as TYPE <- conversion
+    if (cnv && (current_tkn == TKN_KEYWORD_AS
+      || current_tkn == TKN_KEYWORD_BIT_AS)) // EXPR as TYPE <- conversion
       return parse_conversion(to_ret, line_state);
     return to_ret;
   }
@@ -248,7 +248,7 @@ namespace colt::lang
     case TKN_MINUS:
     {
       //Parse the child expression -(5 + 8) -> PARENT -, CHILD (5 + 8)
-      PTR<Expr> child = parse_primary();
+      PTR<Expr> child = parse_primary(false);
       if (child->get_type()->is_builtin()
         && !as<PTR<const BuiltInType>>(child->get_type())->is_signed())
       {
@@ -266,19 +266,17 @@ namespace colt::lang
     case TKN_PLUS_PLUS:
     case TKN_MINUS_MINUS:
     {
-      if (PTR<Expr> read = parse_primary();
+      if (PTR<Expr> read = parse_primary(false);
         !is_a<VarReadExpr>(read))
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
-          "Increment/Decrement operator can only be applied on variables!");
+          "'++' and '--' operator can only be applied on variables!");
       }
-      else if (!read->get_type()->is_builtin()
-        //if is not integral nor floating
-        && !as<PTR<const BuiltInType>>(read->get_type())->is_integral()
-        && !as<PTR<const BuiltInType>>(read->get_type())->is_floating())
+      else if (read->get_type()->is_floating()
+        && read->get_type()->is_semantically_integral())
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
-          "Increment/Decrement operator can only be applied on floating points and integrals types!");
+          "'++' and '--' operator can only be applied on floating points and integrals types!");
       }
       else //no error
       {
@@ -290,7 +288,7 @@ namespace colt::lang
       //Dereference operator '*': applied on pointers
     case TKN_STAR:
     {
-      auto expr = parse_primary();
+      auto expr = parse_primary(false);
       if (!is_a<VarReadExpr>(expr))
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
@@ -304,14 +302,14 @@ namespace colt::lang
           "Dereference operator '*' can only be applied on non-void pointer types!");
         return ErrorExpr::CreateExpr(ctx);
       }
-      return UnaryExpr::CreateExpr(as<PTR<const PtrType>>(expr->get_type())->get_type_to(),
-        TKN_STAR, expr, line_state.to_src_info(), ctx);
+      //Load from pointer
+      return PtrLoadExpr::CreateExpr(expr, line_state.to_src_info(), ctx);
     }
 
       //Address of operator '&': applied on variables
     case TKN_AND:
     {
-      auto expr = parse_primary();
+      auto expr = parse_primary(false);
       if (!is_a<VarReadExpr>(expr))
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
@@ -324,7 +322,7 @@ namespace colt::lang
 
     case TKN_TILDE:
     {
-      auto expr = parse_primary();
+      auto expr = parse_primary(false);
       //pure integral: uint or int (without bool/char)
       if (expr->get_type()->is_builtin()
         && !as<PTR<const BuiltInType>>(expr->get_type())->is_semantically_integral())
@@ -339,7 +337,7 @@ namespace colt::lang
 
     case TKN_BANG:
     {
-      auto expr = parse_primary();
+      auto expr = parse_primary(false);
       //Can only be applied on booleans
       if (expr->get_type()->is_builtin()
         && !as<PTR<const BuiltInType>>(expr->get_type())->is_bool())
@@ -766,10 +764,12 @@ namespace colt::lang
         return ErrorExpr::CreateExpr(ctx);
       }
     }
-    else if (is_a<UnaryExpr>(lhs)
-      && as<PTR<UnaryExpr>>(lhs)->get_operation() == UnaryOperator::OP_DEREFERENCE)
+    else if (is_a<PtrLoadExpr>(lhs))
     {
-      if (lhs->get_type()->is_const())
+      auto read = as<PTR<const PtrLoadExpr>>(lhs);
+      //The type of the PtrLoadExpr is the type
+      //pointed to. So we can directly check for const here.
+      if (read->get_type()->is_const())
       {
         generate_any<report_as::ERROR>(lhs->get_src_code(), nullptr,
           "Cannot write through pointer to non-mutable type!");
@@ -800,11 +800,11 @@ namespace colt::lang
       rhs, line_state.to_src_info());
     
     //Expand the direct assignment operator
-    if (!is_a<UnaryExpr>(lhs))
+    if (!is_a<PtrLoadExpr>(lhs))
       return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(lhs),
-          write_val, line_state.to_src_info(), ctx);
-    return create_binary(lhs, TKN_EQUAL, write_val,
-      line_state.to_src_info());
+          write_val, line_state.to_src_info(), ctx);    
+    return PtrStoreExpr::CreateExpr(as<PTR<PtrLoadExpr>>(lhs)->get_where(), write_val,
+      line_state.to_src_info(), ctx);
   }
 
   PTR<Expr> ASTMaker::parse_conversion(PTR<Expr> lhs, const SavedExprInfo& line_state) noexcept
