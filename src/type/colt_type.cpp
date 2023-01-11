@@ -401,6 +401,14 @@ namespace colt::lang
     return ret->get_builtin_id() == CHAR;
   }
 
+  bool Type::is_bytes() const noexcept
+  {
+    if (!is_builtin())
+      return false;
+    auto ret = as<PTR<const BuiltInType>>(this);
+    return lang::is_bytes(ret->get_builtin_id());
+  }
+
   bool Type::is_equal(PTR<const Type> type) const noexcept
   {
     if (this->is_error() || type->is_error())

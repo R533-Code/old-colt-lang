@@ -139,6 +139,9 @@ namespace colt::lang
     /// @brief Check if the current type is 'char'
     /// @return True if the type is an 'char'
     bool is_char() const noexcept;
+    /// @brief Check if the current type is any of the signed/unsigned built-in integers
+    /// @return True if built-in integer
+    bool is_bytes() const noexcept;
     /// @brief Returns the typename
     /// @return StringView over the typename
     StringView get_name() const noexcept { return name; }
