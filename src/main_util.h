@@ -8,14 +8,6 @@
 #define COLT_MAIN_UTIL
 
 #include <util/colt_config.h>
-
-#if defined(COLT_MSVC) && defined(COLT_DEBUG)
-  //FOR MEMORY LEAK DETECTION
-  #define _CRTDBG_MAP_ALLOC
-  #include <stdlib.h>
-  #include <crtdbg.h>
-#endif
-
 #include <util/colt_pch.h>
 #include <ast/colt_ast.h>
 
