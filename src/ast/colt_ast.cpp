@@ -918,6 +918,18 @@ namespace colt::lang
     case TKN_KEYWORD_DOUBLE:
       consume_current_tkn();
       return BuiltInType::CreateF64(is_const, ctx);
+    case TKN_KEYWORD_BYTE:
+      consume_current_tkn();
+      return BuiltInType::CreateBYTE(is_const, ctx);
+    case TKN_KEYWORD_WORD:
+      consume_current_tkn();
+      return BuiltInType::CreateWORD(is_const, ctx);
+    case TKN_KEYWORD_DWORD:
+      consume_current_tkn();
+      return BuiltInType::CreateDWORD(is_const, ctx);
+    case TKN_KEYWORD_QWORD:
+      consume_current_tkn();
+      return BuiltInType::CreateQWORD(is_const, ctx);
     case TKN_KEYWORD_LSTRING:
     {
       if (!is_const)
