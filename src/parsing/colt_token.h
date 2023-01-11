@@ -245,6 +245,14 @@ namespace colt::lang
 		TKN_KEYWORD_DOUBLE,
 		/// @brief lstring
 		TKN_KEYWORD_LSTRING,
+		/// @brief BYTE
+		TKN_KEYWORD_BYTE,
+		/// @brief WORD
+		TKN_KEYWORD_WORD,
+		/// @brief DWORD
+		TKN_KEYWORD_DWORD,
+		/// @brief QWORD
+		TKN_KEYWORD_QWORD,
 		/// @brief mut
 		TKN_KEYWORD_MUT,
 		/// @brief PTR
