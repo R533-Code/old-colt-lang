@@ -841,6 +841,9 @@ namespace colt::lang
 				return TKN_KEYWORD_BOOL;
 			else if (temp_str == "bit_as")
 				return TKN_KEYWORD_BIT_AS;
+		break; case 'B':
+			if (temp_str == "BYTE")
+				return TKN_KEYWORD_BYTE;
 		break; case 'c':
 			if (temp_str == "char")
 				return TKN_KEYWORD_CHAR;
@@ -855,6 +858,9 @@ namespace colt::lang
 				return TKN_KEYWORD_DOUBLE;
 			else if (temp_str == "default")
 				return TKN_KEYWORD_DEFAULT;
+		break; case 'D':
+			if (temp_str == "DWORD")
+				return TKN_KEYWORD_DWORD;
 		break; case 'e':
 			if (temp_str == "elif")
 				return TKN_KEYWORD_ELIF;
@@ -869,6 +875,7 @@ namespace colt::lang
 				return TKN_KEYWORD_FN;
 			else if (temp_str == "false")
 			{
+				parsed_value.reset_all();
 				parsed_value = false;
 				return TKN_BOOL_L;
 			}
@@ -900,6 +907,9 @@ namespace colt::lang
 		break; case 'P':
 			if (temp_str == "PTR")
 				return TKN_KEYWORD_PTR;
+		break; case 'Q':
+			if (temp_str == "QWORD")
+				return TKN_KEYWORD_QWORD;
 		break; case 'r':
 			if (temp_str == "return")
 				return TKN_KEYWORD_RETURN;
@@ -911,6 +921,7 @@ namespace colt::lang
 		break; case 't':
 			if (temp_str == "true")
 			{
+				parsed_value.reset_all();
 				parsed_value = true;
 				return TKN_BOOL_L;
 			}
@@ -925,14 +936,17 @@ namespace colt::lang
 				return TKN_KEYWORD_U32;
 			else if (temp_str == "u64")
 				return TKN_KEYWORD_U64;
-		break; case 'w':
-			if (temp_str == "while")
-				return TKN_KEYWORD_WHILE;
 		break; case 'v':
 			if (temp_str == "var")
 				return TKN_KEYWORD_VAR;
 			else if (temp_str == "void")
 				return TKN_KEYWORD_VOID;
+		break; case 'w':
+			if (temp_str == "while")
+				return TKN_KEYWORD_WHILE;
+		break; case 'W':
+			if (temp_str == "WORD")
+				return TKN_KEYWORD_WORD;
 		break; default:
 			return TKN_IDENTIFIER;
 		}
