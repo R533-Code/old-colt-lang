@@ -635,15 +635,19 @@ namespace colt::gen
       {
       case U8:
       case I8:
+      case byte:
         return llvm::Type::getInt8Ty(context);
       case U16:
       case I16:
+      case word:
         return llvm::Type::getInt16Ty(context);
       case U32:
       case I32:
+      case dword:
         return llvm::Type::getInt32Ty(context);
       case U64:
       case I64:
+      case qword:
         return llvm::Type::getInt64Ty(context);
       case U128:
       case I128:
