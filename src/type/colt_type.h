@@ -389,6 +389,26 @@ namespace colt::lang
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
     static PTR<Type> CreateChar(bool is_const, COLTContext& ctx) noexcept;
+    /// @brief Creates a byte type
+    /// @param is_const True if const
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
+    static PTR<Type> CreateBYTE(bool is_const, COLTContext& ctx) noexcept;
+    /// @brief Creates a WORD type
+    /// @param is_const True if const
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
+    static PTR<Type> CreateWORD(bool is_const, COLTContext& ctx) noexcept;
+    /// @brief Creates a DWORD type
+    /// @param is_const True if const
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
+    static PTR<Type> CreateDWORD(bool is_const, COLTContext& ctx) noexcept;
+    /// @brief Creates a QWORD type
+    /// @param is_const True if const
+    /// @param ctx The context to store the result
+    /// @return Pointer to the resulting type
+    static PTR<Type> CreateQWORD(bool is_const, COLTContext& ctx) noexcept;
     /// @brief Creates a char type
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type

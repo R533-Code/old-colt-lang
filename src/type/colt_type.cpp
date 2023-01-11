@@ -165,6 +165,38 @@ namespace colt::lang
     );
   }
 
+  PTR<Type> BuiltInType::CreateBYTE(bool is_const, COLTContext& ctx) noexcept
+  {
+    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::byte, is_const,
+      ContiguousView<BinaryOperator>{ BuiltInType::BYTESSupported, std::size(BuiltInType::BYTESSupported) },
+      "mut BYTE" + (4 * as<u64>(is_const)))
+    );
+  }
+
+  PTR<Type> BuiltInType::CreateWORD(bool is_const, COLTContext& ctx) noexcept
+  {
+    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::word, is_const,
+      ContiguousView<BinaryOperator>{ BuiltInType::BYTESSupported, std::size(BuiltInType::BYTESSupported) },
+      "mut WORD" + (4 * as<u64>(is_const)))
+    );
+  }
+
+  PTR<Type> BuiltInType::CreateDWORD(bool is_const, COLTContext& ctx) noexcept
+  {
+    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::dword, is_const,
+      ContiguousView<BinaryOperator>{ BuiltInType::BYTESSupported, std::size(BuiltInType::BYTESSupported) },
+      "mut DWORD" + (4 * as<u64>(is_const)))
+    );
+  }
+
+  PTR<Type> BuiltInType::CreateQWORD(bool is_const, COLTContext& ctx) noexcept
+  {
+    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::qword, is_const,
+      ContiguousView<BinaryOperator>{ BuiltInType::BYTESSupported, std::size(BuiltInType::BYTESSupported) },
+      "mut QWORD" + (4 * as<u64>(is_const)))
+    );
+  }
+
   PTR<Type> BuiltInType::CreateLString(COLTContext& ctx) noexcept
   {
     return ctx.add_type(make_unique<BuiltInType>(BuiltInID::lstring, true,
