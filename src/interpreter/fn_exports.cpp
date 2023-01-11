@@ -15,17 +15,23 @@ COLT_EXPORT void _ColtPrinti8(i8 a)                 { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrinti16(i16 a)               { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrinti32(i32 a)               { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrinti64(i64 a)               { io::Print("{}", a); }
+
 COLT_EXPORT void _ColtPrintu8(u8 a)                 { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintu16(u16 a)               { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintu32(u32 a)               { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintu64(u64 a)               { io::Print("{}", a); }
-COLT_EXPORT void _ColtPrintu8HEX(u8 a)              { io::Print("{:x}", a); }
-COLT_EXPORT void _ColtPrintu16HEX(u16 a)            { io::Print("{:x}", a); }
-COLT_EXPORT void _ColtPrintu32HEX(u32 a)            { io::Print("{:x}", a); }
-COLT_EXPORT void _ColtPrintu64HEX(u64 a)            { io::Print("{:x}", a); }
+
+COLT_EXPORT void _ColtPrintu8HEX(u8 a)              { io::Print("0x{:X}", a); }
+COLT_EXPORT void _ColtPrintu16HEX(u16 a)            { io::Print("0x{:X}", a); }
+COLT_EXPORT void _ColtPrintu32HEX(u32 a)            { io::Print("0x{:X}", a); }
+COLT_EXPORT void _ColtPrintu64HEX(u64 a)            { io::Print("0x{:X}", a); }
+
 COLT_EXPORT void _ColtPrintbool(bool a)             { io::Print("{}", a); }
+
 COLT_EXPORT void _ColtPrintf32(f32 a)               { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintf64(f64 a)               { io::Print("{}", a); }
+
 COLT_EXPORT void _ColtPrintchar(char a)             { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintlstring(lstring a)       { io::Print("{}", a); }
+
 COLT_EXPORT void _ColtPrintPTR(PTR<const void> a)   { io::Print("{}", a); }
