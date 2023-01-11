@@ -18,6 +18,10 @@ COLT_EXPORT void _ColtPrintu8(u8 a)           { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintu16(u16 a)         { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintu32(u32 a)         { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintu64(u64 a)         { io::Print("{}", a); }
+COLT_EXPORT void _ColtPrintu8HEX(u8 a)        { io::Print("{:x}", a); }
+COLT_EXPORT void _ColtPrintu16HEX(u16 a)      { io::Print("{:x}", a); }
+COLT_EXPORT void _ColtPrintu32HEX(u32 a)      { io::Print("{:x}", a); }
+COLT_EXPORT void _ColtPrintu64HEX(u64 a)      { io::Print("{:x}", a); }
 COLT_EXPORT void _ColtPrintbool(bool a)       { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintf32(f32 a)         { io::Print("{}", a); }
 COLT_EXPORT void _ColtPrintf64(f64 a)         { io::Print("{}", a); }
