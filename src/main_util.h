@@ -7,7 +7,6 @@
 #ifndef COLT_MAIN_UTIL
 #define COLT_MAIN_UTIL
 
-#include <util/colt_config.h>
 #include <util/colt_pch.h>
 #include <ast/colt_ast.h>
 
