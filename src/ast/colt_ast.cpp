@@ -845,8 +845,18 @@ namespace colt::lang
       return lhs;
     
     if (cnv == TKN_KEYWORD_BIT_AS)
+    {
+      if (!cnv_type->is_bytes() && !lhs->get_type()->is_bytes())
+      {
+        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+          "'bit_as' conversion can only be applied on/to bytes types!");
+        generate_any<report_as::MESSAGE>({}, nullptr,
+          "Bytes types are 'BYTE', 'WORD', 'DWORD' and 'QWORD'.");
+        return ErrorExpr::CreateExpr(ctx);
+      }
       return ConvertExpr::CreateExpr(cnv_type, lhs, TKN_KEYWORD_BIT_AS,
         lhs->get_src_code(), ctx);
+    }
 
     return as_convert_to(lhs, cnv_type);
   }
