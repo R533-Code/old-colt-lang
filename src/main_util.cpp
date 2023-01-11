@@ -47,6 +47,8 @@ namespace colt
 
     for (;;)
     {
+      //DO NOT REMOVE FOR NOW.
+      ast.global_map.clear();
       ast.expressions.clear();
       io::Print<false>("{}>{} ", io::BrightCyanF, io::Reset);
       auto line = String::getLine();
