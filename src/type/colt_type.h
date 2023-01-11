@@ -218,6 +218,16 @@ namespace colt::lang
       BinaryOperator::OP_BIT_LSHIFT, BinaryOperator::OP_BIT_RSHIFT
     };
 
+    /// @brief BinaryOperator supported by BYTES built-in types
+    static constexpr BinaryOperator BYTESSupported[] = {
+      BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
+      BinaryOperator::OP_GREAT, BinaryOperator::OP_GREAT_EQUAL,
+      BinaryOperator::OP_LESS, BinaryOperator::OP_LESS_EQUAL,
+      BinaryOperator::OP_BIT_AND, BinaryOperator::OP_BIT_OR,
+      BinaryOperator::OP_BIT_XOR,
+      BinaryOperator::OP_BIT_LSHIFT, BinaryOperator::OP_BIT_RSHIFT
+    };
+
     /// @brief BinaryOperator supported by floating point built-in types
     static constexpr BinaryOperator FloatingSupported[] = {
       BinaryOperator::OP_SUM, BinaryOperator::OP_SUB,
@@ -278,20 +288,23 @@ namespace colt::lang
     constexpr bool is_bool() const noexcept { return builtin_ID == BOOL; }
     /// @brief Check if the current type is an f32 or f64
     /// @return True if f32 or f64
-    constexpr bool is_floating() const noexcept { return builtin_ID == F32 || builtin_ID == F64; }
+    constexpr bool is_floating() const noexcept { return lang::is_fpoint(builtin_ID); }
     /// @brief Check if the current type is any of the signed built-in integers
     /// @return True if built-in signed integer
-    constexpr bool is_signed_int() const noexcept { return U64 < builtin_ID && builtin_ID < F32; }
+    constexpr bool is_signed_int() const noexcept { return lang::is_int(builtin_ID); }
     /// @brief Check if the current type is any of the signed built-in integers
     ///        or floating point types.
     /// @return True if built-in signed integer
     constexpr bool is_signed() const noexcept { return U64 < builtin_ID && builtin_ID < lstring; }
     /// @brief Check if the current type is any of the unsigned built-in integers
     /// @return True if built-in unsigned integer
-    constexpr bool is_unsigned_int() const noexcept { return builtin_ID < I8; }
+    constexpr bool is_unsigned_int() const noexcept { return lang::is_uint(builtin_ID); }
     /// @brief Check if the current type is 'lstring'
     /// @return True if the type is an 'lstring'
     constexpr bool is_lstring() const noexcept { return builtin_ID == lstring; }
+    /// @brief Check if the current type is any of the signed/unsigned built-in integers
+    /// @return True if built-in integer
+    constexpr bool is_bytes() const noexcept { return lang::is_bytes(builtin_ID); }
 
     /// @brief Check if the current type supports 'op' BinaryOperator
     /// @param op The operator to check for
