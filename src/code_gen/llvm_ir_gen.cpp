@@ -311,12 +311,12 @@ namespace colt::gen
       else if (type_t->is_floating())
         returned_value = builder.CreateFCmpOGE(lhs, rhs, "fp_geq");
     break; case BinaryOperator::OP_EQUAL:
-      if (type_t->is_integral())
+      if (type_t->is_integral() || type_t->is_bytes())
         returned_value = builder.CreateICmpEQ(lhs, rhs, "i_eq");
       else if (type_t->is_floating())
         returned_value = builder.CreateFCmpOEQ(lhs, rhs, "fp_eq");
     break; case BinaryOperator::OP_NOT_EQUAL:
-      if (type_t->is_integral())
+      if (type_t->is_integral() || type_t->is_bytes())
         returned_value = builder.CreateICmpNE(lhs, rhs, "i_neq");
       else if (type_t->is_floating())
         returned_value = builder.CreateFCmpONE(lhs, rhs, "fp_neq");
