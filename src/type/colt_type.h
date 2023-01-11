@@ -224,8 +224,6 @@ namespace colt::lang
     /// @brief BinaryOperator supported by BYTES built-in types
     static constexpr BinaryOperator BYTESSupported[] = {
       BinaryOperator::OP_EQUAL, BinaryOperator::OP_NOT_EQUAL,
-      BinaryOperator::OP_GREAT, BinaryOperator::OP_GREAT_EQUAL,
-      BinaryOperator::OP_LESS, BinaryOperator::OP_LESS_EQUAL,
       BinaryOperator::OP_BIT_AND, BinaryOperator::OP_BIT_OR,
       BinaryOperator::OP_BIT_XOR,
       BinaryOperator::OP_BIT_LSHIFT, BinaryOperator::OP_BIT_RSHIFT
