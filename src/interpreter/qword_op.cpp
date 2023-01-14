@@ -351,7 +351,7 @@ namespace colt::op
   {
     using namespace lang;
 
-    assert_true(is_integral(id), "Expected an integer!");
+    assert_true(is_integral(id) || is_bytes(id), "Expected an integer!");
     QWORD result = a.as<u64>() & b.as<u64>();
     return { result, NO_ERROR };
   }
@@ -360,7 +360,7 @@ namespace colt::op
   {
     using namespace lang;
 
-    assert_true(is_integral(id), "Expected an integer!");
+    assert_true(is_integral(id) || is_bytes(id), "Expected an integer!");
     QWORD result = a.as<u64>() | b.as<u64>();
     return { result, NO_ERROR };
   }
@@ -369,7 +369,7 @@ namespace colt::op
   {
     using namespace lang;
 
-    assert_true(is_integral(id), "Expected an integer!");
+    assert_true(is_integral(id) || is_bytes(id), "Expected an integer!");
     QWORD result = a.as<u64>() ^ b.as<u64>();
     return { result, NO_ERROR };
   }
@@ -378,7 +378,7 @@ namespace colt::op
   {
     using namespace lang;
 
-    assert_true(is_integral(id), "Expected an integer!");
+    assert_true(is_integral(id) || is_bytes(id), "Expected an integer!");
     QWORD result = ~a.as<u64>();
     return { result, NO_ERROR };
   }
@@ -387,7 +387,7 @@ namespace colt::op
   {
     using namespace lang;
 
-    assert_true(is_integral(id), "Expected an integer!");
+    assert_true(is_integral(id) || is_bytes(id), "Expected an integer!");
     QWORD result = a.as<u64>() >> b.as<u64>();    
     
     return { result, shift_sizeof_check(b, id) };
@@ -397,7 +397,7 @@ namespace colt::op
   {
     using namespace lang;
 
-    assert_true(is_integral(id), "Expected an integer!");
+    assert_true(is_integral(id) || is_bytes(id), "Expected an integer!");
     QWORD result = a.as<u64>() << b.as<u64>();
     
     return { result, shift_sizeof_check(b, id) };
@@ -436,7 +436,10 @@ namespace colt::op
     case colt::lang::I16:
     case colt::lang::I32:
     case colt::lang::I64:
-    case colt::lang::lstring: //compare pointers
+    case colt::lang::byte:
+    case colt::lang::word:
+    case colt::lang::dword:
+    case colt::lang::qword:
       result = a.as<u64>() == b.as<u64>();
     break; case colt::lang::F32:
       if (std::isnan(a.as<f32>()))
