@@ -46,6 +46,10 @@ namespace colt::lang
     static constexpr TypeID classof_v = TYPE_BASE;
 
   private:
+    /// @brief Byte size of current type
+    u64 sizeof_t;
+    /// @brief Alignment in byte size of current type
+    u64 alignof_t;
     /// @brief Name of the type
     StringView name;
     /// @brief The ID of the expression
@@ -62,8 +66,8 @@ namespace colt::lang
     /// @param ID The type ID
     /// @param is_const True if the type is const
     /// @param name The type name
-    constexpr Type(TypeID ID, bool is_const, StringView name) noexcept
-      : name(name), ID(ID), is_const_v(is_const) {}
+    constexpr Type(u64 sizeof_t, u64 alignof_t, TypeID ID, bool is_const, StringView name) noexcept
+      : sizeof_t(sizeof_t), alignof_t(alignof_t), name(name), ID(ID), is_const_v(is_const) {}
 
     /// @brief Destructor
     virtual ~Type() noexcept = default;
@@ -148,7 +152,10 @@ namespace colt::lang
 
     /// @brief Returns the size in bytes of the type
     /// @return Byte size of the current type
-    u64 get_sizeof() const noexcept;
+    u64 get_sizeof() const noexcept { return sizeof_t; };
+    /// @brief Returns the size in bytes of the type
+    /// @return Byte size of the current type
+    u64 get_alignof() const noexcept { return sizeof_t; };
 
     /// @brief Check if two types are equal (without considering 'const')
     /// @param type The type to compare against
@@ -167,7 +174,7 @@ namespace colt::lang
 
     /// @brief No default constructor
     constexpr ErrorType() noexcept
-      : Type(TYPE_ERROR, false, "<Error>") {}
+      : Type(0, 0, TYPE_ERROR, false, "<Error>") {}
 
     /// @brief Destructor
     ~ErrorType() noexcept override = default;
@@ -190,7 +197,7 @@ namespace colt::lang
     constexpr VoidType() = delete;
     
     constexpr VoidType(bool is_const) noexcept
-      : Type(TYPE_VOID, is_const, "mut void" + 4 * as<size_t>(is_const)) {}
+      : Type(0, 0, TYPE_VOID, is_const, "mut void" + 4 * as<size_t>(is_const)) {}
     
     /// @brief Destructor
     ~VoidType() noexcept override = default;
@@ -275,8 +282,8 @@ namespace colt::lang
     /// @param is_const True if const
     /// @param valid_op Array of possible binary operator
     /// @param name The name of the type
-    constexpr BuiltInType(BuiltInID builtinID, bool is_const, ContiguousView<BinaryOperator> valid_op, StringView name) noexcept
-      : Type(TYPE_BUILTIN, is_const, name), builtin_ID(builtinID), valid_op(valid_op) {}
+    constexpr BuiltInType(u64 sizeof_t, u64 alignof_t, BuiltInID builtinID, bool is_const, ContiguousView<BinaryOperator> valid_op, StringView name) noexcept
+      : Type(sizeof_t, alignof_t, TYPE_BUILTIN, is_const, name), builtin_ID(builtinID), valid_op(valid_op) {}
 
     /// @brief Returns the built-in ID
     /// @return BuiltInID of the current type
@@ -300,13 +307,10 @@ namespace colt::lang
     /// @brief Check if the current type is any of the signed built-in integers
     ///        or floating point types.
     /// @return True if built-in signed integer
-    constexpr bool is_signed() const noexcept { return U64 < builtin_ID && builtin_ID < lstring; }
+    constexpr bool is_signed() const noexcept { return U64 < builtin_ID && builtin_ID <= F64; }
     /// @brief Check if the current type is any of the unsigned built-in integers
     /// @return True if built-in unsigned integer
     constexpr bool is_unsigned_int() const noexcept { return lang::is_uint(builtin_ID); }
-    /// @brief Check if the current type is 'lstring'
-    /// @return True if the type is an 'lstring'
-    constexpr bool is_lstring() const noexcept { return builtin_ID == lstring; }
     /// @brief Check if the current type is any of the signed/unsigned built-in integers
     /// @return True if built-in integer
     constexpr bool is_bytes() const noexcept { return lang::is_bytes(builtin_ID); }
@@ -414,10 +418,6 @@ namespace colt::lang
     /// @param ctx The context to store the result
     /// @return Pointer to the resulting type
     static PTR<Type> CreateQWORD(bool is_const, COLTContext& ctx) noexcept;
-    /// @brief Creates a char type
-    /// @param ctx The context to store the result
-    /// @return Pointer to the resulting type
-    static PTR<Type> CreateLString(COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a pointer to a type
@@ -441,8 +441,8 @@ namespace colt::lang
     /// @param is_const True if the pointer is const
     /// @param ptr_to The type pointed by the pointer
     /// @param name The type name
-    constexpr PtrType(bool is_const, PTR<const Type> ptr_to, StringView name) noexcept
-      : Type(TYPE_PTR, is_const, name), ptr_to(ptr_to) {}
+    constexpr PtrType(u64 sizeof_t, u64 alignof_t, bool is_const, PTR<const Type> ptr_to, StringView name) noexcept
+      : Type(sizeof_t, alignof_t, TYPE_PTR, is_const, name), ptr_to(ptr_to) {}
 
     /// @brief Returns the type pointed to by the pointer
     /// @return The type pointed to by the pointer
@@ -483,7 +483,7 @@ namespace colt::lang
     /// @param is_vararg True if accepts c-style variadic arguments
     /// @param name The type name of the function
     constexpr FnType(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, bool is_vararg, StringView name) noexcept
-      : Type(TYPE_FN, false, name), args_type(std::move(args_type)), return_type(return_type), is_vararg(is_vararg) {}
+      : Type(0, 0, TYPE_FN, false, name), args_type(std::move(args_type)), return_type(return_type), is_vararg(is_vararg) {}
 
     /// @brief Returns the return type of the function
     /// @return Return type of the function

@@ -34,9 +34,9 @@ namespace colt::lang
       &CreateBool, &CreateChar,
       &CreateU8, &CreateU16, &CreateU32, &CreateU64, &CreateU128,
       &CreateI8, &CreateI16, &CreateI32, &CreateI64, &CreateI128,
-      &CreateF32, &CreateF64
+      &CreateF32, &CreateF64,
+      &CreateBYTE, &CreateWORD, &CreateDWORD, &CreateQWORD
     };
-    assert_true(builtin_ID < lstring, "Invalid built-in ID!");
     return table[builtin_ID](true, ctx);
   }
 
@@ -47,9 +47,9 @@ namespace colt::lang
       &CreateBool, &CreateChar,
       &CreateU8, &CreateU16, &CreateU32, &CreateU64, &CreateU128,
       &CreateI8, &CreateI16, &CreateI32, &CreateI64, &CreateI128,
-      &CreateF32, &CreateF64
+      &CreateF32, &CreateF64,
+      &CreateBYTE, &CreateWORD, &CreateDWORD, &CreateQWORD
     };
-    assert_true(builtin_ID < lstring, "Invalid built-in ID!");
     return table[builtin_ID](false, ctx);
   }
 
@@ -196,14 +196,6 @@ namespace colt::lang
       "mut QWORD" + (4 * as<u64>(is_const)))
     );
   }
-
-  PTR<Type> BuiltInType::CreateLString(COLTContext& ctx) noexcept
-  {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::lstring, true,
-      ContiguousView<BinaryOperator>{ BuiltInType::lstringSupported, std::size(BuiltInType::lstringSupported) },
-      "lstring")
-    );
-  }
   
   PTR<Type> PtrType::CreatePtr(bool is_const, PTR<const Type> ptr_to, COLTContext& ctx) noexcept
   {
@@ -254,8 +246,8 @@ namespace colt::lang
   PTR<Type> ErrorType::CreateType(COLTContext& ctx) noexcept
   {
     return ctx.add_type(make_unique<ErrorType>());
-  }  
-  
+  }
+
   PTR<const Type> Type::clone_as_const(COLTContext& ctx) const noexcept
   {
     if (is_const())
@@ -374,7 +366,7 @@ namespace colt::lang
       return false;
     auto ret = as<PTR<const BuiltInType>>(this);
     return U64 < ret->get_builtin_id()
-      && ret->get_builtin_id() < lstring;
+      && ret->get_builtin_id() <= F64;
   }
 
   bool Type::is_unsigned_int() const noexcept
@@ -383,14 +375,6 @@ namespace colt::lang
       return false;
     auto ret = as<PTR<const BuiltInType>>(this);
     return ret->get_builtin_id() < I8;
-  }
-
-  bool Type::is_lstring() const noexcept
-  {
-    if (!is_builtin())
-      return false;
-    auto ret = as<PTR<const BuiltInType>>(this);
-    return ret->get_builtin_id() == lstring;
   }
 
   bool Type::is_char() const noexcept
@@ -411,7 +395,9 @@ namespace colt::lang
 
   u64 Type::get_sizeof() const noexcept
   {
-    
+    if (args::GlobalArguments.target_machine == "no-target")
+      return get_default_sizeof();
+    return get_backend_sizeof();
   }
 
   bool Type::is_equal(PTR<const Type> type) const noexcept

@@ -39,8 +39,6 @@ namespace colt::lang
     F32,
     /// @brief 64-bit floating point
     F64,
-    /// @brief Pointer to constant characters
-    lstring,
     /// @brief byte (8-bit)
     byte,
     /// @brief word (16-bit)
