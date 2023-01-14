@@ -263,19 +263,21 @@ namespace colt::lang
     //Save current expression state
     SavedExprInfo line_state = { *this };
 
+    PTR<Expr> to_ret;
+
     //Save the operator
     Token op = current_tkn;
     consume_current_tkn(); //consume the unary operator
 
     switch (op)
     {
-    case TKN_PLUS:
+    break; case TKN_PLUS:
     {
       generate_any<report_as::ERROR>(line_state.to_src_info(), &ASTMaker::panic_consume_semicolon,
         "Unary '+' is not supported!");
-      return ErrorExpr::CreateExpr(ctx);
+      to_ret = ErrorExpr::CreateExpr(ctx);
     }
-    case TKN_MINUS:
+    break; case TKN_MINUS:
     {
       //Parse the child expression -(5 + 8) -> PARENT -, CHILD (5 + 8)
       PTR<Expr> child = parse_primary(false);
@@ -284,14 +286,17 @@ namespace colt::lang
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Only signed integers and floating point types support negation operator '-'!");
-        return ErrorExpr::CreateExpr(ctx);
+        to_ret = ErrorExpr::CreateExpr(ctx);
       }
+      else
+      {
       //No need to consume a Token as the previous call to parse_primary
       //already does
-      return UnaryExpr::CreateExpr(child->get_type(), op, child,
+      to_ret = UnaryExpr::CreateExpr(child->get_type(), op, child,
         line_state.to_src_info(), ctx);
+      }
     }
-    
+    break;
       // ++ -- operators. They only exist as prefix.
     case TKN_PLUS_PLUS:
     case TKN_MINUS_MINUS:
@@ -301,17 +306,20 @@ namespace colt::lang
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "'++' and '--' operator can only be applied on variables!");
+        to_ret = ErrorExpr::CreateExpr(ctx);
       }
       else if (read->get_type()->is_floating()
         && read->get_type()->is_semantically_integral())
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "'++' and '--' operator can only be applied on floating points and integrals types!");
+        to_ret = ErrorExpr::CreateExpr(ctx);
       }
       else if (read->get_type()->is_const())
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "'++' and '--' operator can only be applied on mutable variables!");
+        to_ret = ErrorExpr::CreateExpr(ctx);
       }
       else //no error
       {
@@ -324,66 +332,70 @@ namespace colt::lang
           value = 1.0;
         //Generate an increment/decrement by reading the variable,
         //adding 1, then writing.
-        return VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(read),
+        to_ret = VarWriteExpr::CreateExpr(as<PTR<VarReadExpr>>(read),
           BinaryExpr::CreateExpr(read->get_type(), read,
           op == TKN_PLUS_PLUS ? TKN_PLUS : TKN_MINUS,
           LiteralExpr::CreateExpr(value, read->get_type(), line_state.to_src_info(), ctx),
             line_state.to_src_info(), ctx),
           line_state.to_src_info(), ctx);
       }
-      return ErrorExpr::CreateExpr(ctx);
     }
       //Dereference operator '*': applied on pointers
-    case TKN_STAR:
+    break; case TKN_STAR:
     {
       auto expr = parse_primary(false);
       if (!is_a<VarReadExpr>(expr))
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Dereference operator '*' can only be applied on variables!");
-        return ErrorExpr::CreateExpr(ctx);
+        to_ret = ErrorExpr::CreateExpr(ctx);
       }
-      if (!expr->get_type()->is_ptr()
+      else if (!expr->get_type()->is_ptr()
         && expr->get_type()->is_ptr_to_void())
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Dereference operator '*' can only be applied on non-void pointer types!");
-        return ErrorExpr::CreateExpr(ctx);
+        to_ret = ErrorExpr::CreateExpr(ctx);
       }
-      //Load from pointer
-      return PtrLoadExpr::CreateExpr(expr, line_state.to_src_info(), ctx);
+      else
+      {
+        //Load from pointer
+        to_ret = PtrLoadExpr::CreateExpr(expr, line_state.to_src_info(), ctx);
+      }
     }
 
       //Address of operator '&': applied on variables
-    case TKN_AND:
+    break; case TKN_AND:
     {
       auto expr = parse_primary(false);
       if (!is_a<VarReadExpr>(expr))
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Address of operator '&' can only be applied on variables!");
-        return ErrorExpr::CreateExpr(ctx);
+        to_ret = ErrorExpr::CreateExpr(ctx);
       }
-      return UnaryExpr::CreateExpr(PtrType::CreatePtr(false, expr->get_type(), ctx),
-        TKN_AND, expr, line_state.to_src_info(), ctx);
+      else
+        to_ret = UnaryExpr::CreateExpr(PtrType::CreatePtr(false, expr->get_type(), ctx),
+          TKN_AND, expr, line_state.to_src_info(), ctx);
     }
 
-    case TKN_TILDE:
+    break; case TKN_TILDE:
     {
       auto expr = parse_primary(false);
       //pure integral: uint or int (without bool/char)
-      if (expr->get_type()->is_builtin()
-        && !as<PTR<const BuiltInType>>(expr->get_type())->is_semantically_integral())
+      if (expr->get_type()->is_semantically_integral()
+        && expr->get_type()->is_bytes())
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
-         "Bit NOT '~' can only be applied on integral types!");
-        return ErrorExpr::CreateExpr(ctx);
+         "Bit NOT '~' can only be applied on integral/bytes types!");
+        to_ret = ErrorExpr::CreateExpr(ctx);
       }
-      return UnaryExpr::CreateExpr(expr->get_type(),
-        TKN_TILDE, expr, line_state.to_src_info(), ctx);
+      else
+        to_ret = UnaryExpr::CreateExpr(expr->get_type(),
+          TKN_TILDE, expr, line_state.to_src_info(), ctx);
     }
 
-    case TKN_BANG:
+    break; case TKN_BANG:
     {
       auto expr = parse_primary(false);
       //Can only be applied on booleans
@@ -392,14 +404,20 @@ namespace colt::lang
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Bool NOT '!' can only be applied on 'bool' type!");
-        return ErrorExpr::CreateExpr(ctx);
+        to_ret = ErrorExpr::CreateExpr(ctx);
       }
-      return UnaryExpr::CreateExpr(expr->get_type(),
-        TKN_BANG, expr, line_state.to_src_info(), ctx);
+      else
+        to_ret = UnaryExpr::CreateExpr(expr->get_type(),
+          TKN_BANG, expr, line_state.to_src_info(), ctx);
     }
-    default:
+    break; default:
       colt_unreachable("Invalid unary token!");
     }
+
+    if (current_tkn == TKN_KEYWORD_AS
+      || current_tkn == TKN_KEYWORD_BIT_AS) // EXPR as TYPE <- conversion
+      return parse_conversion(to_ret, line_state);
+    return to_ret;
   }
 
   PTR<Expr> ASTMaker::parse_global_declaration() noexcept
