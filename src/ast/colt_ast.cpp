@@ -978,15 +978,8 @@ namespace colt::lang
       return BuiltInType::CreateQWORD(is_const, ctx);
     case TKN_KEYWORD_LSTRING:
     {
-      if (!is_const)
-      {
-        generate_any<report_as::ERROR>(line_state.to_src_info(), panic,
-          "'lstring' typename cannot be marked as mutable!");
-        return ErrorType::CreateType(ctx);
-      }
       consume_current_tkn();
-      return PtrType::CreatePtr(true,
-        BuiltInType::CreateChar(true, ctx), ctx);
+      return PtrType::CreateLString(is_const, ctx);
     }
     case TKN_KEYWORD_PTR:
     {
@@ -1419,18 +1412,30 @@ namespace colt::lang
   {
     //If the expression is 2 lstring to add, create lstring
     //that represents the concatenation of both arguments
-    if (ret->is_lstring() && op == BinaryOperator::OP_SUM)
+    if (ret->is_lstring())
     {
-      String concat = { *a->get_value().as<PTR<String>>() };
-      concat += *b->get_value().as<PTR<String>>();
-      QWORD res = str_table.insert(std::move(concat)).first;
-      return LiteralExpr::CreateExpr(res, ret, src_info, ctx);
+      if (op == BinaryOperator::OP_SUM)
+      {
+        String concat = { *a->get_value().as<PTR<String>>() };
+        concat += *b->get_value().as<PTR<String>>();
+        QWORD res = str_table.insert(std::move(concat)).first;
+        return LiteralExpr::CreateExpr(res, ret, src_info, ctx);
+      }
+      if (op == BinaryOperator::OP_EQUAL)
+        return LiteralExpr::CreateValue(
+          a->get_value().as<PTR<String>>() == b->get_value().as<PTR<String>>(),
+          ctx);
+      if (op == BinaryOperator::OP_NOT_EQUAL)
+        return LiteralExpr::CreateValue(
+          a->get_value().as<PTR<String>>() != b->get_value().as<PTR<String>>(),
+          ctx);
     }
 
     //We take advantage of the interpreter's instructions.
     //See "interpreter/qword_op.h"
     auto fn = op::getInstFromBinaryOperator(op);
-    auto [res, err] = fn(a->get_value(), b->get_value(), a->get_type()->get_builtin_id());    
+    auto [res, err] = fn(a->get_value(), b->get_value(),
+      as<PTR<const BuiltInType>>(a->get_type())->get_builtin_id());
     
     if (err == op::DIV_BY_ZERO)
     {
