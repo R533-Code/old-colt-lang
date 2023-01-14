@@ -78,6 +78,8 @@ namespace colt::lang
 
 		/**************** GETTERS ****************/
 
+		u64 get_current_offset() const noexcept { return offset; }
+
 		/// @brief Returns line informations of the current lexeme
 		/// @return Line informations of the current lexeme
 		LineInformations get_line_info() const noexcept;
