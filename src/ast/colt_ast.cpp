@@ -165,6 +165,15 @@ namespace colt::lang
       to_ret = parse_unary();
     else if (current_tkn == TKN_LEFT_PAREN)
       to_ret = parse_parenthesis(&ASTMaker::parse_binary, static_cast<u8>(0));
+    else if (current_tkn == TKN_KEYWORD_SIZEOF)
+    {
+      auto type = parse_parenthesis(&ASTMaker::parse_typename,
+        static_cast<panic_consume_t>(nullptr));
+      if (is_a<ErrorType>(type))
+        to_ret = ErrorExpr::CreateExpr(ctx);
+      else
+        to_ret = LiteralExpr::CreateValue(type->get_sizeof(), ctx);
+    }
     else if (current_tkn == TKN_ERROR)
     {
       //TKN_ERROR is an invalid lexeme (usually literal)
