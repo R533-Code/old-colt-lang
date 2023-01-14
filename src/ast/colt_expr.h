@@ -190,7 +190,8 @@ namespace colt::lang
     LiteralExpr(QWORD value, PTR<const Type> type, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_LITERAL, type, src_info), value(value)
     {
-      assert_true(type->is_builtin(), "Type of LiteralExpr should be BuiltInType");
+      assert_true(type->is_builtin()
+        || type->is_lstring(), "Type of LiteralExpr should be BuiltInType || lstring");
     }
 
     /// @brief Returns the value of the literal expression
@@ -199,7 +200,7 @@ namespace colt::lang
 
     /// @brief Returns the built-in type of this expression
     /// @return The built-in type of this expression
-    PTR<const BuiltInType> get_type() const noexcept { return as<PTR<const BuiltInType>>(Expr::get_type()); }
+    PTR<const Type> get_type() const noexcept { return as<PTR<const BuiltInType>>(Expr::get_type()); }
 
     /// @brief Creates a LiteralExpr
     /// @param value The value of the LiteralExpr

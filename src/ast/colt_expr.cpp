@@ -30,7 +30,7 @@ namespace colt::lang
     break; case TKN_U64_L:    type = BuiltInType::CreateU64(true, ctx);
     break; case TKN_FLOAT_L:  type = BuiltInType::CreateF32(true, ctx);
     break; case TKN_DOUBLE_L: type = BuiltInType::CreateF64(true, ctx);
-    break; case TKN_STRING_L: type = BuiltInType::CreateLString(ctx);
+    break; case TKN_STRING_L: type = PtrType::CreateLString(true, ctx);
     break; default: colt_unreachable("Invalid Literal Token!");
     }
     return ctx.add_expr(make_unique<LiteralExpr>(value, type, src_info));
