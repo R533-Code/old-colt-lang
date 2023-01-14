@@ -40,6 +40,62 @@ namespace colt
 #endif //!COLT_NO_LLVM
   }
 
+  io::Color get_color(Token tkn) noexcept
+  {
+    if (tkn <= TKN_RIGHT_SQUARE)
+      return io::BrightBlackF;
+    else if (tkn == TKN_BOOL_L
+      || (TKN_KEYWORD_VOID <= tkn && tkn <= TKN_KEYWORD_PTR))
+      return io::BlueF;
+    else if (tkn == TKN_CHAR_L || tkn == TKN_STRING_L)
+      return io::YellowF;
+    else if (tkn <= TKN_DOUBLE_L)
+      return io::BrightGreenF;
+    else if ((tkn == TKN_KEYWORD_EXTERN || tkn == TKN_KEYWORD_VAR)
+      || (TKN_KEYWORD_CONST <= tkn && tkn <= TKN_KEYWORD_BIT_AS))
+      return io::BlueF;
+    else if ((TKN_KEYWORD_IF <= tkn && tkn <= TKN_KEYWORD_RETURN)
+      || (TKN_KEYWORD_FOR <= tkn && tkn <= TKN_KEYWORD_CONTINUE)
+      || (TKN_KEYWORD_SWITCH <= tkn && tkn <= TKN_KEYWORD_GOTO))
+      return io::BrightMagentaF;
+    else if (tkn == TKN_IDENTIFIER)
+      return io::BrightBlueF;
+    return io::BrightBlackF;
+  }
+
+  Expected<String, StringError> get_str_repl() noexcept
+  {
+    if (!args::GlobalArguments.colored_output)
+      return String::getLine();
+
+    auto ret = String::getLine(WithNUL);
+    if (ret.is_error())
+      return ret;
+
+    std::fputs("\x1B[1F", stdout); //go to previous line
+    io::Print<false>("{}>{} ", io::BrightCyanF, io::Reset);
+
+    Lexer lex = *ret;
+    
+    u64 old_offset = 0;
+    Token tkn = lex.get_next_token();
+    u64 new_offset = lex.get_current_offset();
+    
+    while (tkn != TKN_EOF)
+    {
+      io::Print<false>("{}{}", get_color(tkn),
+        StringView{ ret->get_data() + old_offset, ret->get_data() + new_offset - 1 });
+      old_offset = new_offset; 
+      
+      tkn = lex.get_next_token();
+      new_offset = lex.get_current_offset();      
+    }
+    io::Print<false>("{}", io::Reset);
+    std::fputs("\x1B[1E", stdout); //go back to new line
+    ret->pop_back(); //pop NUL-terminator
+    return ret;
+  }
+
   void REPL() noexcept
   {
     COLTContext ctx;
@@ -51,7 +107,7 @@ namespace colt
       ast.global_map.clear();
       ast.expressions.clear();
       io::Print<false>("{}>{} ", io::BrightCyanF, io::Reset);
-      auto line = String::getLine();
+      auto line = get_str_repl();
       if (line.is_error())
         break;
       if (line->is_empty())
