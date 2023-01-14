@@ -281,8 +281,7 @@ namespace colt::lang
     {
       //Parse the child expression -(5 + 8) -> PARENT -, CHILD (5 + 8)
       PTR<Expr> child = parse_primary(false);
-      if (child->get_type()->is_builtin()
-        && !as<PTR<const BuiltInType>>(child->get_type())->is_signed())
+      if (!child->get_type()->is_signed())
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Only signed integers and floating point types support negation operator '-'!");
@@ -290,10 +289,10 @@ namespace colt::lang
       }
       else
       {
-      //No need to consume a Token as the previous call to parse_primary
-      //already does
-      to_ret = UnaryExpr::CreateExpr(child->get_type(), op, child,
-        line_state.to_src_info(), ctx);
+        //No need to consume a Token as the previous call to parse_primary
+        //already does
+        to_ret = UnaryExpr::CreateExpr(child->get_type(), op, child,
+          line_state.to_src_info(), ctx);
       }
     }
     break;
@@ -308,8 +307,8 @@ namespace colt::lang
           "'++' and '--' operator can only be applied on variables!");
         to_ret = ErrorExpr::CreateExpr(ctx);
       }
-      else if (read->get_type()->is_floating()
-        && read->get_type()->is_semantically_integral())
+      else if (!read->get_type()->is_floating()
+        && !read->get_type()->is_semantically_integral())
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "'++' and '--' operator can only be applied on floating points and integrals types!");
@@ -351,7 +350,7 @@ namespace colt::lang
         to_ret = ErrorExpr::CreateExpr(ctx);
       }
       else if (!expr->get_type()->is_ptr()
-        && expr->get_type()->is_ptr_to_void())
+        || expr->get_type()->is_ptr_to_void())
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Dereference operator '*' can only be applied on non-void pointer types!");
@@ -382,33 +381,36 @@ namespace colt::lang
     break; case TKN_TILDE:
     {
       auto expr = parse_primary(false);
-      //pure integral: uint or int (without bool/char)
+      //pure integral: uint or int (without bool/char) or bytes
       if (expr->get_type()->is_semantically_integral()
-        && expr->get_type()->is_bytes())
+        || expr->get_type()->is_bytes())
       {
-        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
-         "Bit NOT '~' can only be applied on integral/bytes types!");
-        to_ret = ErrorExpr::CreateExpr(ctx);
-      }
-      else
         to_ret = UnaryExpr::CreateExpr(expr->get_type(),
           TKN_TILDE, expr, line_state.to_src_info(), ctx);
+      }
+      else
+      {
+        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+          "Bit NOT '~' can only be applied on integral/bytes types!");
+        to_ret = ErrorExpr::CreateExpr(ctx);
+      }
     }
 
     break; case TKN_BANG:
     {
       auto expr = parse_primary(false);
       //Can only be applied on booleans
-      if (expr->get_type()->is_builtin()
-        && !as<PTR<const BuiltInType>>(expr->get_type())->is_bool())
+      if (expr->get_type()->is_bool())
+      {
+        to_ret = UnaryExpr::CreateExpr(expr->get_type(),
+          TKN_BANG, expr, line_state.to_src_info(), ctx);
+      }
+      else
       {
         generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
           "Bool NOT '!' can only be applied on 'bool' type!");
         to_ret = ErrorExpr::CreateExpr(ctx);
       }
-      else
-        to_ret = UnaryExpr::CreateExpr(expr->get_type(),
-          TKN_BANG, expr, line_state.to_src_info(), ctx);
     }
     break; default:
       colt_unreachable("Invalid unary token!");
@@ -1471,6 +1473,7 @@ namespace colt::lang
       return LiteralExpr::CreateValue(
         a->get_value().as<PTR<String>>() != b->get_value().as<PTR<String>>(),
         ctx);
+    colt_unreachable("Invalid operator!");
   }  
 
   PTR<Expr> ASTMaker::parse_bin_cond() noexcept
