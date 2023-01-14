@@ -69,7 +69,7 @@ namespace colt::gen
 	/// @param ast The AST from which to generate IR
 	/// @param target_triple The target for which to generate IR
 	/// @return IR or std::string representing the error (related to targets)
-	Expected<GeneratedIR, std::string> GenerateIR(const lang::AST& ast, const std::string& target_triple = LLVM_DEFAULT_TARGET_TRIPLE) noexcept;
+	Expected<GeneratedIR, std::string> GenerateIR(const lang::AST& ast) noexcept;
 
 	/// @brief Class responsible of generating LLVM IR
 	class LLVMIRGenerator

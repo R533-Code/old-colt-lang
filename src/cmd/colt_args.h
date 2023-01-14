@@ -11,8 +11,14 @@
 #define HG_COLT_ARGS
 
 #include <array>
+#include <string>
 #include <algorithm>
 #include <filesystem>
+
+#ifndef COLT_NO_LLVM
+	//for the target triple
+	#include <llvm/Config/llvm-config.h>
+#endif
 
 #include <colt/data_structs/String.h>
 #include <code_gen/opt_level.h>
@@ -41,6 +47,13 @@ namespace colt::args
 		bool wait_for_user_input = true;
 		/// @brief If true, the compiler will attempt to run the 'main' function if it exists
 		bool jit_run_main = false;
+		/// @brief The target machine for which to compile
+		std::string target_machine =
+#ifdef COLT_NO_LLVM
+			"no-target";
+#else
+			LLVM_DEFAULT_TARGET_TRIPLE;
+#endif
 		/// @brief Optimization level
 		gen::OptimizationLevel opt_level = static_cast<gen::OptimizationLevel>(0);
 	};
@@ -159,12 +172,16 @@ namespace colt::args
 		/// @param argv The array of arguments
 		/// @param current_arg The current argument
 		void run_main_callback(int argc, const char** argv, size_t& current_arg) noexcept;
-		/// @brief Demangle main callback
+		/// @brief Demangle callback
 		/// @param argc The total argument count
 		/// @param argv The array of arguments
 		/// @param current_arg The current argument
 		void demangle_callback(int argc, const char** argv, size_t& current_arg) noexcept;
-
+		/// @brief Target callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
+		void target_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 
 		/// @brief Contains all predefined valid arguments
 		constexpr std::array PredefinedArguments
@@ -187,6 +204,7 @@ namespace colt::args
 			Argument{ "opt-z", "Oz", "Optimize for small code size at all cost.\nUse: --opt-z/-Oz", 0, &oz_callback},
 			Argument{ "run-main", "r", "Run 'main' function inside the compiler if it exists.\nUse: --run-main/-r", 0, &run_main_callback},
 			Argument{ "demangle", "", "Demangles a string.\nUse: --demangle <STRING>", 1, &demangle_callback},
+			Argument{ "target", "", "Chooses the target for which to compile.\nUse: --target <TARGET_TRIPLE>", 1, &target_callback},
 		};
 
 		/// @brief Handles an argument, searching for it and doing error handling

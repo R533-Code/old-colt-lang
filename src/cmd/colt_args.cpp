@@ -6,6 +6,11 @@
 #include "util/colt_print.h"
 #include "code_gen/mangle.h"
 
+#ifndef COLT_NO_LLVM
+  //for lookups of targets
+  #include <llvm/MC/TargetRegistry.h>
+#endif
+
 namespace colt::args
 {    
   void ParseArguments(int argc, const char** argv) noexcept
@@ -21,7 +26,11 @@ namespace colt::args
           io::PrintError("File at path '{}' does not exist!", arg_view);
           std::exit(1);
         }
-        details::global_args.file_in = arg_view.get_data();
+        if (details::global_args.file_in == nullptr)
+          details::global_args.file_in = arg_view.get_data();
+        else
+          details::print_error_and_exit("File to compile was already set to '{}'!",
+            details::global_args.file_in);
         continue;
       }
       if (arg_view.get_size() < 2)
@@ -169,6 +178,19 @@ namespace colt::args
         io::Reset, io::BrightGreenF,
         gen::demangle(argv[current_arg + 1]), io::Reset);
       std::exit(0);
+    }
+
+    void target_callback(int argc, const char** argv, size_t& current_arg) noexcept
+    {
+#ifndef COLT_NO_LLVM
+      std::string str;
+      auto Target = llvm::TargetRegistry::lookupTarget(argv[current_arg + 1], str);
+      if (!Target)
+        print_error_and_exit("{}", str);
+      global_args.target_machine = argv[current_arg + 1];
+#else
+      print_error_and_exit("This executable was compiled without support for LLVM!");
+#endif
     }
 
     /*************************************
