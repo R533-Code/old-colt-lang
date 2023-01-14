@@ -158,7 +158,14 @@ namespace colt::gen
   {
     using namespace colt::lang;
 
-    switch (ptr->get_type()->get_builtin_id())
+    //If lstring, then the type is not built-in but PTR
+    if (ptr->get_type()->is_lstring())
+    {
+      returned_value = builder.CreateGlobalStringPtr(ToStringRef(*ptr->get_value().as<PTR<String>>()), "GlobStr", 0U, &module);
+      return;
+    }
+
+    switch (as<PTR<const BuiltInType>>(ptr->get_type())->get_builtin_id())
     {
     break; case U8:
       returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<u8>());
@@ -188,8 +195,6 @@ namespace colt::gen
       returned_value = ConstantInt::get(llvm::Type::getInt1Ty(context), ptr->get_value().as<bool>());
     break; case CHAR:
       returned_value = ConstantInt::get(llvm::Type::getInt8Ty(context), ptr->get_value().as<char>());
-    break; case lang::lstring:
-      returned_value = builder.CreateGlobalStringPtr(ToStringRef(*ptr->get_value().as<PTR<String>>()), "GlobStr", 0U, &module);
     break; default:
       colt_unreachable("Invalid literal expr!");
     }
@@ -663,8 +668,6 @@ namespace colt::gen
         return llvm::Type::getInt1Ty(context);
       case CHAR:
         return llvm::Type::getInt8Ty(context);
-      case lang::lstring:
-        return PointerType::get(llvm::Type::getInt8Ty(context), 0);
       default:
         colt_unreachable("Invalid ID!");
       }
