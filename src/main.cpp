@@ -5,10 +5,10 @@ using namespace colt;
 
 int main(int argc, const char** argv)
 {
-  //Populates the GlobalArguments
-  args::ParseArguments(argc, argv);
   //Initialize code generators
   InitializeCOLT();
+  //Populates the GlobalArguments
+  args::ParseArguments(argc, argv);
 
   //Compile a file or enter REPL
   if (args::GlobalArguments.file_in != nullptr)
