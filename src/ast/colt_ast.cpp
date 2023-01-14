@@ -1385,6 +1385,10 @@ namespace colt::lang
       auto rhs_l = as<PTR<const LiteralExpr>>(rhs);
       if (is_a<LiteralExpr>(lhs))
       {
+        if (rhs->get_type()->is_lstring())
+          return constant_fold_lstring(as<PTR<LiteralExpr>>(lhs),
+            bin_op, rhs_l, src_info);
+
         //Constant fold as both expression are known at compile-time
         //'constant_fold' also emits errors and warnings.
         return constant_fold(as<PTR<LiteralExpr>>(lhs), bin_op, rhs_l,
@@ -1410,27 +1414,6 @@ namespace colt::lang
   
   PTR<Expr> ASTMaker::constant_fold(PTR<const LiteralExpr> a, BinaryOperator op, PTR<const LiteralExpr> b, PTR<const BuiltInType> ret, const SourceCodeExprInfo& src_info) noexcept
   {
-    //If the expression is 2 lstring to add, create lstring
-    //that represents the concatenation of both arguments
-    if (ret->is_lstring())
-    {
-      if (op == BinaryOperator::OP_SUM)
-      {
-        String concat = { *a->get_value().as<PTR<String>>() };
-        concat += *b->get_value().as<PTR<String>>();
-        QWORD res = str_table.insert(std::move(concat)).first;
-        return LiteralExpr::CreateExpr(res, ret, src_info, ctx);
-      }
-      if (op == BinaryOperator::OP_EQUAL)
-        return LiteralExpr::CreateValue(
-          a->get_value().as<PTR<String>>() == b->get_value().as<PTR<String>>(),
-          ctx);
-      if (op == BinaryOperator::OP_NOT_EQUAL)
-        return LiteralExpr::CreateValue(
-          a->get_value().as<PTR<String>>() != b->get_value().as<PTR<String>>(),
-          ctx);
-    }
-
     //We take advantage of the interpreter's instructions.
     //See "interpreter/qword_op.h"
     auto fn = op::getInstFromBinaryOperator(op);
@@ -1451,18 +1434,26 @@ namespace colt::lang
     return LiteralExpr::CreateExpr(res, ret, src_info, ctx);
   }
 
-  void ASTMaker::panic_consume_semicolon() noexcept
+  PTR<Expr> ASTMaker::constant_fold_lstring(PTR<const LiteralExpr> a, BinaryOperator op, PTR<const LiteralExpr> b, const SourceCodeExprInfo& src_info) noexcept
   {
-    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY
-      && current_tkn != TKN_RIGHT_PAREN && current_tkn != TKN_EOF)
-      consume_current_tkn();
-  }
-
-  void ASTMaker::panic_consume_decl() noexcept
-  {
-    while (current_tkn != TKN_KEYWORD_VAR && current_tkn != TKN_KEYWORD_FN && current_tkn != TKN_EOF)
-      consume_current_tkn();
-  }
+    //If the expression is 2 lstring to add, create lstring
+          //that represents the concatenation of both arguments
+    if (op == BinaryOperator::OP_SUM)
+    {
+      String concat = { *a->get_value().as<PTR<String>>() };
+      concat += *b->get_value().as<PTR<String>>();
+      QWORD res = str_table.insert(std::move(concat)).first;
+      return LiteralExpr::CreateExpr(res, a->get_type(), src_info, ctx);
+    }
+    if (op == BinaryOperator::OP_EQUAL)
+      return LiteralExpr::CreateValue(
+        a->get_value().as<PTR<String>>() == b->get_value().as<PTR<String>>(),
+        ctx);
+    if (op == BinaryOperator::OP_NOT_EQUAL)
+      return LiteralExpr::CreateValue(
+        a->get_value().as<PTR<String>>() != b->get_value().as<PTR<String>>(),
+        ctx);
+  }  
 
   PTR<Expr> ASTMaker::parse_bin_cond() noexcept
   {
@@ -1482,14 +1473,7 @@ namespace colt::lang
         LiteralExpr::CreateValue(true, ctx), condition->get_src_code());
     }
     return condition;
-  }
-
-  void ASTMaker::panic_consume_return() noexcept
-  {
-    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF
-      && current_tkn != TKN_KEYWORD_IF && current_tkn != TKN_KEYWORD_WHILE && current_tkn != TKN_KEYWORD_VAR)
-      consume_current_tkn();
-  }
+  }  
 
   PTR<Expr> ASTMaker::as_convert_to(PTR<Expr> what, PTR<const Type> to) noexcept
   {
@@ -1541,12 +1525,32 @@ namespace colt::lang
     return what;
   }
 
+  void ASTMaker::panic_consume_semicolon() noexcept
+  {
+    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY
+      && current_tkn != TKN_RIGHT_PAREN && current_tkn != TKN_EOF)
+      consume_current_tkn();
+  }
+
+  void ASTMaker::panic_consume_decl() noexcept
+  {
+    while (current_tkn != TKN_KEYWORD_VAR && current_tkn != TKN_KEYWORD_FN && current_tkn != TKN_EOF)
+      consume_current_tkn();
+  }
+
   void ASTMaker::panic_consume_sttmnt() noexcept
   {
     while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF
       && current_tkn != TKN_KEYWORD_IF && current_tkn != TKN_KEYWORD_WHILE && current_tkn != TKN_KEYWORD_VAR)
       consume_current_tkn();
     if (current_tkn == TKN_SEMICOLON)
+      consume_current_tkn();
+  }
+
+  void ASTMaker::panic_consume_return() noexcept
+  {
+    while (current_tkn != TKN_SEMICOLON && current_tkn != TKN_RIGHT_CURLY && current_tkn != TKN_EOF
+      && current_tkn != TKN_KEYWORD_IF && current_tkn != TKN_KEYWORD_WHILE && current_tkn != TKN_KEYWORD_VAR)
       consume_current_tkn();
   }
 

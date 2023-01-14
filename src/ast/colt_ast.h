@@ -352,6 +352,8 @@ namespace colt::lang
     /// @return LiteralExpr or ErrorExpr
     PTR<Expr> constant_fold(PTR<const LiteralExpr> a, BinaryOperator op, PTR<const LiteralExpr> b, PTR<const BuiltInType> ret, const SourceCodeExprInfo& src_info) noexcept;
 
+    PTR<Expr> constant_fold_lstring(PTR<const LiteralExpr> a, BinaryOperator op, PTR<const LiteralExpr> b, const SourceCodeExprInfo& src_info) noexcept;
+
     /// @brief Converts 'what' to type 'to', and prints error
     /// @param what The expression to convert
     /// @param to The type to convert to
