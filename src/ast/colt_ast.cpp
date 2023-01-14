@@ -884,6 +884,12 @@ namespace colt::lang
           "Bytes types are 'BYTE', 'WORD', 'DWORD' and 'QWORD'.");
         return ErrorExpr::CreateExpr(ctx);
       }
+      if (cnv_type->get_sizeof() > lhs->get_type()->get_sizeof())
+      {
+        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+          "'bit_as' conversion can only be applied on type whose 'sizeof' is greater or equal than the resulting type's 'sizeof'!");
+        return ErrorExpr::CreateExpr(ctx);
+      }
       return ConvertExpr::CreateExpr(cnv_type, lhs, TKN_KEYWORD_BIT_AS,
         lhs->get_src_code(), ctx);
     }
