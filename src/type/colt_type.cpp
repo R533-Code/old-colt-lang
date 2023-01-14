@@ -55,7 +55,7 @@ namespace colt::lang
 
   PTR<Type> BuiltInType::CreateU8(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::U8, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(1, 1, BuiltInID::U8, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::IntegralSupported, std::size(BuiltInType::IntegralSupported) },
       "mut u8" + (4 * as<u64>(is_const)))
     );
@@ -63,7 +63,7 @@ namespace colt::lang
   
   PTR<Type> BuiltInType::CreateU16(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::U16, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(2, 2, BuiltInID::U16, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::IntegralSupported, std::size(BuiltInType::IntegralSupported) },
       "mut u16" + (4 * as<u64>(is_const)))
     );
@@ -71,7 +71,7 @@ namespace colt::lang
   
   PTR<Type> BuiltInType::CreateU32(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::U32, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(4, 4, BuiltInID::U32, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::IntegralSupported, std::size(BuiltInType::IntegralSupported) },
       "mut u32" + (4 * as<u64>(is_const)))
     );
@@ -79,7 +79,7 @@ namespace colt::lang
   
   PTR<Type> BuiltInType::CreateU64(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::U64, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(8, 8, BuiltInID::U64, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::IntegralSupported, std::size(BuiltInType::IntegralSupported) },
       "mut u64" + (4 * as<u64>(is_const)))
     );
@@ -87,7 +87,7 @@ namespace colt::lang
   
   PTR<Type> BuiltInType::CreateU128(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::U128, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(16, 16, BuiltInID::U128, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::IntegralSupported, std::size(BuiltInType::IntegralSupported) },
       "mut u128" + (4 * as<u64>(is_const)))
     );
@@ -95,7 +95,7 @@ namespace colt::lang
   
   PTR<Type> BuiltInType::CreateI8(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::I8, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(1, 1, BuiltInID::I8, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::IntegralSupported, std::size(BuiltInType::IntegralSupported) },
       "mut i8" + (4 * as<u64>(is_const)))
     );
@@ -103,7 +103,7 @@ namespace colt::lang
   
   PTR<Type> BuiltInType::CreateI16(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::I16, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(2, 2, BuiltInID::I16, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::IntegralSupported, std::size(BuiltInType::IntegralSupported) },
       "mut i16" + (4 * as<u64>(is_const)))
     );
@@ -111,7 +111,7 @@ namespace colt::lang
   
   PTR<Type> BuiltInType::CreateI32(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::I32, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(4, 4, BuiltInID::I32, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::IntegralSupported, std::size(BuiltInType::IntegralSupported) },
       "mut i32" + (4 * as<u64>(is_const)))
     );
@@ -119,7 +119,7 @@ namespace colt::lang
   
   PTR<Type> BuiltInType::CreateI64(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::I64, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(8, 8, BuiltInID::I64, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::IntegralSupported, std::size(BuiltInType::IntegralSupported) },
       "mut i64" + (4 * as<u64>(is_const)))
     );
@@ -127,7 +127,7 @@ namespace colt::lang
   
   PTR<Type> BuiltInType::CreateI128(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::I128, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(16, 16, BuiltInID::I128, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::IntegralSupported, std::size(BuiltInType::IntegralSupported) },
       "mut i128" + (4 * as<u64>(is_const)))
     );
@@ -135,7 +135,7 @@ namespace colt::lang
   
   PTR<Type> BuiltInType::CreateF32(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::F32, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(4, 4, BuiltInID::F32, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::FloatingSupported, std::size(BuiltInType::FloatingSupported) },
       "mut float" + (4 * as<u64>(is_const)))
     );
@@ -143,7 +143,7 @@ namespace colt::lang
   
   PTR<Type> BuiltInType::CreateF64(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::F64, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(8, 8, BuiltInID::F64, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::FloatingSupported, std::size(BuiltInType::FloatingSupported) },
       "mut double" + (4 * as<u64>(is_const)))
     );
@@ -151,7 +151,7 @@ namespace colt::lang
   
   PTR<Type> BuiltInType::CreateBool(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::BOOL, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(1, 1, BuiltInID::BOOL, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::BoolSupported, std::size(BuiltInType::BoolSupported) },
       "mut bool" + (4 * as<u64>(is_const)))
     );
@@ -159,7 +159,7 @@ namespace colt::lang
 
   PTR<Type> BuiltInType::CreateChar(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::CHAR, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(1, 1, BuiltInID::CHAR, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::CharSupported, std::size(BuiltInType::CharSupported) },
       "mut char" + (4 * as<u64>(is_const)))
     );
@@ -167,7 +167,7 @@ namespace colt::lang
 
   PTR<Type> BuiltInType::CreateBYTE(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::byte, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(1, 1, BuiltInID::byte, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::BYTESSupported, std::size(BuiltInType::BYTESSupported) },
       "mut BYTE" + (4 * as<u64>(is_const)))
     );
@@ -175,7 +175,7 @@ namespace colt::lang
 
   PTR<Type> BuiltInType::CreateWORD(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::word, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(2, 2, BuiltInID::word, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::BYTESSupported, std::size(BuiltInType::BYTESSupported) },
       "mut WORD" + (4 * as<u64>(is_const)))
     );
@@ -183,7 +183,7 @@ namespace colt::lang
 
   PTR<Type> BuiltInType::CreateDWORD(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::dword, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(4, 4, BuiltInID::dword, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::BYTESSupported, std::size(BuiltInType::BYTESSupported) },
       "mut DWORD" + (4 * as<u64>(is_const)))
     );
@@ -191,7 +191,7 @@ namespace colt::lang
 
   PTR<Type> BuiltInType::CreateQWORD(bool is_const, COLTContext& ctx) noexcept
   {
-    return ctx.add_type(make_unique<BuiltInType>(BuiltInID::qword, is_const,
+    return ctx.add_type(make_unique<BuiltInType>(8, 8, BuiltInID::qword, is_const,
       ContiguousView<BinaryOperator>{ BuiltInType::BYTESSupported, std::size(BuiltInType::BYTESSupported) },
       "mut QWORD" + (4 * as<u64>(is_const)))
     );
@@ -202,7 +202,7 @@ namespace colt::lang
     auto str = String{ "mut PTR<" + (4 * as<u64>(is_const)) };
     str += ptr_to->get_name();
     str += ">";    
-    return ctx.add_type(make_unique<PtrType>(is_const, ptr_to,
+    return ctx.add_type(make_unique<PtrType>(8, 8, is_const, ptr_to,
       ctx.add_str(std::move(str))
       ));
   }
@@ -298,7 +298,8 @@ namespace colt::lang
 
   bool Type::is_ptr_to_void() const noexcept
   {
-    return ID == TYPE_PTR && as<PTR<const PtrType>>(this)->get_type_to()->is_void();
+    return ID == TYPE_PTR
+      && as<PTR<const PtrType>>(this)->get_type_to()->is_void();
   }
 
   bool Type::is_semantically_integral() const noexcept
@@ -391,13 +392,6 @@ namespace colt::lang
       return false;
     auto ret = as<PTR<const BuiltInType>>(this);
     return lang::is_bytes(ret->get_builtin_id());
-  }
-
-  u64 Type::get_sizeof() const noexcept
-  {
-    if (args::GlobalArguments.target_machine == "no-target")
-      return get_default_sizeof();
-    return get_backend_sizeof();
   }
 
   bool Type::is_equal(PTR<const Type> type) const noexcept
