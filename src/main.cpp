@@ -1,4 +1,4 @@
-//Include every colt related functionality:
+//include every colt related functionality:
 #include <main_util.h>
 
 using namespace colt;
