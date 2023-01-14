@@ -206,6 +206,14 @@ namespace colt::lang
       ctx.add_str(std::move(str))
       ));
   }
+
+  PTR<Type> PtrType::CreateLString(bool is_const, COLTContext& ctx) noexcept
+  {
+    return ctx.add_type(make_unique<PtrType>(8, 8, is_const, 
+      BuiltInType::CreateChar(true, ctx),
+      "mut PTR<char>" + (4 * as<u64>(is_const))
+      ));
+  }
   
   PTR<Type> FnType::CreateFn(PTR<const Type> return_type, SmallVector<PTR<const Type>, 4>&& args_type, bool is_vararg, COLTContext& ctx) noexcept
   {
@@ -376,6 +384,13 @@ namespace colt::lang
       return false;
     auto ret = as<PTR<const BuiltInType>>(this);
     return ret->get_builtin_id() < I8;
+  }
+
+  bool Type::is_lstring() const noexcept
+  {
+    if (!is_ptr())
+      return false;
+    return as<PTR<const PtrType>>(this)->get_type_to()->is_char();
   }
 
   bool Type::is_char() const noexcept

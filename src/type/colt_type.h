@@ -454,6 +454,12 @@ namespace colt::lang
     /// @param ctx The COLTContext to store the resulting type
     /// @return Pointer to the resulting type
     static PTR<Type> CreatePtr(bool is_const, PTR<const Type> ptr_to, COLTContext& ctx) noexcept;
+
+    /// @brief Creates a pointer type
+    /// @param is_const True if the pointer is const
+    /// @param ctx The COLTContext to store the resulting type
+    /// @return Pointer to the resulting type
+    static PTR<Type> CreateLString(bool is_const, COLTContext& ctx) noexcept;
   };
 
   /// @brief Represents a function type
