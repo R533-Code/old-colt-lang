@@ -206,7 +206,10 @@ namespace colt::args
         print_error_and_exit("'{}' expects at least {} argument{}",
           arg_view, it->nb_of_args, it->nb_of_args == 1 ? "!" : "s!");
       else
+      {
         it->callback(argc, argv, current_arg);
+        current_arg += it->nb_of_args;
+      }
     }
     
     auto find_arg_in_predefined(StringView arg_view) noexcept -> decltype(PredefinedArguments.end())
