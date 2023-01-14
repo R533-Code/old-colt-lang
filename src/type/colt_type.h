@@ -146,6 +146,10 @@ namespace colt::lang
     /// @return StringView over the typename
     StringView get_name() const noexcept { return name; }
 
+    /// @brief Returns the size in bytes of the type
+    /// @return Byte size of the current type
+    u64 get_sizeof() const noexcept;
+
     /// @brief Check if two types are equal (without considering 'const')
     /// @param type The type to compare against
     /// @return True if both type are equivalent

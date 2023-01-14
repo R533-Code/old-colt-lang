@@ -409,6 +409,11 @@ namespace colt::lang
     return lang::is_bytes(ret->get_builtin_id());
   }
 
+  u64 Type::get_sizeof() const noexcept
+  {
+    
+  }
+
   bool Type::is_equal(PTR<const Type> type) const noexcept
   {
     if (this->is_error() || type->is_error())
