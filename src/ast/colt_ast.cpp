@@ -906,8 +906,9 @@ namespace colt::lang
       }
       if (cnv_type->get_sizeof() > lhs->get_type()->get_sizeof())
       {
-        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
-          "'bit_as' conversion can only be applied on type whose 'sizeof' is greater or equal than the resulting type's 'sizeof'!");
+        generate_any<report_as::ERROR>(lhs->get_src_code(), nullptr,
+          "'{}' too small to fit in '{}'!",
+          lhs->get_type()->get_name(), cnv_type->get_name());
         return ErrorExpr::CreateExpr(ctx);
       }
       return ConvertExpr::CreateExpr(cnv_type, lhs, TKN_KEYWORD_BIT_AS,
@@ -1498,35 +1499,26 @@ namespace colt::lang
 
   PTR<Expr> ASTMaker::as_convert_to(PTR<Expr> what, PTR<const Type> to) noexcept
   {
-    PTR<const Type> from = what->get_type();
-    if (from->is_lstring() && !to->is_builtin())
-    {
-      if (!as<PTR<const PtrType>>(to)->get_type_to()->is_char())
-      {
-        generate_any<report_as::ERROR>(what->get_src_code(), nullptr,
-          "'lstring' can only be converted to a 'PTR<char>', not '{}'!", to->get_name());
-        return ErrorExpr::CreateExpr(ctx);
-      }
-      return what;
-    }
-    if (from->is_builtin() && to->is_builtin())
+    if (PTR<const Type> from = what->get_type();
+      from->is_builtin() && to->is_builtin())
     {
       if (from->is_equal(to))
         return what;
-      if (from->is_lstring() || to->is_lstring())
-      {
-        generate_any<report_as::ERROR>(what->get_src_code(), nullptr,
-          "Cannot convert '{}' to 'lstring'!", from->get_name());
-        return ErrorExpr::CreateExpr(ctx);
-      }
       //Create conversion.
       return ConvertExpr::CreateExpr(to, what, TKN_KEYWORD_AS,
         what->get_src_code(), ctx);
     }
-    if (from->is_ptr() && to->is_ptr()) //both are pointers
+    else if (from->is_ptr() && to->is_ptr()) //both are pointers
     {
       auto to_p = as<PTR<const PtrType>>(to);
       auto from_p = as<PTR<const PtrType>>(from);
+      if (to_p->get_type_to()->is_void())
+      {
+        //set type of expression to void PTR
+        what->set_type(to_p);
+        return what;
+      }
+      
       if (!from_p->get_type_to()->is_equal(to_p->get_type_to()))
       {
         generate_any<report_as::ERROR>(what->get_src_code(), nullptr,
@@ -1542,6 +1534,13 @@ namespace colt::lang
           from->get_name(), to->get_name());
         return ErrorExpr::CreateExpr(ctx);
       }
+    }
+    else
+    {
+      generate_any<report_as::ERROR>(what->get_src_code(), nullptr,
+        "Cannot convert from '{}' to '{}'!",
+        from->get_name(), to->get_name());
+      return ErrorExpr::CreateExpr(ctx);
     }
     return what;
   }

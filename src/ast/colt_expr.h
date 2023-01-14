@@ -135,6 +135,10 @@ namespace colt::lang
     /// @return The type of the expression
     constexpr PTR<const Type> get_type() const noexcept { return type; }
 
+    /// @brief Changes the type of the expression
+    /// @param ntype The new type of the expression
+    constexpr void set_type(PTR<const Type> ntype) noexcept { type = ntype; }
+
     /// @brief Returns the source code information of the expressions
     /// @return The source code information of the expression
     constexpr const SourceCodeExprInfo& get_src_code() const noexcept { return src_info; }
@@ -365,8 +369,7 @@ namespace colt::lang
     ConvertExpr(PTR<const Type> type, PTR<Expr> to_convert, ConversionType cnv, const SourceCodeExprInfo& src_info) noexcept
       : Expr(EXPR_CONVERT, type, src_info), to_convert(to_convert), cnv(cnv)
     {
-      assert_true(type->is_builtin() && to_convert->get_type()->is_builtin(),
-        "Both type of ConvertExpr should be BuiltInTypes");
+      assert_true(type->is_builtin(), "Type of ConvertExpr should be BuiltInType");
     }
 
     /// @brief Returns the conversion type of the expression
