@@ -171,8 +171,29 @@ namespace colt::lang
         static_cast<panic_consume_t>(nullptr));
       if (is_a<ErrorType>(type))
         to_ret = ErrorExpr::CreateExpr(ctx);
+      else if (type->is_void())
+      {
+        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+          "'sizeof' does not support 'void' type!");
+        to_ret = ErrorExpr::CreateExpr(ctx);
+      }
       else
         to_ret = LiteralExpr::CreateValue(type->get_sizeof(), ctx);
+    }
+    else if (current_tkn == TKN_KEYWORD_ALIGNOF)
+    {
+      auto type = parse_parenthesis(&ASTMaker::parse_typename,
+        static_cast<panic_consume_t>(nullptr));
+      if (is_a<ErrorType>(type))
+        to_ret = ErrorExpr::CreateExpr(ctx);
+      else if (type->is_void())
+      {
+        generate_any<report_as::ERROR>(line_state.to_src_info(), nullptr,
+          "'alignof' does not support 'void' type!");
+        to_ret = ErrorExpr::CreateExpr(ctx);
+      }
+      else
+        to_ret = LiteralExpr::CreateValue(type->get_alignof(), ctx);
     }
     else if (current_tkn == TKN_ERROR)
     {
@@ -958,7 +979,8 @@ namespace colt::lang
         return ErrorType::CreateType(ctx);
       }
       consume_current_tkn();
-      return BuiltInType::CreateLString(ctx);
+      return PtrType::CreatePtr(true,
+        BuiltInType::CreateChar(true, ctx), ctx);
     }
     case TKN_KEYWORD_PTR:
     {
