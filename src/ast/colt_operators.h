@@ -6,7 +6,7 @@
 #define HG_COLT_OPERATORS
 
 #include <util/colt_macro.h>
-#include <parsing/colt_token.h>
+#include <lexer/colt_token.h>
 
 namespace colt::lang
 {

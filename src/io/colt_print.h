@@ -10,7 +10,7 @@
 #include <util/colt_config.h>
 #include <fmt/core.h>
 #include <cmd/colt_args.h>
-#include <util/console_colors.h>
+#include <io/console_colors.h>
 
 namespace colt
 {

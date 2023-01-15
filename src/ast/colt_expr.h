@@ -8,7 +8,7 @@
 #define HG_COLT_EXPR
 
 #include <util/colt_pch.h>
-#include <parsing/colt_error_report.h>
+#include <io/colt_error_report.h>
 #include <type/colt_type.h>
 #include <ast/colt_operators.h>
 

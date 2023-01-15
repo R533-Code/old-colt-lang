@@ -3,7 +3,7 @@
 */
 
 #include "colt_args.h"
-#include "util/colt_print.h"
+#include "io/colt_print.h"
 #include "code_gen/mangle.h"
 
 #ifndef COLT_NO_LLVM

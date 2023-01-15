@@ -6,7 +6,7 @@
 #define HG_COLT_MACRO
 
 #include <util/colt_config.h>
-#include <util/colt_print.h>
+#include <io/colt_print.h>
 
 #if defined(__has_builtin)
   #if __has_builtin(__builtin_debugtrap)

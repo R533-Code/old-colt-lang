@@ -47,6 +47,6 @@
 #include <cmd/colt_args.h>
 
 #include <util/colt_macro.h>
-#include <util/colt_print.h>
+#include <io/colt_print.h>
 
 #endif //!HG_COLT_PCH

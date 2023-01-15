@@ -6,8 +6,8 @@
 #define HG_COLT_SCANNER
 
 #include <util/colt_pch.h>
-#include <parsing/colt_token.h>
-#include <parsing/colt_error_report.h>
+#include <lexer/colt_token.h>
+#include <io/colt_error_report.h>
 
 
 namespace colt::lang

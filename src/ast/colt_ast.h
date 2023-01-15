@@ -8,7 +8,7 @@
 
 #include "colt_expr.h"
 #include "colt_context.h"
-#include "parsing/colt_lexer.h"
+#include "lexer/colt_lexer.h"
 #include "interpreter/qword_op.h"
 
 namespace colt

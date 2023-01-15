@@ -5,7 +5,7 @@
 #ifndef HG_COLT_ERROR_REPORT
 #define HG_COLT_ERROR_REPORT
 
-#include <util/console_colors.h>
+#include <io/console_colors.h>
 #include <util/colt_pch.h>
 
 namespace colt::lang
