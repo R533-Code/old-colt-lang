@@ -38,32 +38,7 @@ namespace colt
     llvm::InitializeNativeTargetAsmPrinter();
     llvm::InitializeNativeTargetDisassembler();
 #endif //!COLT_NO_LLVM
-  }
-
-  io::Color get_color(Token tkn) noexcept
-  {
-    if (tkn <= TKN_RIGHT_SQUARE)
-      return io::BrightBlackF;
-    else if (tkn == TKN_KEYWORD_MUT)
-      return io::BlueF;
-    else if (TKN_KEYWORD_VOID <= tkn && tkn <= TKN_KEYWORD_PTR)
-      return io::GreenF;
-    else if (tkn == TKN_CHAR_L || tkn == TKN_STRING_L)
-      return io::YellowF;
-    else if (tkn <= TKN_DOUBLE_L)
-      return io::BrightGreenF;
-    else if (tkn == TKN_BOOL_L
-      || (tkn == TKN_KEYWORD_EXTERN || tkn == TKN_KEYWORD_VAR)
-      || (TKN_KEYWORD_CONST <= tkn && tkn <= TKN_KEYWORD_BIT_AS))
-      return io::BlueF;
-    else if ((TKN_KEYWORD_IF <= tkn && tkn <= TKN_KEYWORD_RETURN)
-      || (TKN_KEYWORD_FOR <= tkn && tkn <= TKN_KEYWORD_CONTINUE)
-      || (TKN_KEYWORD_SWITCH <= tkn && tkn <= TKN_KEYWORD_GOTO))
-      return io::BrightMagentaF;
-    else if (tkn == TKN_IDENTIFIER)
-      return io::BrightBlueF;
-    return io::BrightBlackF;
-  }
+  }  
 
   Expected<String, StringError> get_str_repl() noexcept
   {
@@ -74,51 +49,12 @@ namespace colt
     if (ret.is_error())
       return ret;
 
-    std::fputs("\x1B[1F", stdout); //go to previous line
-    io::Print<false>("{}>{} ", io::BrightCyanF, io::Reset);
-
-    Lexer lex = *ret;
-    
-    u64 old_offset = 1;
-    Token tkn = lex.get_next_token();
-    u64 new_offset = lex.get_current_offset();
-    
-    while (tkn != TKN_EOF)
-    {
-      //Lookahead for function calls
-      if (tkn == TKN_IDENTIFIER)
-      {
-        StringView identifier = { ret->get_data() + old_offset - 1, ret->get_data() + new_offset - 1 };
-        old_offset = new_offset;
-
-        tkn = lex.get_next_token();
-        new_offset = lex.get_current_offset();
-        io::Color identifier_color;
-        if (tkn == TKN_LEFT_PAREN)
-          identifier_color = io::BrightYellowF;
-        else
-          identifier_color = io::BrightBlueF;
-        
-        io::Print<false>("{}{}", identifier_color, identifier);
-        io::Print<false>("{}{}", get_color(tkn),
-          StringView{ ret->get_data() + old_offset - 1, ret->get_data() + new_offset - 1 });
-
-        old_offset = new_offset;
-
-        tkn = lex.get_next_token();
-        new_offset = lex.get_current_offset();
-
-        continue;
-      }
-      io::Print<false>("{}{}", get_color(tkn),
-        StringView{ ret->get_data() + old_offset - 1, ret->get_data() + new_offset - 1 });
-      old_offset = new_offset;
-      
-      tkn = lex.get_next_token();
-      new_offset = lex.get_current_offset();
-    }
-    io::Print<false>("{}", io::Reset);
-    std::fputs("\x1B[1E", stdout); //go back to new line
+    io::Print<false>(
+      "\x1B[1F" //Go to previous line
+      "{}>{} {}" //Write highlighted string
+      "\x1B[1E", //Go to next line
+      io::BrightCyanF, io::Reset,
+      io::HighlightCode{ *ret });
     ret->pop_back(); //pop NUL-terminator
     return ret;
   }

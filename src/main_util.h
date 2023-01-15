@@ -9,6 +9,7 @@
 
 #include <util/colt_pch.h>
 #include <ast/colt_ast.h>
+#include <io/colt_code_highlight.h>
 
 #ifndef COLT_NO_LLVM
   #include <code_gen/llvm_ir_gen.h>
