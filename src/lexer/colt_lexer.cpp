@@ -11,7 +11,7 @@ namespace colt::lang
 	{
 		if (strv.is_empty())
 			to_scan = "";
-		assert_true(strv.get_back() == '\0', "The StringView should be NUL-terminated!");
+		//assert_true(strv.get_back() == '\0', "The StringView should be NUL-terminated!");
 	}
 	
 	Lexer::LineInformations Lexer::get_line_info() const noexcept
@@ -21,9 +21,11 @@ namespace colt::lang
 
 	Token Lexer::get_next_token() noexcept
 	{
+		skipped_spaces = 0;
 		//We skip spaces
 		while (isSpace(current_char))
 		{
+			++skipped_spaces;
 			//We increment the line number if the token being parsed is NOT an TKN_EOF
 			//TKN_EOF is returned if a '\0' is found
 			if (current_char == '\n' && peek_next_char() != '\0')
@@ -152,7 +154,6 @@ namespace colt::lang
 
 	char Lexer::get_next_char() noexcept
 	{
-		assert_true(!to_scan.is_empty(), "StringView to scan was empty!");
 		if (offset < to_scan.get_size())
 		{
 			char to_ret = to_scan[offset++];

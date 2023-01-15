@@ -40,7 +40,8 @@ namespace colt::lang
 		mutable u32 cached_line_nb = 0;
 		/// @brief The cached line StringView
 		mutable StringView cached_line_strv = {};
-		
+		/// @brief Number of skipped spaces
+		u64 skipped_spaces = 0;
 		/// @brief The current char, which is the one to parse next
 		char current_char = ' ';
 		/// @brief If true, next call of get_next_token should increment 'current_line'
@@ -78,6 +79,12 @@ namespace colt::lang
 
 		/**************** GETTERS ****************/
 
+		/// @brief Returns the number of spaces skipped before hitting the lexeme
+		/// @return Number of spaces skipped
+		u64 get_skipped_spaces_count() const noexcept { return skipped_spaces; }
+		
+		/// @brief Returns the current offset into the StringView to parse
+		/// @return Byte offset from the beginning of the StringView
 		u64 get_current_offset() const noexcept { return offset; }
 
 		/// @brief Returns line informations of the current lexeme
