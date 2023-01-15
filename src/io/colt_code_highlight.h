@@ -26,6 +26,9 @@ struct fmt::formatter<colt::io::HighlightCode>
     using namespace colt;
     using namespace colt::lang;
 
+    if (!args::GlobalArguments.colored_output)
+      return fmt::format_to(ctx.out(), "{}", str.strv);
+
     auto iter = ctx.out();
 
     Lexer lex = { str.strv };
