@@ -122,7 +122,7 @@ endif()
 # -C: No Color (so no weird behavior happens when regex matching)
 # --no-wait: Do not wait for user input before closing the app.
 # -r: Run 'main'
-set(COLT_ADDITIONAL_ARGS -i -C --no-wait -r)
+set(COLT_ADDITIONAL_ARGS -ir -C --no-wait -r)
 
 # TESTING:
 # Each file in resources/tests/ that ends with .ct
