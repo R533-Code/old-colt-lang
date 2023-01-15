@@ -182,6 +182,11 @@ namespace colt::args
 		/// @param argv The array of arguments
 		/// @param current_arg The current argument
 		void target_callback(int argc, const char** argv, size_t& current_arg) noexcept;
+		/// @brief Print code callback
+		/// @param argc The total argument count
+		/// @param argv The array of arguments
+		/// @param current_arg The current argument
+		void print_code_callback(int argc, const char** argv, size_t& current_arg) noexcept;
 
 		/// @brief Contains all predefined valid arguments
 		constexpr std::array PredefinedArguments
@@ -189,7 +194,7 @@ namespace colt::args
 			Argument{ "version", "v", "Prints the version of the compiler.\nUse: --version/-v", 0, &version_callback},
 			Argument{ "help", "h", "Prints the documentation of a command.\nUse: --help/-h <COMMAND>", 1, &help_callback},
 			Argument{ "enum", "e", "Enumerates all possible commands.\nUse: --enum/-e", 0, &enum_callback},
-			Argument{ "print-ir", "i", "Prints generated LLVM IR.\nUse: --print-ir/-i", 0, &print_ir_callback},
+			Argument{ "print-ir", "ir", "Prints generated LLVM IR.\nUse: --print-ir/-i", 0, &print_ir_callback},
 			Argument{ "no-color", "C", "Removes colored/highlighted outputs on the console.\nUse: --no-color/-C", 0, &no_color_callback},
 			Argument{ "no-error", "E", "Removes error outputs.\nUse: --no-error/-E", 0, &no_error_callback},
 			Argument{ "no-warn", "W", "Removes warning outputs.\nUse: --no-warn/-W", 0, &no_warning_callback},
@@ -205,6 +210,7 @@ namespace colt::args
 			Argument{ "run-main", "r", "Run 'main' function inside the compiler if it exists.\nUse: --run-main/-r", 0, &run_main_callback},
 			Argument{ "demangle", "", "Demangles a string.\nUse: --demangle <STRING>", 1, &demangle_callback},
 			Argument{ "target", "", "Chooses the target for which to compile.\nUse: --target <TARGET_TRIPLE>", 1, &target_callback},
+			Argument{ "print-code", "", "Prints highlighted 'colt' code.\nUse: --print-code <FILE>", 1, &print_code_callback},
 		};
 
 		/// @brief Handles an argument, searching for it and doing error handling

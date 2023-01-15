@@ -4,6 +4,7 @@
 
 #include "colt_args.h"
 #include "io/colt_print.h"
+#include "io/colt_code_highlight.h"
 #include "code_gen/mangle.h"
 
 #ifndef COLT_NO_LLVM
@@ -191,6 +192,18 @@ namespace colt::args
 #else
       print_error_and_exit("This executable was compiled without support for LLVM!");
 #endif
+    }
+
+    void print_code_callback(int argc, const char** argv, size_t& current_arg) noexcept
+    {
+      if (std::error_code code; !std::filesystem::exists(argv[current_arg + 1], code))
+        print_error_and_exit("File at path '{}' does not exist!", argv[current_arg + 1]);
+      auto str = String::getFileContent(argv[current_arg + 1]);
+
+      if (str.is_error())
+        print_error_and_exit("Could not read the content of the file '{}'!", argv[current_arg + 1]);
+      str->c_str();
+      io::Print("{}", io::HighlightCode{ *str });
     }
 
     /*************************************
