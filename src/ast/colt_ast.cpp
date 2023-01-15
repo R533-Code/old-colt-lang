@@ -1143,10 +1143,11 @@ namespace colt::lang
       current_function->get_return_type());
     if (is_a<ErrorExpr>(ret_val))
     {
-      generate_any<report_as::ERROR>(ret_val->get_src_code(), nullptr,
-        "Type of return value does not match function return type!");
+      check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_sttmnt,
+        "Expected a ';'!");
       return ret_val;
     }
+    
     //Return the FnReturnExpr
     ret_val = FnReturnExpr::CreateExpr(ret_val, line_state.to_src_info(), ctx);
     check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_sttmnt,
@@ -1499,6 +1500,9 @@ namespace colt::lang
 
   PTR<Expr> ASTMaker::as_convert_to(PTR<Expr> what, PTR<const Type> to) noexcept
   {
+    if (is_a<ErrorExpr>(what))
+      return what;
+
     if (PTR<const Type> from = what->get_type();
       from->is_builtin() && to->is_builtin())
     {
