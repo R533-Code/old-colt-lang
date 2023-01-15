@@ -8,7 +8,7 @@ fn a()->i64
   else:
     12;
   {
-    var hello = 10;
+    var mut hello = 10;
     hello = 10 + 12;
   }
 }
