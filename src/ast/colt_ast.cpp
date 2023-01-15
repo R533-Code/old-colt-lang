@@ -1388,14 +1388,14 @@ namespace colt::lang
     //Type checks, and supported operators check
     if (!rhs->get_type()->is_equal(lhs->get_type()))
     {
-      generate_any<report_as::ERROR>(src_info, &ASTMaker::panic_consume_semicolon,
+      generate_any<report_as::ERROR>(src_info, nullptr,
         "Operands should be of same type!");
       return ErrorExpr::CreateExpr(ctx);
     }
     else if (bin_op != BinaryOperator::OP_ASSIGN && is_a<BuiltInType>(rhs->get_type())
       && !as<PTR<const BuiltInType>>(rhs->get_type())->supports(bin_op))
     {
-      generate_any<report_as::ERROR>(src_info, &ASTMaker::panic_consume_semicolon,
+      generate_any<report_as::ERROR>(src_info, nullptr,
         "Type '{}' does not support operator '{}'!", rhs->get_type()->get_name(), BinaryOperatorToString(bin_op));
       return ErrorExpr::CreateExpr(ctx);
     }
@@ -1481,6 +1481,9 @@ namespace colt::lang
   PTR<Expr> ASTMaker::parse_bin_cond() noexcept
   {
     PTR<Expr> condition = parse_binary();
+    if (is_a<ErrorExpr>(condition))
+      return condition;
+
     if (!condition->get_type()->is_equal(BuiltInType::CreateBool(false, ctx)))
     {
       generate_any<report_as::ERROR>(condition->get_src_code(), nullptr,
