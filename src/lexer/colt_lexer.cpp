@@ -25,7 +25,9 @@ namespace colt::lang
 		//We skip spaces
 		while (isSpace(current_char))
 		{
-			++skipped_spaces;
+			//The first time this method is called, 'current_char' contains
+			//a space. We do not want to count it.
+			skipped_spaces += as<u64>(offset != 0);
 			//We increment the line number if the token being parsed is NOT an TKN_EOF
 			//TKN_EOF is returned if a '\0' is found
 			if (current_char == '\n' && peek_next_char() != '\0')

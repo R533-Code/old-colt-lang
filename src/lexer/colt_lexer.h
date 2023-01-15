@@ -101,7 +101,7 @@ namespace colt::lang
 
 		/// @brief Get the current lexeme
 		/// @return String view over the current lexeme
-		StringView get_current_lexeme() const noexcept { return { to_scan.get_data() + lexeme_begin, to_scan.get_data() + offset - 1 }; }
+		StringView get_current_lexeme() const noexcept { return { to_scan.get_data() + lexeme_begin, to_scan.get_data() + offset - 1 * as<u64>(offset - lexeme_begin != 1) }; }
 
 		/// @brief Returns the parsed String literal
 		/// @return String literal
