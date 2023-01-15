@@ -62,7 +62,8 @@ struct fmt::formatter<colt::io::HighlightCode>
         continue;
       }
       iter = fmt::format_to(iter, "{}{}", io::ToColor(tkn),
-        StringView{ str.strv.get_data() + old_offset - 1, str.strv.get_data() + new_offset - 1 });
+        StringView{ str.strv.get_data() + old_offset - 1,
+        str.strv.get_data() + new_offset - 1 * as<u64>(str.strv.get_size() != 1) });
       old_offset = new_offset;
 
       tkn = lex.get_next_token();
