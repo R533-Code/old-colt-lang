@@ -17,6 +17,11 @@ namespace colt
 	u64 rand(u64 a, u64 b) noexcept;
 }
 
+namespace colt::args
+{
+	extern bool NoColor;
+}
+
 /// @brief Contains utilities for printing to console
 namespace colt::io
 {
@@ -85,7 +90,7 @@ namespace colt::io
 	template<bool new_line, typename... Args>
 	constexpr void PrintMessage(fmt::format_string<Args...> fmt, Args && ...args)
 	{
-		if (args::GlobalArguments.colored_output)
+		if (args::NoColor)
 			fmt::print(fg(fmt::color::cornflower_blue) | fmt::emphasis::bold, "Message: ");
 		else
 			fmt::print("Message: ");
@@ -98,7 +103,7 @@ namespace colt::io
 	template<bool new_line, typename... Args>
 	constexpr void PrintWarning(fmt::format_string<Args...> fmt, Args && ...args)
 	{
-		if (args::GlobalArguments.colored_output)
+		if (args::NoColor)
 			fmt::print(fg(fmt::color::yellow) | fmt::emphasis::bold, "Warning: ");
 		else
 			fmt::print("Warning: ");
@@ -111,7 +116,7 @@ namespace colt::io
 	template<bool new_line, typename... Args>
 	constexpr void PrintError(fmt::format_string<Args...> fmt, Args && ...args)
 	{
-		if (args::GlobalArguments.colored_output)
+		if (args::NoColor)
 			fmt::print(fg(fmt::color::red) | fmt::emphasis::bold, "Error: ");
 		else
 			fmt::print("Error: ");
