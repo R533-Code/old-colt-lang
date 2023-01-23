@@ -44,9 +44,9 @@
 
 #include <util/dyn_cast.h>
 
-#include <cmd/colt_args.h>
-
 #include <util/colt_macro.h>
 #include <io/colt_print.h>
+
+#include <cmd/colt_args_v2.h>
 
 #endif //!HG_COLT_PCH
