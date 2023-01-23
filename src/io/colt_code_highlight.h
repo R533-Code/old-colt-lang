@@ -4,6 +4,11 @@
 #include <colt/data_structs/String.h>
 #include <lexer/colt_lexer.h>
 
+namespace colt::args
+{
+  extern bool NoColor;
+}
+
 namespace colt::io
 {
   struct HighlightCode
@@ -26,7 +31,7 @@ struct fmt::formatter<colt::io::HighlightCode>
     using namespace colt;
     using namespace colt::lang;
 
-    if (!args::GlobalArguments.colored_output)
+    if (args::NoColor)
       return fmt::format_to(ctx.out(), "{}", str.strv);
 
     auto iter = ctx.out();

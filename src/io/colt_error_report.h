@@ -69,7 +69,7 @@ namespace colt::lang
 	template<typename ...Args>
 	void GenerateMessage(const SourceCodeExprInfo& src_info, fmt::format_string<Args...> fmt, Args&& ...args) noexcept
 	{
-		if (!args::GlobalArguments.print_messages)
+		if (args::NoMessage)
 			return;
 		io::PrintMessage(fmt, std::forward<Args>(args)...);
 
@@ -100,7 +100,7 @@ namespace colt::lang
 	template<typename ...Args>
 	void GenerateWarning(const SourceCodeExprInfo& src_info, fmt::format_string<Args...> fmt, Args&& ...args) noexcept
 	{
-		if (!args::GlobalArguments.print_warnings)
+		if (args::NoWarning)
 			return;
 		io::PrintWarning(fmt, std::forward<Args>(args)...);
 
@@ -131,7 +131,7 @@ namespace colt::lang
 	template<typename ...Args>
 	void GenerateError(const SourceCodeExprInfo& src_info, fmt::format_string<Args...> fmt, Args&&... args) noexcept
 	{
-		if (!args::GlobalArguments.print_errors)
+		if (args::NoError)
 			return;
 		io::PrintError(fmt, std::forward<Args>(args)...);
 

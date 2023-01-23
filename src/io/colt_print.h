@@ -202,7 +202,7 @@ struct fmt::formatter<colt::io::ColorEachStrChar>
 	/// @return context
 	auto format(const colt::io::ColorEachStrChar& chr, FormatContext& ctx)
 	{
-		if (args::NoColor)
+		if (colt::args::NoColor)
 			return fmt::format_to(ctx.out(), "{}", chr.str);
 
 		colt::io::ColorEachStrChar cpy = chr;
