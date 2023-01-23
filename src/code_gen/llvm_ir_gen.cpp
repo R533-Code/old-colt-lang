@@ -19,16 +19,17 @@ namespace colt::gen
 
   Expected<GeneratedIR, std::string> GenerateIR(const lang::AST& ast) noexcept
   {
-    if (args::GlobalArguments.target_machine == "no-target")
+    std::string target_str = args::TargetMachine;
+    if (target_str == "no-target")
       return { Error, "No target selected!" };
 
     GeneratedIR ir;
     std::string error;
-    auto Target = llvm::TargetRegistry::lookupTarget(args::GlobalArguments.target_machine, error);
+    auto Target = llvm::TargetRegistry::lookupTarget(target_str, error);
     if (!Target)
       return { Error, error };
-    ir.target_machine = Target->createTargetMachine(args::GlobalArguments.target_machine, "generic", "", {}, {});
-    ir.module->setTargetTriple(args::GlobalArguments.target_machine);
+    ir.target_machine = Target->createTargetMachine(target_str, "generic", "", {}, {});
+    ir.module->setTargetTriple(target_str);
     ir.module->setDataLayout(ir.target_machine->createDataLayout());
 
     //Generate and store the IR in 'ir'
