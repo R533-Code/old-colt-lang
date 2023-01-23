@@ -2,6 +2,7 @@
 #define HG_COLT_ARGS_V2
 
 #include "colt_args_parser.h"
+#include "code_gen/opt_level.h"
 
 #ifndef COLT_NO_LLVM
   //for the target triple
@@ -36,7 +37,7 @@ namespace colt::args
 
   //HELPERS FOR COMMANDS STARTING WITH "-"
 #define GET_NAME(a, num, v, name, d) StringView{ name },
-#define DECLARE_VAR(name, num, init, n, d) decltype(init) name = init;
+#define DECLARE_VAR(name, num, init, n, d) inline decltype(init) name = init;
 #define HELP_STR(n, num, i, name, desc) "  -" name ":\n     " desc "\n\n"
 #define GEN_CASE(a, num, v, name, desc) \
   if (name[0] == argv[i][1]) { \
@@ -59,7 +60,7 @@ namespace colt::args
   //POSITIONAL ARGUMENTS
 
 #define HELP_POS(n, t, name) "<" name "> "
-#define DECLARE_VAR_POS(name, t, n) decltype(t) name = t;
+#define DECLARE_VAR_POS(name, t, n) inline decltype(t) name = t;
 #define GEN_BOOL(name, t, n) bool COLT_CONCAT(name, BOOL) = false;
 #define IF_POS(name, type, n) \
   if (COLT_CONCAT(name, BOOL) == false) {\
@@ -69,7 +70,7 @@ namespace colt::args
   }
 
 #define DECLARE_ARGS(COMMANDS, ALIAS, POSITIONALS) \
-  void PrintHelp() noexcept {\
+  static void PrintHelp() noexcept {\
     io::Print( \
     "The COLT compiler and interpreter.\n\n" \
     "USAGE:  colt [options] " \
@@ -85,7 +86,7 @@ namespace colt::args
   constexpr auto MaxNameSize = details::max_name_size(NameTable); \
   COMMANDS(DECLARE_VAR) \
   POSITIONALS(DECLARE_VAR_POS)\
-  void ParseArguments(int argc, const char** argv) noexcept { \
+  static void ParseArguments(int argc, const char** argv) noexcept { \
     bool is_only_positional = false; \
     for (size_t i = 1; i < argc; i++) \
     { \
