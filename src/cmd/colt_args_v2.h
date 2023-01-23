@@ -85,7 +85,7 @@ namespace colt::args
   constexpr auto MaxNameSize = details::max_name_size(NameTable); \
   COMMANDS(DECLARE_VAR) \
   POSITIONALS(DECLARE_VAR_POS)\
-  void ParseArguments2(int argc, const char** argv) noexcept { \
+  void ParseArguments(int argc, const char** argv) noexcept { \
     bool is_only_positional = false; \
     for (size_t i = 1; i < argc; i++) \
     { \
