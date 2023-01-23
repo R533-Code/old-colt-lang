@@ -42,7 +42,7 @@ namespace colt
 
   Expected<String, StringError> get_str_repl() noexcept
   {
-    if (!args::GlobalArguments.colored_output)
+    if (args::NoColor)
       return String::getLine();
 
     auto ret = String::getLine(WithNUL);
@@ -186,19 +186,19 @@ namespace colt
     }
 
     //Optimize resulting IR
-    IR->optimize(args::GlobalArguments.opt_level);
+    IR->optimize(OptimizationLevel::O3);
 
-    if (args::GlobalArguments.print_llvm_ir) //Print IR
+    if (args::PrintLLVMIR) //Print IR
       IR->print_module(llvm::errs());
-    if (args::GlobalArguments.file_out) //Write object file
+    if (args::FileOut) //Write object file
     {
-      if (auto result = IR->to_object_file(args::GlobalArguments.file_out); result.is_error())
+      if (auto result = IR->to_object_file(args::FileOut); result.is_error())
         io::PrintError("{}", result.get_error());
       else
-        io::PrintMessage("Successfully written object file '{}'!", args::GlobalArguments.file_out);
+        io::PrintMessage("Successfully written object file '{}'!", args::FileOut);
     }
 
-    if (args::GlobalArguments.jit_run_main)
+    if (args::RunMain)
       RunMain(std::move(*IR));
 #endif //!COLT_NO_LLVM
   }
