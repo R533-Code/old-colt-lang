@@ -7,15 +7,15 @@ int main(int argc, const char** argv)
 {
   //Initialize code generators
   InitializeCOLT();
-  //Populates the GlobalArguments
+  //Populates the global arguments
   args::ParseArguments(argc, argv);
 
   //Compile a file or enter REPL
-  if (args::GlobalArguments.file_in != nullptr)
-    CompileFile(args::GlobalArguments.file_in);
+  if (args::FileIn != nullptr)
+    CompileFile(args::FileIn);
   else
     REPL();
 
-  if (args::GlobalArguments.wait_for_user_input)
+  if (args::NoWait)
     io::PressToContinue();
 }
