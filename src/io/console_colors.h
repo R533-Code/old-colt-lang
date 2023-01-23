@@ -169,7 +169,7 @@ struct fmt::formatter<colt::io::Color>
   {
     //If -C option was passed, format "" (CONSOLE_COLORS[0])
     return fmt::format_to(ctx.out(), "{}",
-      CONSOLE_COLORS[op.index * static_cast<colt::u64>(colt::args::GlobalArguments.colored_output)]);
+      CONSOLE_COLORS[op.index * static_cast<colt::u64>(!colt::args::NoColor)]);
   }
 };
 

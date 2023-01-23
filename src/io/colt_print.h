@@ -90,7 +90,7 @@ namespace colt::io
 	template<bool new_line, typename... Args>
 	constexpr void PrintMessage(fmt::format_string<Args...> fmt, Args && ...args)
 	{
-		if (args::NoColor)
+		if (!args::NoColor)
 			fmt::print(fg(fmt::color::cornflower_blue) | fmt::emphasis::bold, "Message: ");
 		else
 			fmt::print("Message: ");
@@ -103,7 +103,7 @@ namespace colt::io
 	template<bool new_line, typename... Args>
 	constexpr void PrintWarning(fmt::format_string<Args...> fmt, Args && ...args)
 	{
-		if (args::NoColor)
+		if (!args::NoColor)
 			fmt::print(fg(fmt::color::yellow) | fmt::emphasis::bold, "Warning: ");
 		else
 			fmt::print("Warning: ");
@@ -116,7 +116,7 @@ namespace colt::io
 	template<bool new_line, typename... Args>
 	constexpr void PrintError(fmt::format_string<Args...> fmt, Args && ...args)
 	{
-		if (args::NoColor)
+		if (!args::NoColor)
 			fmt::print(fg(fmt::color::red) | fmt::emphasis::bold, "Error: ");
 		else
 			fmt::print("Error: ");
@@ -202,7 +202,7 @@ struct fmt::formatter<colt::io::ColorEachStrChar>
 	/// @return context
 	auto format(const colt::io::ColorEachStrChar& chr, FormatContext& ctx)
 	{
-		if (!colt::args::GlobalArguments.colored_output)
+		if (args::NoColor)
 			return fmt::format_to(ctx.out(), "{}", chr.str);
 
 		colt::io::ColorEachStrChar cpy = chr;
