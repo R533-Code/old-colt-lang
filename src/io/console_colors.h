@@ -7,7 +7,6 @@
 
 #include <fmt/core.h>
 #include <colt/utility/Typedefs.h>
-#include <cmd/colt_args.h>
 
 /******************************************************
 FOREGROUND COLORS FOR CONSOLE
@@ -58,6 +57,11 @@ static const char* CONSOLE_COLORS[] =
   "\x1B[5m",//CONSOLE_FONT_FLICKER
   "\x1B[7m",//CONSOLE_COLOR_REVERSE
 };
+
+namespace colt::args
+{
+  extern bool NoColor;
+}
 
 namespace colt::io
 {
