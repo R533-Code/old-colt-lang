@@ -576,6 +576,7 @@ namespace colt::lang
   PTR<Expr> ASTMaker::parse_scope(bool one_expr) noexcept
   {
     SavedExprInfo line_state = { *this };
+    
     if (current_tkn == TKN_COLON && one_expr)
     {
       consume_current_tkn(); // :
@@ -619,7 +620,8 @@ namespace colt::lang
     else
     {
       //TODO: choose consuming strategy
-      generate_any_current<report_as::ERROR>(nullptr, "Expected the beginning of a scope ('{{'{}", one_expr ? "or ':')!" : ")!");
+      generate_any_current<report_as::ERROR>(nullptr,
+        "Expected the beginning of a scope ('{{'{}", one_expr ? "or ':')!" : ")!");
       return ErrorExpr::CreateExpr(ctx);
     }
   }
@@ -1139,14 +1141,23 @@ namespace colt::lang
       consume_current_tkn(); // consume ';'
       return FnReturnExpr::CreateExpr(nullptr, line_state.to_src_info(), ctx);
     }
-    PTR<Expr> ret_val = as_convert_to(parse_binary(),
-      current_function->get_return_type());
-    if (is_a<ErrorExpr>(ret_val))
+    PTR<Expr> ret_val = parse_binary();
+    if (!ret_val->get_type()->is_equal(current_function->get_return_type()))
     {
+      generate_any<report_as::ERROR>(ret_val->get_src_code(), nullptr,
+        "Type of return value '{}' does not match function return type '{}'!",
+        ret_val->get_type()->get_name(),
+        current_function->get_return_type()->get_name());
+      
       check_and_consume(TKN_SEMICOLON, &ASTMaker::panic_consume_sttmnt,
         "Expected a ';'!");
-      return ret_val;
+      return ErrorExpr::CreateExpr(ctx);
     }
+    //Do more type checks
+    ret_val = as_convert_to(ret_val,
+      current_function->get_return_type());
+    if (is_a<ErrorExpr>(ret_val))
+      return ret_val;
     
     //Return the FnReturnExpr
     ret_val = FnReturnExpr::CreateExpr(ret_val, line_state.to_src_info(), ctx);
@@ -1178,7 +1189,7 @@ namespace colt::lang
     bool ret = true;
     for (size_t i = 0; i < decl->get_params_count(); i++)
     {
-      if (is_a<ErrorExpr>(as_convert_to(arguments[i], decl->get_params_type()[i])))
+      if (arguments[i]->get_type()->is_equal(decl->get_params_type()[i]))
       {
         generate_any<report_as::ERROR>(arguments[i]->get_src_code(), nullptr,
           "Type of argument ('{}') does not match that of declaration ('{}')!",
