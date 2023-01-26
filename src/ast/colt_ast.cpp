@@ -1145,7 +1145,7 @@ namespace colt::lang
     if (!ret_val->get_type()->is_equal(current_function->get_return_type()))
     {
       generate_any<report_as::ERROR>(ret_val->get_src_code(), nullptr,
-        "Type of return value '{}' does not match function return type '{}'!",
+        "Type of return value ({}) does not match function return type ({})!",
         ret_val->get_type()->get_name(),
         current_function->get_return_type()->get_name());
       
@@ -1189,10 +1189,10 @@ namespace colt::lang
     bool ret = true;
     for (size_t i = 0; i < decl->get_params_count(); i++)
     {
-      if (arguments[i]->get_type()->is_equal(decl->get_params_type()[i]))
+      if (!arguments[i]->get_type()->is_equal(decl->get_params_type()[i]))
       {
         generate_any<report_as::ERROR>(arguments[i]->get_src_code(), nullptr,
-          "Type of argument ('{}') does not match that of declaration ('{}')!",
+          "Type of argument ({}) does not match that of declaration ({})!",
           arguments[i]->get_type()->get_name(), decl->get_params_type()[i]->get_name());
         ret = false;
       }
