@@ -1,4 +1,4 @@
-//`Type of return value does not match function return type!
+//`Type of return value (u64) does not match function return type (i64)!
 //1
 fn hello()->i64 {
   return 10u64;

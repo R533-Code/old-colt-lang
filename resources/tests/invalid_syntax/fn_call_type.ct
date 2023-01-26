@@ -1,4 +1,4 @@
-//`Type of argument ('u64') does not match that of declaration ('i64')!
+//`Type of argument (u64) does not match that of declaration (i64)!
 //1
 fn hello(i64 a, i64 b)->void;
 
