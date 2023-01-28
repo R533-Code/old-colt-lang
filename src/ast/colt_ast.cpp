@@ -893,7 +893,7 @@ namespace colt::lang
     PTR<const Type> cnv_type = parse_typename();
     
     //Propagate error
-    if (is_a<ErrorExpr>(lhs))
+    if (is_a<ErrorExpr>(lhs) || is_a<ErrorType>(cnv_type))
       return lhs;
     
     if (cnv == TKN_KEYWORD_BIT_AS)
@@ -1023,8 +1023,9 @@ namespace colt::lang
       //TODO: add
       colt_unreachable("not implemented");
     default:
-      generate_any<report_as::ERROR>(line_state.to_src_info(), panic,
+      generate_any_current<report_as::ERROR>(panic,
         "Expected a typename!");
+      consume_current_tkn();
     }
     //return an error
     return ErrorType::CreateType(ctx);
