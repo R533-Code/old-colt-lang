@@ -78,7 +78,7 @@ struct fmt::formatter<colt::io::HighlightCode>
       lexeme = lex.get_current_lexeme();
       skipped_spaces = lex.get_skipped_spaces_count();
     }    
-    return fmt::format_to(iter, "{}{: <{}}", io::Reset, "", lex.get_skipped_spaces_count());
+    return fmt::format_to(iter, "{}{: <{}}", io::Reset, "", skipped_spaces);
   }
 };
 
