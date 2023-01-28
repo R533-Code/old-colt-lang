@@ -380,7 +380,11 @@ namespace colt::lang
 
 		if (current_char != '\'')
 		{
-			while (current_char != ';' && current_char != '\n' && current_char != EOF && current_char != '\'')
+			while (current_char != ';'
+				&& current_char != '\n'
+				&& current_char != EOF
+				&& current_char != '\''
+				&& current_char != ')')
 				current_char = get_next_char();
 			gen_error(get_current_lexeme(), "Invalid char literal!");
 			return TKN_ERROR;
