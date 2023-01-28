@@ -44,8 +44,6 @@ namespace colt::lang
 		u64 skipped_spaces = 0;
 		/// @brief The current char, which is the one to parse next
 		char current_char = ' ';
-		/// @brief If true, next call of get_next_token should increment 'current_line'
-		bool inc_next_tkn = false;
 
 		/// @brief Contains informations about the current line being parsed
 		struct LineInformations
@@ -101,7 +99,7 @@ namespace colt::lang
 
 		/// @brief Get the current lexeme
 		/// @return String view over the current lexeme
-		StringView get_current_lexeme() const noexcept { return { to_scan.get_data() + lexeme_begin, to_scan.get_data() + offset - 1 * as<u64>(offset - lexeme_begin != 1) }; }
+		StringView get_current_lexeme() const noexcept { return { to_scan.get_data() + lexeme_begin, to_scan.get_data() + offset - 1 * as<u64>(offset != to_scan.get_size()) }; }
 
 		/// @brief Returns the parsed String literal
 		/// @return String literal

@@ -9,9 +9,8 @@ namespace colt::lang
 	Lexer::Lexer(StringView strv) noexcept
 		: to_scan(strv)
 	{
-		if (strv.is_empty())
-			to_scan = "";
-		//assert_true(strv.get_back() == '\0', "The StringView should be NUL-terminated!");
+    if (!to_scan.is_empty() && to_scan.get_back() == '\0')
+			to_scan.pop_back();
 	}
 	
 	Lexer::LineInformations Lexer::get_line_info() const noexcept
@@ -28,9 +27,8 @@ namespace colt::lang
 			//The first time this method is called, 'current_char' contains
 			//a space. We do not want to count it.
 			skipped_spaces += as<u64>(offset != 0);
-			//We increment the line number if the token being parsed is NOT an TKN_EOF
-			//TKN_EOF is returned if a '\0' is found
-			if (current_char == '\n' && peek_next_char() != '\0')
+			//TODO: check
+			if (current_char == '\n' && peek_next_char() != EOF)
 				current_line += 1;
 			current_char = get_next_char();
 		}
@@ -107,7 +105,6 @@ namespace colt::lang
 			return TKN_SEMICOLON;
 		case '@':
 			return handle_at();
-		case '\0':
 		case EOF:
 			return TKN_EOF;
 		default:
