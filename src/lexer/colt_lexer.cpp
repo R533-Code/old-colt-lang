@@ -9,8 +9,12 @@ namespace colt::lang
 	Lexer::Lexer(StringView strv) noexcept
 		: to_scan(strv)
 	{
-    if (!to_scan.is_empty() && to_scan.get_back() == '\0')
-			to_scan.pop_back();
+		if (!to_scan.is_empty())
+		{
+			if (to_scan.get_back() == '\0')
+				to_scan.pop_back();
+			ends_with_space = isSpace(to_scan.get_back());
+		}
 	}
 	
 	Lexer::LineInformations Lexer::get_line_info() const noexcept
@@ -117,6 +121,15 @@ namespace colt::lang
 	void Lexer::set_to_scan(StringView to_scan) noexcept
 	{
 		this->to_scan = to_scan;
+		if (!this->to_scan.is_empty())
+		{
+			if (this->to_scan.get_back() == '\0')
+				this->to_scan.pop_back();
+			ends_with_space = isSpace(this->to_scan.get_back());
+		}
+		else
+			ends_with_space = false;
+		
 		temp_str.clear();
 		offset = 0;
 		lexeme_begin = 0;
@@ -139,7 +152,7 @@ namespace colt::lang
 		line_begin += as<size_t>(*line_begin == '\n');
 
 		const char* line_end = line_begin;
-		while (*line_end != '\n' && *line_end != '\0')
+		while (*line_end != '\n')
 			++line_end;
 		//a StringView's end is non-inclusive, so there is no need to change line_end
 		//depending on if it is a '\n' or not.
