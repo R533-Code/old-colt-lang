@@ -15,10 +15,7 @@ namespace colt
     if (str.is_error())
       io::PrintError("Error reading file at path '{}'.", path);
     else
-    {
-      str.get_value().c_str(); //Appends a NUL terminator if needed
       CompileStr(str.get_value());
-    }
   }
 
   void InitializeCOLT() noexcept
@@ -45,7 +42,7 @@ namespace colt
     if (args::NoColor)
       return String::getLine();
 
-    auto ret = String::getLine(WithNUL);
+    auto ret = String::getLine();
     if (ret.is_error())
       return ret;
 
@@ -55,7 +52,6 @@ namespace colt
       "\x1B[1E", //Go to next line
       io::BrightCyanF, io::Reset,
       io::HighlightCode{ *ret });
-    ret->pop_back(); //pop NUL-terminator
     return ret;
   }
 
@@ -127,7 +123,6 @@ namespace colt
         };
         to_cmp += str;
         to_cmp += "\n); }";
-        to_cmp.c_str();
         if (CompileAndAdd(ctx.add_str(std::move(to_cmp)), ast))
         {
 #ifndef COLT_NO_LLVM
@@ -138,7 +133,6 @@ namespace colt
       }
       else
       {
-        line->c_str();
         if (CompileAndAdd(ctx.add_str(std::move(line.get_value())), ast))
         {
 #ifndef COLT_NO_LLVM
