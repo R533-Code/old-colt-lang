@@ -65,6 +65,8 @@ namespace colt::lang
       return isFnTerminated(cond->get_if_statement())
         && isFnTerminated(cond->get_else_statement());
     }
+    //TODO: add support for [[noreturn]]
+    case Expr::EXPR_FN_CALL:
     default:
       return false;
     }
