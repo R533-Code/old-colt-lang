@@ -9,12 +9,8 @@ namespace colt::lang
 	Lexer::Lexer(StringView strv) noexcept
 		: to_scan(strv)
 	{
-		if (!to_scan.is_empty())
-		{
-			if (to_scan.get_back() == '\0')
-				to_scan.pop_back();
-			ends_with_space = isSpace(to_scan.get_back());
-		}
+		if (!to_scan.is_empty() && to_scan.get_back() == '\0')
+			to_scan.pop_back();
 	}
 	
 	Lexer::LineInformations Lexer::get_line_info() const noexcept
@@ -121,14 +117,8 @@ namespace colt::lang
 	void Lexer::set_to_scan(StringView to_scan) noexcept
 	{
 		this->to_scan = to_scan;
-		if (!this->to_scan.is_empty())
-		{
-			if (this->to_scan.get_back() == '\0')
-				this->to_scan.pop_back();
-			ends_with_space = isSpace(this->to_scan.get_back());
-		}
-		else
-			ends_with_space = false;
+		if (!this->to_scan.is_empty() && this->to_scan.get_back() == '\0')
+			this->to_scan.pop_back();
 		
 		temp_str.clear();
 		offset = 0;
@@ -173,6 +163,7 @@ namespace colt::lang
 				line_begin_old = std::exchange(line_begin_new, as<u32>(offset));
 			return to_ret;
 		}
+		offset = to_scan.get_size() + 1;
 		return EOF;
 	}
 

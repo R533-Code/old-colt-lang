@@ -42,8 +42,6 @@ namespace colt::lang
 		mutable StringView cached_line_strv = {};
 		/// @brief Number of skipped spaces
 		u64 skipped_spaces = 0;
-		/// @brief True if the last character of 'to_scan' is a space
-		bool ends_with_space = false;
 		/// @brief The current char, which is the one to parse next
 		char current_char = ' ';
 
@@ -102,9 +100,7 @@ namespace colt::lang
 		/// @brief Get the current lexeme
 		/// @return String view over the current lexeme
 		StringView get_current_lexeme() const noexcept {
-			if (offset != to_scan.get_size())
-				return { to_scan.get_data() + lexeme_begin, to_scan.get_data() + offset - 1 };
-			return { to_scan.get_data() + lexeme_begin, to_scan.get_data() + offset - as<u64>(ends_with_space) };
+			return { to_scan.get_data() + lexeme_begin, to_scan.get_data() + offset - 1 };
 		}
 
 		/// @brief Returns the parsed String literal
