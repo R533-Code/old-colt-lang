@@ -163,6 +163,12 @@ namespace colt::lang
 				line_begin_old = std::exchange(line_begin_new, as<u32>(offset));
 			return to_ret;
 		}
+		// get_current_lexeme uses offset - 1 as an end.
+		//This comes from the fact that 'current_char' always contains
+		//the NEXT character to parse.
+		//Setting offset to the end of the string to parse + 1
+		//allows the calculation in get_current_lexeme to be right
+		//even when the end of the string to parse is reached.
 		offset = to_scan.get_size() + 1;
 		return EOF;
 	}
