@@ -2,11 +2,11 @@
 #define COLT_HG_FN_EXPORTS
 
 #ifdef _WIN32
-/// @brief Makes a function available for JIT
-#define COLT_EXPORT_FN __declspec(dllexport)
+  /// @brief Makes a function available for JIT
+  #define COLT_EXPORT_FN __declspec(dllexport)
 #else
-/// @brief Makes a function available for JIT
-#define COLT_EXPORT_FN
+  /// @brief Makes a function available for JIT
+  #define COLT_EXPORT_FN
 #endif
 
 /// @brief Expands to 'extern "C"'
