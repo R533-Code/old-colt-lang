@@ -44,24 +44,26 @@ namespace colt::lang
     return 0;
   }  
 
-  bool isTerminatedExpr(PTR<const Expr> expr) noexcept
+  bool isFnTerminated(PTR<const Expr> expr) noexcept
   {
+    assert_true(expr != nullptr, "Expr should not be null!");
     switch (expr->classof())
     {
+    case Expr::EXPR_FN_DEF:
+      return isFnTerminated(as<PTR<const FnDefExpr>>(expr)->get_body());
     case Expr::EXPR_SCOPE:
-      return isTerminatedExpr(as<PTR<const ScopeExpr>>(expr)->get_body_array().get_back());
+      return isFnTerminated(as<PTR<const ScopeExpr>>(expr)->get_body_array().get_back());
     case Expr::EXPR_ERROR:
     case Expr::EXPR_FN_RETURN:
       return true;
     case Expr::EXPR_CONDITION:
     {
       PTR<const ConditionExpr> cond = as<PTR<const ConditionExpr>>(expr);
-      bool to_ret = true;
-      //Validate both branches
-      to_ret &= isTerminatedExpr(cond->get_if_statement());
-      if (cond->get_else_statement() != nullptr)
-        to_ret &= isTerminatedExpr(cond->get_else_statement());
-      return to_ret;
+
+      if (cond->get_else_statement() == nullptr)
+        return false;
+      return isFnTerminated(cond->get_if_statement())
+        && isFnTerminated(cond->get_else_statement());
     }
     default:
       return false;
@@ -551,7 +553,7 @@ namespace colt::lang
       //If a return is not present at the end of the void function,
       //add one. As parse_scope can return ErrorExpr or ScopeExpr,
       //do necessary check
-      else if (is_a<ScopeExpr>(body) && !isTerminatedExpr(body))
+      else if (is_a<ScopeExpr>(body) && !isFnTerminated(body))
       {
         //If main has no return, add 'return 0'
         //If function is not main, (and returns void) add 'return void'
@@ -735,7 +737,7 @@ namespace colt::lang
 
     PTR<Expr> condition = parse_bin_cond();
     PTR<Expr> body = parse_scope();
-    if (isTerminatedExpr(body))
+    if (isFnTerminated(body))
     {
       generate_any<report_as::WARNING>(body->get_src_code(), nullptr,
         "Loop body is terminated!");

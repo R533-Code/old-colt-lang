@@ -567,7 +567,7 @@ namespace colt::gen
     builder.SetInsertPoint(if_st);
     
     gen_ir(ptr->get_if_statement());
-    if (!(are_both_branches_term = lang::isTerminatedExpr(ptr->get_if_statement())))
+    if (!(are_both_branches_term = lang::isFnTerminated(ptr->get_if_statement())))
       builder.CreateBr(after_st);
     
     // Emit else block.
@@ -577,7 +577,7 @@ namespace colt::gen
     if (ptr->get_else_statement())
     {
       gen_ir(ptr->get_else_statement());
-      if (!(are_both_branches_term &= lang::isTerminatedExpr(ptr->get_else_statement())))
+      if (!(are_both_branches_term &= lang::isFnTerminated(ptr->get_else_statement())))
         builder.CreateBr(after_st);
     }
     else

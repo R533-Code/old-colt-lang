@@ -45,7 +45,7 @@ namespace colt::lang
   /// expression is a 'return', or an if/else whose branches are terminated expressions.
   /// @param expr The expression to check for
   /// @return True if represents a return expression
-  bool isTerminatedExpr(PTR<const Expr> expr) noexcept;
+  bool isFnTerminated(PTR<const Expr> expr) noexcept;
 
   /// @brief Concatenate two adjacent SourceCodeExprInfo
   /// @param lhs The left hand side
