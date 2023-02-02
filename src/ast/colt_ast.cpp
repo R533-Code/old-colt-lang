@@ -1313,9 +1313,11 @@ namespace colt::lang
     case Expr::EXPR_CONDITION:
     {
       PTR<const ConditionExpr> cond = as<PTR<const ConditionExpr>>(expr);
-      //Validate both branches
       validate_all_path_return(cond->get_if_statement());
-      if (cond->get_else_statement() != nullptr)
+      if (cond->get_else_statement() == nullptr)
+        generate_any<report_as::ERROR>(expr->get_src_code(), nullptr,
+          "Missing 'else' branch with 'return' statement, as path must return a value!");
+      else
         validate_all_path_return(cond->get_else_statement());
       return;
     }
