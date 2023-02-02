@@ -47,6 +47,8 @@ namespace colt::lang
   /// @return True if represents a return expression
   bool isFnTerminated(PTR<const Expr> expr) noexcept;
 
+  bool isLoopTerminated(PTR<const Expr> expr) noexcept;
+
   /// @brief Concatenate two adjacent SourceCodeExprInfo
   /// @param lhs The left hand side
   /// @param rhs The right hand side

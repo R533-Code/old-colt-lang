@@ -72,6 +72,35 @@ namespace colt::lang
     }
   }
 
+  bool isLoopTerminated(PTR<const Expr> expr) noexcept
+  {
+    assert_true(expr != nullptr, "Expr should not be null!");
+    switch (expr->classof())
+    {
+    case Expr::EXPR_SCOPE:
+      return isLoopTerminated(as<PTR<const ScopeExpr>>(expr)->get_body_array().get_back());
+    case Expr::EXPR_ERROR:
+      return false;
+    case Expr::EXPR_FN_RETURN:
+      return true;
+    case Expr::EXPR_BREAK_CONTINUE:
+      return as<PTR<const BreakContinueExpr>>(expr)->is_break();
+    case Expr::EXPR_CONDITION:
+    {
+      PTR<const ConditionExpr> cond = as<PTR<const ConditionExpr>>(expr);
+
+      if (cond->get_else_statement() == nullptr)
+        return false;
+      return isLoopTerminated(cond->get_if_statement())
+        && isLoopTerminated(cond->get_else_statement());
+    }
+    //TODO: add support for [[noreturn]]
+    case Expr::EXPR_FN_CALL:
+    default:
+      return false;
+    }
+  }
+
   SourceCodeExprInfo ConcatInfo(const SourceCodeExprInfo& lhs, const SourceCodeExprInfo& rhs) noexcept
   {
     return SourceCodeExprInfo{ lhs.line_begin, rhs.line_end,
@@ -739,7 +768,7 @@ namespace colt::lang
 
     PTR<Expr> condition = parse_bin_cond();
     PTR<Expr> body = parse_scope();
-    if (isFnTerminated(body))
+    if (isLoopTerminated(body))
     {
       generate_any<report_as::WARNING>(body->get_src_code(), nullptr,
         "Loop body is terminated!");
