@@ -112,12 +112,6 @@ namespace colt::gen
 		LLVMIRGenerator(const lang::AST& ast, llvm::LLVMContext& ctx, llvm::Module& mod) noexcept;
 
 	private:
-
-		void print_module() const noexcept
-		{
-			module.print(llvm::errs(), nullptr);
-		}
-
 		/// @brief Generates IR for any expression by calling the
 		///        corresponding function.
 		void gen_ir(PTR<const lang::Expr> ptr) noexcept;
