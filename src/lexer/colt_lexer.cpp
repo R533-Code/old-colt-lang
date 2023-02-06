@@ -230,11 +230,9 @@ namespace colt::lang
 			break; case 'o': //OCTAL	
 				base = 8;
 			break; default:
+				//If not any 'x', 'b' or 'o', parse normally
 				if (isDigit(current_char) || current_char == '.')
-				{
-					//We recurse now that we have popped the leading 0
-					return get_next_token();
-				}
+					goto NORM;
 				else
 					return str_to_integral();
 			}
@@ -260,7 +258,7 @@ namespace colt::lang
 			}
 			return str_to_u64(base);
 		}
-
+	NORM:
 		//Parse as many digits as possible
 		current_char = parse_digits();
 
