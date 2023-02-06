@@ -39,6 +39,35 @@
 
 namespace colt
 {
+  template<typename T>
+  /// @brief Assigns to a variable, then restores its previous value at the end
+  /// of the scope
+  /// @tparam T The type of the variable
+  class ScopedSave
+  {
+    /// @brief The value to restore
+    T restore;
+    /// @brief Where to restore the value
+    T& ref;
+
+  public:
+    /// @brief Constructor
+    /// @param ref The variable whose value to store
+    /// @param new_val The value to assign to the variable
+    template<typename Tf, typename = std::enable_if_t<std::is_same_v<std::decay_t<Tf>, std::decay_t<T>>>>
+    constexpr ScopedSave(T& ref, Tf&& new_val) noexcept
+      : restore(std::forward<Tf>(ref)), ref(ref)
+    {
+      ref = std::move(new_val);
+    }
+
+    /// @brief Restores the previous value of the variable
+    ~ScopedSave() noexcept
+    {
+      ref = std::move(restore);
+    }
+  };
+
   namespace traits
   {
     template<typename T, typename = std::void_t<>>

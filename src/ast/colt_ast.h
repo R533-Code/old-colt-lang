@@ -11,28 +11,6 @@
 #include "lexer/colt_lexer.h"
 #include "interpreter/qword_op.h"
 
-namespace colt
-{
-  template<typename T>
-  class ScopedSave
-  {
-    T restore;
-    T& ref;
-
-  public:
-    constexpr ScopedSave(T& ref, T new_val) noexcept
-      : restore(ref), ref(ref)
-    {
-      ref = new_val;
-    }
-
-    ~ScopedSave() noexcept
-    {
-      ref = restore;
-    }
-  };
-}
-
 namespace colt::lang
 {
   /// @brief Returns the precedence of an operator or 0 if the token is not an operator.
