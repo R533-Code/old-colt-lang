@@ -142,6 +142,8 @@ namespace colt::gen
       gen_condition(as<PTR<const ConditionExpr>>(ptr));
     break; case Expr::EXPR_WHILE_LOOP:
       gen_while_loop(as<PTR<const WhileLoopExpr>>(ptr));
+    break; case Expr::EXPR_BREAK_CONTINUE:
+      gen_break_continue(as<PTR<const BreakContinueExpr>>(ptr));
     break; case Expr::EXPR_NOP:
       returned_value = builder.CreateIntrinsic(llvm::Intrinsic::donothing, {}, {}, nullptr);
     break; case Expr::EXPR_PTR_LOAD:
@@ -149,7 +151,6 @@ namespace colt::gen
     break; case Expr::EXPR_PTR_STORE:
       gen_ptr_store(as<PTR<const PtrStoreExpr>>(ptr));
     break; case Expr::EXPR_FOR_LOOP:
-    break; case Expr::EXPR_BREAK_CONTINUE:    
     break; default:
       colt_unreachable("Generating invalid expression!");
     }
@@ -557,17 +558,13 @@ namespace colt::gen
     BasicBlock* else_st = BasicBlock::Create(context, "br_false");
     BasicBlock* after_st = BasicBlock::Create(context, "after_br");
 
-    //If both if and else branches are terminated,
-    //then no 'after_st' branches should be emitted
-    bool are_both_branches_term;
-
     builder.CreateCondBr(cond, if_st, else_st);
 
     // Emit then value.
     builder.SetInsertPoint(if_st);
     
     gen_ir(ptr->get_if_statement());
-    if (!(are_both_branches_term = lang::isFnTerminated(ptr->get_if_statement())))
+    if (!lang::isTerminated(ptr->get_if_statement()))
       builder.CreateBr(after_st);
     
     // Emit else block.
@@ -577,13 +574,13 @@ namespace colt::gen
     if (ptr->get_else_statement())
     {
       gen_ir(ptr->get_else_statement());
-      if (!(are_both_branches_term &= lang::isFnTerminated(ptr->get_else_statement())))
+      if (!lang::isTerminated(ptr->get_else_statement()))
         builder.CreateBr(after_st);
     }
     else
       builder.CreateBr(after_st);
 
-    if (!are_both_branches_term)
+    if (!lang::isTerminated(ptr))
     {
       function->getBasicBlockList().push_back(after_st);
       builder.SetInsertPoint(after_st);
@@ -593,9 +590,13 @@ namespace colt::gen
   void LLVMIRGenerator::gen_while_loop(PTR<const lang::WhileLoopExpr> ptr) noexcept
   {
     BasicBlock* while_cond = BasicBlock::Create(context, "while_cond", current_fn);
-    BasicBlock* body = BasicBlock::Create(context, "loop_body", current_fn);
-    BasicBlock* end = BasicBlock::Create(context, "after_loop", current_fn);
-    loop_begin = while_cond;
+    BasicBlock* body = BasicBlock::Create(context, "loop_body", current_fn);    
+    
+    BasicBlock* end = BasicBlock::Create(context, "after_loop");
+
+    colt::ScopedSave s1 = { loop_begin, while_cond };
+    colt::ScopedSave s2 = { loop_end, end };
+
     //Jump from current block to while condition
     builder.CreateBr(while_cond);
     
@@ -606,10 +607,27 @@ namespace colt::gen
     builder.SetInsertPoint(body);
     gen_ir(ptr->get_body());
     //Jump back to reevaluate condition
-    builder.CreateBr(while_cond);
+    if (!lang::isLoopTerminated(ptr->get_body()))
+      builder.CreateBr(while_cond);
     
+    current_fn->getBasicBlockList().push_back(end);
     //Set insertion to after loop body
     builder.SetInsertPoint(end);
+  }
+
+  void LLVMIRGenerator::gen_break_continue(PTR<const lang::BreakContinueExpr> ptr) noexcept
+  {
+    BasicBlock* jmp = BasicBlock::Create(context, ptr->is_break() ? "break" : "continue", current_fn);
+    builder.CreateBr(jmp);
+    auto insert = jmp->getPrevNode();
+    
+    builder.SetInsertPoint(jmp);    
+    if (ptr->is_break())
+      builder.CreateBr(loop_end);
+    else
+      builder.CreateBr(loop_begin);
+    
+    builder.SetInsertPoint(insert);
   }
 
   void LLVMIRGenerator::gen_ptr_load(PTR<const lang::PtrLoadExpr> ptr) noexcept
@@ -627,7 +645,7 @@ namespace colt::gen
     auto store = builder.CreateStore(value, returned_value);
     returned_value = builder.CreateLoad(returned_value->getType(),
       store->getPointerOperand());
-  }
+  }  
 
   PTR<llvm::Type> LLVMIRGenerator::type_to_llvm(PTR<const lang::Type> type) noexcept
   {
@@ -676,6 +694,8 @@ namespace colt::gen
     case lang::Type::TYPE_PTR:
     {
       auto ptr = as<PTR<const PtrType>>(type);
+      if (ptr->get_type_to()->is_void())
+        return PointerType::get(context, 0);
       return PointerType::get(type_to_llvm(ptr->get_type_to()), 0);
     }
     case lang::Type::TYPE_FN:

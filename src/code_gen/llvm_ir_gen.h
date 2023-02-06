@@ -94,6 +94,8 @@ namespace colt::gen
 		PTR<llvm::Function> current_fn = nullptr;
 		/// @brief Current loop begin block (used for continue)
 		PTR<llvm::BasicBlock> loop_begin = nullptr;
+		/// @brief Current loop begin block (used for continue)
+		PTR<llvm::BasicBlock> loop_end = nullptr;
 
 	public:
 		/// @brief No default constructor
@@ -110,6 +112,12 @@ namespace colt::gen
 		LLVMIRGenerator(const lang::AST& ast, llvm::LLVMContext& ctx, llvm::Module& mod) noexcept;
 
 	private:
+
+		void print_module() const noexcept
+		{
+			module.print(llvm::errs(), nullptr);
+		}
+
 		/// @brief Generates IR for any expression by calling the
 		///        corresponding function.
 		void gen_ir(PTR<const lang::Expr> ptr) noexcept;
@@ -165,6 +173,8 @@ namespace colt::gen
 		/// @brief Generates IR for while expressions
 		/// @param ptr The expression for which to generate the IR
 		void gen_while_loop(PTR<const lang::WhileLoopExpr> ptr) noexcept;
+
+		void gen_break_continue(PTR<const lang::BreakContinueExpr> ptr) noexcept;
 
 		void gen_ptr_load(PTR<const lang::PtrLoadExpr> ptr) noexcept;
 		
