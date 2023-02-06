@@ -27,6 +27,8 @@ namespace colt::lang
 
   bool isLoopTerminated(PTR<const Expr> expr) noexcept;
 
+  bool isTerminated(PTR<const Expr> expr) noexcept;
+
   /// @brief Concatenate two adjacent SourceCodeExprInfo
   /// @param lhs The left hand side
   /// @param rhs The right hand side
