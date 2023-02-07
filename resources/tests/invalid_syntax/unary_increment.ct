@@ -1,4 +1,4 @@
-//`Increment/Decrement operator can only be applied on variables!
+//`'++' and '--' operator can only be applied on variables!
 //1
 fn main()->i64 {
   ++10;

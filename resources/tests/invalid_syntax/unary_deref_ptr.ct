@@ -1,4 +1,4 @@
-//`Dereference operator '*' can only be applied on pointer types!
+//`Dereference operator '*' can only be applied on non-void pointer types!
 //1
 fn main()->i64 {
   var hello = 10;
