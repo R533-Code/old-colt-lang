@@ -43,7 +43,7 @@
 #include <util/colt_config.h>
 
 #include <util/dyn_cast.h>
-
+#include <util/colt_int.h>
 #include <util/colt_macro.h>
 #include <io/colt_print.h>
 
