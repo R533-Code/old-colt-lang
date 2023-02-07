@@ -6,7 +6,8 @@ namespace colt::io
   {
     using namespace colt;
     using namespace colt::lang;
-
+    if (tkn == TKN_ERROR)
+      return io::RedF;
     if (tkn <= TKN_RIGHT_SQUARE)
       return io::BrightBlackF;
     else if (tkn == TKN_KEYWORD_MUT)
