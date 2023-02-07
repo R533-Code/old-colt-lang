@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.4)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-project(Colt-Lang VERSION 0.0.12.0 LANGUAGES CXX)
+project(Colt-Lang VERSION 0.0.12.5 LANGUAGES CXX)
 
 # Set default build type to Release
 set(CMAKE_BUILD_TYPE "Release")
