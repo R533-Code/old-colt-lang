@@ -33,7 +33,7 @@ namespace colt
 	}
 
 	template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-	IntOpResult add(T a, T x, T* result) noexcept
+	IntOpResult add(T a, T x, T& result) noexcept
 	{
 		if constexpr (std::is_signed_v<T>)
 		{
@@ -41,7 +41,7 @@ namespace colt
 				return OP_OVERFLOW;
 			if (x < 0 && a < std::numeric_limits<T>::min() - x)
 				return OP_UNDERFLOW;
-			*result = a + x;
+			result = a + x;
 			return OP_VALID;
 		}
 		else
@@ -50,7 +50,7 @@ namespace colt
 			{
 				uint64_t res = a;
 				res += x;
-				*result = res;
+				result = res;
 				if (res & (std::numeric_limits<uint64_t>::max() + 1))
 					return OP_OVERFLOW;
 				return OP_VALID;
@@ -59,7 +59,7 @@ namespace colt
 			{
 				uint64_t res = a;
 				res += x;
-				*result = res;
+				result = res;
 				if (std::max(a, x) > res)
 					return OP_OVERFLOW;
 				return OP_VALID;
@@ -68,7 +68,7 @@ namespace colt
 	}
 
 	template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-	IntOpResult sub(T a, T x, T* result) noexcept
+	IntOpResult sub(T a, T x, T& result) noexcept
 	{
 		if constexpr (std::is_signed_v<T>)
 		{
@@ -76,12 +76,12 @@ namespace colt
 				return OP_OVERFLOW;
 			if (x > 0 && a < std::numeric_limits<T>::min() + x)
 				return OP_UNDERFLOW;
-			*result = a - x;
+			result = a - x;
 			return OP_VALID;
 		}
 		else
 		{
-			*result = a - x;
+			result = a - x;
 			if (x > a)
 				return OP_UNDERFLOW;
 			return OP_VALID;
@@ -89,7 +89,7 @@ namespace colt
 	}
 
 	template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-	IntOpResult mul(T a, T x, T* result) noexcept
+	IntOpResult mul(T a, T x, T& result) noexcept
 	{
 		if constexpr (std::is_signed_v<T>)
 		{
@@ -101,7 +101,7 @@ namespace colt
 				return OP_OVERFLOW;
 			if (x < 0 && (a < std::numeric_limits<T>::max() / x || a > std::numeric_limits<T>::min() / x))
 				return OP_UNDERFLOW;
-			*result = a * x;
+			result = a * x;
 			return OP_VALID;
 		}
 		else
@@ -110,7 +110,7 @@ namespace colt
 			{
 				uint64_t res = a;
 				res += x;
-				*result = res;
+				result = res;
 				if (res & (std::numeric_limits<uint64_t>::max() & ~static_cast<uint64_t>(std::numeric_limits<T>::max())))
 					return OP_OVERFLOW;
 				return OP_VALID;
@@ -119,7 +119,7 @@ namespace colt
 			{
 				uint64_t res = a;
 				res *= x;
-				*result = res;
+				result = res;
 				if (a != 0 && res / a != x)
 					return OP_OVERFLOW;
 				return OP_VALID;
@@ -128,18 +128,18 @@ namespace colt
 	}
 
 	template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-	IntOpResult div(T a, T x, T* result) noexcept
+	IntOpResult div(T a, T x, T& result) noexcept
 	{
 		if constexpr (std::is_signed_v<T>)
 		{
 			if (x == -1 && a == std::numeric_limits<T>::min())
 				return OP_OVERFLOW;
-			*result = a / x;
+			result = a / x;
 			return OP_VALID;
 		}
 		else
 		{
-			*result = a / x;
+			result = a / x;
 			return OP_VALID;
 		}
 	}
