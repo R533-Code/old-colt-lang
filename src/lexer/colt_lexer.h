@@ -44,6 +44,8 @@ namespace colt::lang
 		u64 skipped_spaces = 0;
 		/// @brief The current char, which is the one to parse next
 		char current_char = ' ';
+		/// @brief If false, then errors are not reported to the console
+		bool report_errors = true;
 
 		/// @brief Contains informations about the current line being parsed
 		struct LineInformations
@@ -63,7 +65,7 @@ namespace colt::lang
 		Lexer() noexcept = default;
 		/// @brief Constructs a Lexer to parse 'strv'
 		/// @param strv A NUL terminated StringView
-		Lexer(StringView strv) noexcept;
+		Lexer(StringView strv, bool report_errors = true) noexcept;
 		/// @brief Default destructor
 		~Lexer() noexcept = default;
 		/// @brief Default move constructor
@@ -113,7 +115,7 @@ namespace colt::lang
 
 		/// @brief Resets the state of the scanner and 
 		/// @param to_scan The StringView to scan
-		void set_to_scan(StringView to_scan) noexcept;
+		void set_to_scan(StringView to_scan, bool report_errors = true) noexcept;
 
 	private:
 		/// @brief Returns a string view over the current line
@@ -256,6 +258,8 @@ namespace colt::lang
 	template<typename ...Args>
 	inline void Lexer::gen_error(StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept
 	{
+		if (!report_errors)
+			return;
 		auto info = get_line_info();
 		//Construct source information from lexeme information
 		SourceCodeExprInfo lexeme_info = { info.line_nb, info.line_nb, info.line_strv, get_current_lexeme() };
@@ -266,6 +270,8 @@ namespace colt::lang
 	template<typename ...Args>
 	inline void Lexer::gen_warn(StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept
 	{
+		if (!report_errors)
+			return;
 		auto info = get_line_info();
 		//Construct source information from lexeme information
 		SourceCodeExprInfo lexeme_info = { info.line_nb, info.line_nb, info.line_strv, get_current_lexeme() };

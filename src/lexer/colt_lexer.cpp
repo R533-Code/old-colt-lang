@@ -6,8 +6,8 @@
 
 namespace colt::lang
 {
-	Lexer::Lexer(StringView strv) noexcept
-		: to_scan(strv)
+	Lexer::Lexer(StringView strv, bool report_errors) noexcept
+		: to_scan(strv), report_errors(report_errors)
 	{
 		if (!to_scan.is_empty() && to_scan.get_back() == '\0')
 			to_scan.pop_back();
@@ -114,12 +114,13 @@ namespace colt::lang
 		}
 	}
 
-	void Lexer::set_to_scan(StringView to_scan) noexcept
+	void Lexer::set_to_scan(StringView to_scan, bool report_errors) noexcept
 	{
 		this->to_scan = to_scan;
 		if (!this->to_scan.is_empty() && this->to_scan.get_back() == '\0')
 			this->to_scan.pop_back();
 		
+		this->report_errors = report_errors;
 		temp_str.clear();
 		offset = 0;
 		lexeme_begin = 0;
@@ -142,7 +143,7 @@ namespace colt::lang
 		line_begin += as<size_t>(*line_begin == '\n');
 
 		const char* line_end = line_begin;
-		while (*line_end != '\n')
+		while (*line_end != '\n' && line_end < to_scan.end())
 			++line_end;
 		//a StringView's end is non-inclusive, so there is no need to change line_end
 		//depending on if it is a '\n' or not.
@@ -220,6 +221,7 @@ namespace colt::lang
 		if (current_char == '0') //Could be 0x, 0b, 0o
 		{
 			current_char = get_next_char();
+			char symbol = current_char;
 			int base = 10;
 			switch (current_char)
 			{
@@ -233,19 +235,20 @@ namespace colt::lang
 				//If not any 'x', 'b' or 'o', parse normally
 				if (isDigit(current_char) || current_char == '.')
 					goto NORM;
-				else
+				else //If not digit nor '.', then simply '0'
 					return str_to_integral();
 			}
-
+			//Pop the leading '0'
+			temp_str.clear();
 			current_char = parse_alnum();
 
-			if (temp_str.get_size() == 1) //Contains only the '0'
+			if (temp_str.get_size() == 0) //Contains only the '0'
 			{
 				const char* range_str;
-				switch (current_char)
+				switch (symbol)
 				{
 				break; case 'x':
-					range_str = "[0-9a-f]";
+					range_str = "[0-9] or [a-f]";
 				break; case 'b':
 					range_str = "[0-1]";
 				break; case 'o':
@@ -253,7 +256,8 @@ namespace colt::lang
 				break; default: //should never happen
 					colt_unreachable("Invalid current char!");
 				}
-				gen_error(get_current_lexeme(), "Integral literals starting with 0{} should be followed by characters in range {}!", current_char, range_str);
+				gen_error(get_current_lexeme(),
+					"Integral literals starting with 0{} should be followed by characters in range {}!", symbol, range_str);
 				return TKN_ERROR;
 			}
 			return str_to_u64(base);

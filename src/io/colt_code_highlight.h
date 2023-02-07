@@ -36,7 +36,7 @@ struct fmt::formatter<colt::io::HighlightCode>
 
     auto iter = ctx.out();
 
-    Lexer lex = { str.strv };
+    Lexer lex = { str.strv, false };
 
     Token tkn = lex.get_next_token();
     StringView lexeme = lex.get_current_lexeme();
