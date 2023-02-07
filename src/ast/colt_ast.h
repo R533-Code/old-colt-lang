@@ -25,8 +25,19 @@ namespace colt::lang
   /// @return True if represents a return expression
   bool isFnTerminated(PTR<const Expr> expr) noexcept;
 
+  /// @brief Check if 'expr' is a terminated expression.
+  /// The only difference between this function and isFnTerminated
+  /// is the handling of ErrorExpr, which returns true in isFnTerminated
+  /// but false in isLoopTerminated.
+  /// @param expr The expression to check for
+  /// @return True if represents a terminated loop expression
   bool isLoopTerminated(PTR<const Expr> expr) noexcept;
 
+  /// @brief Merge of isFnTerminated and isLoopTerminated.
+  /// A function is considered terminated if when lowered
+  /// to LLVM-IR contains a jump.
+  /// @param expr The expression to check for
+  /// @return True if represents a terminated expression
   bool isTerminated(PTR<const Expr> expr) noexcept;
 
   /// @brief Concatenate two adjacent SourceCodeExprInfo
@@ -144,7 +155,7 @@ namespace colt::lang
 
   public:
     /// @brief Parses a StringView into an abstract syntax tree
-    /// @param strv The StringView to parse (should be NUL-terminated)    
+    /// @param strv The StringView to parse
     /// @param ast The AST in which to store the result
     ASTMaker(StringView strv, AST& ast) noexcept;
     //No default move constructor
