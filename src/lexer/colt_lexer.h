@@ -99,6 +99,10 @@ namespace colt::lang
 		/// @return Union of the possible value
 		QWORD get_parsed_value() const noexcept { return parsed_value; }
 
+		/// @brief Returns the current line number
+		/// @return Current line number being parsed
+		u32 get_current_line() const noexcept { return current_line; }
+
 		/// @brief Get the current lexeme
 		/// @return String view over the current lexeme
 		StringView get_current_lexeme() const noexcept {
