@@ -6,85 +6,43 @@
 
 namespace colt::op
 {
+  template<typename T>
+  constexpr OpError IntOpToOpError(colt::IntOpResult res) noexcept
+  {
+    if constexpr (std::is_signed_v<T>)
+    {
+      switch (res)
+      {
+      case colt::OP_VALID:
+        return OpError::NO_ERROR;
+      case colt::OP_OVERFLOW:
+        return OpError::SIGNED_OVERFLOW;
+      case colt::OP_UNDERFLOW:
+        return OpError::SIGNED_UNDERFLOW;
+      default:
+        colt_unreachable("Invalid enum!");
+      }
+    }
+    else
+    {
+      switch (res)
+      {
+      case colt::OP_VALID:
+        return OpError::NO_ERROR;
+      case colt::OP_OVERFLOW:
+        return OpError::UNSIGNED_OVERFLOW;
+      case colt::OP_UNDERFLOW:
+        return OpError::UNSIGNED_UNDERFLOW;
+      default:
+        colt_unreachable("Invalid enum!");
+      }
+    }
+  }
+  
   //BOOL, CHAR,
   //U8, U16, U32, U64, U128,
   //I8, I16, I32, I64, I128,
   //F32, F64, lstring,
-
-  OpError uint_overflow_check_add(QWORD a, QWORD b, QWORD result, lang::BuiltInID id) noexcept
-  {
-    using namespace lang;
-
-    switch (id)
-    {
-    case U8:
-      //Check if bit after 8 lowest bit is set
-      if (result.as<u64>() & (std::numeric_limits<u8>::max() + 1))
-        return UNSIGNED_OVERFLOW;
-      return NO_ERROR;
-    case U16:
-      if (result.as<u64>() & (std::numeric_limits<u16>::max() + 1))
-        return UNSIGNED_OVERFLOW;
-      return NO_ERROR;
-    case U32:
-      if (result.as<u64>() & (std::numeric_limits<u32>::max() + 1))
-        return UNSIGNED_OVERFLOW;
-      return NO_ERROR;
-    case U64:
-      if (details::max(a.as<u64>(), b.as<u64>()) > result.as<u64>())
-        return UNSIGNED_OVERFLOW;
-      return NO_ERROR;
-    break; default:
-      colt_unreachable("Invalid ID!");
-    }
-  }
-
-  OpError uint_overflow_check_sub(QWORD a, QWORD b, lang::BuiltInID id) noexcept
-  {
-    using namespace lang;
-    
-    switch (id)
-    {
-    case U8:
-    case U16:
-    case U32:
-    case U64:
-      //Check if 'b' is greater than 'a'
-      if (b.as<u64>() > a.as<u64>())
-        return UNSIGNED_UNDERFLOW;
-      return NO_ERROR;
-    break; default:
-      colt_unreachable("Invalid ID!");
-    }
-  }
-
-  OpError uint_overflow_check_mul(QWORD a, QWORD b, QWORD result, lang::BuiltInID id) noexcept
-  {
-    using namespace lang;
-
-    switch (id)
-    {
-    case U8:
-      //Check if any bits over the 8 lowest bits are set
-      if (result.as<u64>() & (std::numeric_limits<u64>::max() & ~static_cast<u64>(std::numeric_limits<u8>::max())))
-        return UNSIGNED_OVERFLOW;
-      return NO_ERROR;
-    case U16:
-      if (result.as<u64>() & (std::numeric_limits<u64>::max() & ~static_cast<u64>(std::numeric_limits<u16>::max())))
-        return UNSIGNED_OVERFLOW;
-      return NO_ERROR;
-    case U32:
-      if (result.as<u64>() & (std::numeric_limits<u64>::max() & ~static_cast<u64>(std::numeric_limits<u32>::max())))
-        return UNSIGNED_OVERFLOW;
-      return NO_ERROR;
-    case U64:
-      if (a.as<u64>() != 0 && result.as<u64>() / a.as<u64>() != b.as<u64>())
-        return UNSIGNED_OVERFLOW;
-      return NO_ERROR;
-    break; default:
-      colt_unreachable("Invalid ID!");
-    }
-  }
 
   OpError shift_sizeof_check(QWORD sh_by, lang::BuiltInID id) noexcept
   {
@@ -152,19 +110,45 @@ namespace colt::op
     switch (id)
     {
     case U8:
+    {
+      u8 ret;
+      return { ret, IntOpToOpError<u8>(colt::add(a.as<u8>(), b.as<u8>(), ret)) };
+    }
     case U16:
+    {
+      u16 ret;
+      return { ret, IntOpToOpError<u8>(colt::add(a.as<u16>(), b.as<u16>(), ret)) };
+    }
     case U32:
+    {
+      u32 ret;
+      return { ret, IntOpToOpError<u8>(colt::add(a.as<u32>(), b.as<u32>(), ret)) };
+    }
     case U64:
-      result = a.as<u64>() + b.as<u64>();
-      return { result.as<u64>(), uint_overflow_check_add(a, b, result, id) };
-    break; case I8:
-      result = a.as<i8>() + b.as<i8>();
-    break; case I16:
-      result = a.as<i16>() + b.as<i16>();
-    break; case I32:
-      result = a.as<i32>() + b.as<i32>();
-    break; case I64:
-      result = a.as<i64>() + b.as<i64>();
+    {
+      u64 ret;
+      return { ret, IntOpToOpError<u8>(colt::add(a.as<u64>(), b.as<u64>(), ret)) };
+    }
+    case I8:
+    {
+      i8 ret;
+      return { ret, IntOpToOpError<i8>(colt::add(a.as<i8>(), b.as<i8>(), ret)) };
+    }
+    case I16:
+    {
+      i16 ret;
+      return { ret, IntOpToOpError<i8>(colt::add(a.as<i16>(), b.as<i16>(), ret)) };
+    }
+    case I32:
+    {
+      i32 ret;
+      return { ret, IntOpToOpError<i8>(colt::add(a.as<i32>(), b.as<i32>(), ret)) };
+    }
+    case I64:
+    {
+      i64 ret;
+      return { ret, IntOpToOpError<i8>(colt::add(a.as<i64>(), b.as<i64>(), ret)) };
+    }
     break; case F32:
       if (std::isnan(a.as<f32>()))
         return { a, WAS_NAN };
@@ -195,19 +179,45 @@ namespace colt::op
     switch (id)
     {
     case U8:
+    {
+      u8 ret;
+      return { ret, IntOpToOpError<u8>(colt::sub(a.as<u8>(), b.as<u8>(), ret)) };
+    }
     case U16:
+    {
+      u16 ret;
+      return { ret, IntOpToOpError<u8>(colt::sub(a.as<u16>(), b.as<u16>(), ret)) };
+    }
     case U32:
+    {
+      u32 ret;
+      return { ret, IntOpToOpError<u8>(colt::sub(a.as<u32>(), b.as<u32>(), ret)) };
+    }
     case U64:
-      result = a.as<u64>() + b.as<u64>();
-      return { result.as<u64>(), uint_overflow_check_sub(a, b, id) };
-    break; case I8:
-      result = a.as<i8>() - b.as<i8>();
-    break; case I16:
-      result = a.as<i16>() - b.as<i16>();
-    break; case I32:
-      result = a.as<i32>() - b.as<i32>();
-    break; case I64:
-      result = a.as<i64>() - b.as<i64>();
+    {
+      u64 ret;
+      return { ret, IntOpToOpError<u8>(colt::sub(a.as<u64>(), b.as<u64>(), ret)) };
+    }
+    case I8:
+    {
+      i8 ret;
+      return { ret, IntOpToOpError<i8>(colt::sub(a.as<i8>(), b.as<i8>(), ret)) };
+    }
+    case I16:
+    {
+      i16 ret;
+      return { ret, IntOpToOpError<i8>(colt::sub(a.as<i16>(), b.as<i16>(), ret)) };
+    }
+    case I32:
+    {
+      i32 ret;
+      return { ret, IntOpToOpError<i8>(colt::sub(a.as<i32>(), b.as<i32>(), ret)) };
+    }
+    case I64:
+    {
+      i64 ret;
+      return { ret, IntOpToOpError<i8>(colt::sub(a.as<i64>(), b.as<i64>(), ret)) };
+    }
     break; case F32:
       if (std::isnan(a.as<f32>()))
         return { a, WAS_NAN };
@@ -238,19 +248,45 @@ namespace colt::op
     switch (id)
     {
     case U8:
+    {
+      u8 ret;
+      return { ret, IntOpToOpError<u8>(colt::mul(a.as<u8>(), b.as<u8>(), ret)) };
+    }
     case U16:
+    {
+      u16 ret;
+      return { ret, IntOpToOpError<u8>(colt::mul(a.as<u16>(), b.as<u16>(), ret)) };
+    }
     case U32:
+    {
+      u32 ret;
+      return { ret, IntOpToOpError<u8>(colt::mul(a.as<u32>(), b.as<u32>(), ret)) };
+    }
     case U64:
-      result = a.as<u64>() * b.as<u64>();
-      return { result.as<u64>(), uint_overflow_check_mul(a, b, result, id) };
-    break; case I8:
-      result = a.as<i8>() * b.as<i8>();
-    break; case I16:
-      result = a.as<i16>() * b.as<i16>();
-    break; case I32:
-      result = a.as<i32>() * b.as<i32>();
-    break; case I64:
-      result = a.as<i64>() * b.as<i64>();
+    {
+      u64 ret;
+      return { ret, IntOpToOpError<u8>(colt::mul(a.as<u64>(), b.as<u64>(), ret)) };
+    }
+    case I8:
+    {
+      i8 ret;
+      return { ret, IntOpToOpError<i8>(colt::mul(a.as<i8>(), b.as<i8>(), ret)) };
+    }
+    case I16:
+    {
+      i16 ret;
+      return { ret, IntOpToOpError<i8>(colt::mul(a.as<i16>(), b.as<i16>(), ret)) };
+    }
+    case I32:
+    {
+      i32 ret;
+      return { ret, IntOpToOpError<i8>(colt::mul(a.as<i32>(), b.as<i32>(), ret)) };
+    }
+    case I64:
+    {
+      i64 ret;
+      return { ret, IntOpToOpError<i8>(colt::mul(a.as<i64>(), b.as<i64>(), ret)) };
+    }
     break; case F32:
       if (std::isnan(a.as<f32>()))
         return { a, WAS_NAN };
@@ -284,18 +320,45 @@ namespace colt::op
     switch (id)
     {
     case U8:
+    {
+      u8 ret;
+      return { ret, IntOpToOpError<u8>(colt::div(a.as<u8>(), b.as<u8>(), ret)) };
+    }
     case U16:
+    {
+      u16 ret;
+      return { ret, IntOpToOpError<u8>(colt::div(a.as<u16>(), b.as<u16>(), ret)) };
+    }
     case U32:
+    {
+      u32 ret;
+      return { ret, IntOpToOpError<u8>(colt::div(a.as<u32>(), b.as<u32>(), ret)) };
+    }
     case U64:
-      result = a.as<u64>() / b.as<u64>();
-    break; case I8:
-      result = a.as<i8>() / b.as<i8>();
-    break; case I16:
-      result = a.as<i16>() / b.as<i16>();
-    break; case I32:
-      result = a.as<i32>() / b.as<i32>();
-    break; case I64:
-      result = a.as<i64>() / b.as<i64>();
+    {
+      u64 ret;
+      return { ret, IntOpToOpError<u8>(colt::div(a.as<u64>(), b.as<u64>(), ret)) };
+    }
+    case I8:
+    {
+      i8 ret;
+      return { ret, IntOpToOpError<i8>(colt::div(a.as<i8>(), b.as<i8>(), ret)) };
+    }
+    case I16:
+    {
+      i16 ret;
+      return { ret, IntOpToOpError<i8>(colt::div(a.as<i16>(), b.as<i16>(), ret)) };
+    }
+    case I32:
+    {
+      i32 ret;
+      return { ret, IntOpToOpError<i8>(colt::div(a.as<i32>(), b.as<i32>(), ret)) };
+    }
+    case I64:
+    {
+      i64 ret;
+      return { ret, IntOpToOpError<i8>(colt::div(a.as<i64>(), b.as<i64>(), ret)) };
+    }
     break; case F32:
       if (std::isnan(a.as<f32>()))
         return { a, WAS_NAN };
