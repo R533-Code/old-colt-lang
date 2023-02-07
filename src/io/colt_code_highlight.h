@@ -40,6 +40,7 @@ struct fmt::formatter<colt::io::HighlightCode>
 
     Token tkn = lex.get_next_token();
     StringView lexeme = lex.get_current_lexeme();
+    u64 current_line = lex.get_current_line();
     u64 skipped_spaces = lex.get_skipped_spaces_count();
 
     while (tkn != TKN_EOF)
@@ -49,9 +50,11 @@ struct fmt::formatter<colt::io::HighlightCode>
       {
         StringView identifier = lex.get_current_lexeme();
         u64 skipped_spaces2 = lex.get_skipped_spaces_count();
+        u32 current_line2 = lex.get_current_line();
 
         tkn = lex.get_next_token();
         lexeme = lex.get_current_lexeme();
+        current_line = lex.get_current_line();
         skipped_spaces = lex.get_skipped_spaces_count();
         
         io::Color identifier_color;
@@ -60,22 +63,30 @@ struct fmt::formatter<colt::io::HighlightCode>
         else
           identifier_color = io::BrightBlueF;
 
-        iter = fmt::format_to(iter, "{: <{}}{}{}", "",
-          skipped_spaces2, identifier_color, identifier);
-        iter = fmt::format_to(iter, "{: <{}}{}{}",
-          "", skipped_spaces, io::ToColor(tkn), lexeme);
+        iter = fmt::format_to(iter, "{: <{}}{:\n<{}}{}{}",
+          "", skipped_spaces2,
+          "", lex.get_current_line() - current_line2,
+          identifier_color, identifier);
+        iter = fmt::format_to(iter, "{: <{}}{:\n<{}}{}{}",
+          "", skipped_spaces,
+          "", lex.get_current_line() - current_line,
+          io::ToColor(tkn), lexeme);
 
         tkn = lex.get_next_token();
         lexeme = lex.get_current_lexeme();
+        current_line = lex.get_current_line();
         skipped_spaces = lex.get_skipped_spaces_count();
 
         continue;
       }
-      iter = fmt::format_to(iter, "{: <{}}{}{}",
-        "", skipped_spaces, io::ToColor(tkn), lexeme);
+      iter = fmt::format_to(iter, "{: <{}}{:\n<{}}{}{}",
+        "", skipped_spaces,
+        "", lex.get_current_line() - current_line,
+        io::ToColor(tkn), lexeme);
 
       tkn = lex.get_next_token();
       lexeme = lex.get_current_lexeme();
+      current_line = lex.get_current_line();
       skipped_spaces = lex.get_skipped_spaces_count();
     }    
     return fmt::format_to(iter, "{}{: <{}}", io::Reset, "", skipped_spaces);
