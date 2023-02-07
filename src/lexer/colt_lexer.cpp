@@ -229,7 +229,7 @@ namespace colt::lang
 				base = 16;
 			break; case 'b': //BINARY
 				base = 2;
-			break; case 'o': //OCTAL	
+			break; case 'o': //OCTAL
 				base = 8;
 			break; default:
 				//If not any 'x', 'b' or 'o', parse normally
@@ -728,7 +728,7 @@ namespace colt::lang
 	Token Lexer::str_to_u64(int base) noexcept
 	{
 		u64 value = 0;
-		auto [ptr, err] = std::from_chars(temp_str.begin(), temp_str.end(), value);
+		auto [ptr, err] = std::from_chars(temp_str.begin(), temp_str.end(), value, base);
 		if (ptr == temp_str.end() && err == std::errc{})
 		{
 			parsed_value = value;
