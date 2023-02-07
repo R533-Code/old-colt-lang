@@ -686,7 +686,7 @@ namespace colt::op
       &add, &sub, &mul, &div, &mod,
       &bit_and, &bit_or, &bit_xor,
       &shl, &shr, &bool_and, &bool_or,
-      &le, &leq, &ge, &geq, &eq, &neq
+      &le, &leq, &ge, &geq, &neq, &eq
     };
     assert_true(op < lang::BinaryOperator::OP_ASSIGN, "Invalid operator!");
     return op_array[static_cast<u64>(op)];    
