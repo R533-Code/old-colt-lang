@@ -32,10 +32,10 @@ namespace colt::lang
   {
     static constexpr u8 operator_precedence_table[] =
     {
-      10, 10, 11, 11, 11, // + - * / %
-      6, 4, 5, 8, 8,  // & | ^ << >>
+      12, 12, 13, 13, 13, // + - * / %
+      10, 9, 8, 11, 11,  // & | ^ << >>
       3, 2,  // '&&' '||'
-      9, 9, 9, 9, 10, 10, // < <= > >= != ==
+      7, 7, 7, 7, 6, 6, // < <= > >= != ==
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // = += -= *= /= %= &= |= ^= <<= >>=
     };
     assert_true(static_cast<size_t>(tkn) >= 0, "Token should be greater or equal to 0!");
@@ -301,7 +301,7 @@ namespace colt::lang
       //Consume the operator
       consume_current_tkn();
       //Recurse: 10 + 5 + 8 -> (10 + (5 + 8))
-      PTR<Expr> rhs = parse_binary(getOpPrecedence(binary_op));      
+      PTR<Expr> rhs = parse_binary(getOpPrecedence(binary_op));
 
       //Pratt's parsing, which allows operators priority
       lhs = create_binary(
@@ -1532,7 +1532,7 @@ namespace colt::lang
   PTR<Expr> ASTMaker::constant_fold_lstring(PTR<const LiteralExpr> a, BinaryOperator op, PTR<const LiteralExpr> b, const SourceCodeExprInfo& src_info) noexcept
   {
     //If the expression is 2 lstring to add, create lstring
-          //that represents the concatenation of both arguments
+    //that represents the concatenation of both arguments
     if (op == BinaryOperator::OP_SUM)
     {
       String concat = { *a->get_value().as<PTR<String>>() };
