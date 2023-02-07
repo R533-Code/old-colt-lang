@@ -80,6 +80,7 @@ namespace colt::args
     "  -v:\n     Display compiler version informations.\n\n" \
       COMMANDS(HELP_STR) \
     ); \
+    std::exit(0); \
   } \
   constexpr auto NameTable = sort(std::array{ COMMANDS(GET_NAME) }); \
   static_assert(details::is_unique(NameTable), "All arguments name should be unique!"); \
