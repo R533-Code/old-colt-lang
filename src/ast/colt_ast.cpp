@@ -484,10 +484,16 @@ namespace colt::lang
 
   PTR<Expr> ASTMaker::parse_global_declaration() noexcept
   {
-    //Function declaration/definition
-    if (current_tkn == TKN_KEYWORD_FN || current_tkn == TKN_KEYWORD_EXTERN)
+    bool is_extern = false;
+    if (current_tkn == TKN_KEYWORD_EXTERN)
     {
-      auto expr = parse_fn_decl(); //Function
+      is_extern = true;
+      consume_current_tkn();
+    }
+    //Function declaration/definition
+    if (current_tkn == TKN_KEYWORD_FN)
+    {
+      auto expr = parse_fn_decl(is_extern); //Function
       if (is_a<FnDefExpr>(expr)) //add to the global table
         add_fn_to_global_table(as<PTR<FnDefExpr>>(expr));
       return expr;
@@ -513,18 +519,11 @@ namespace colt::lang
     }
   }
 
-  PTR<Expr> ASTMaker::parse_fn_decl() noexcept
+  PTR<Expr> ASTMaker::parse_fn_decl(bool is_extern) noexcept
   {
     SavedExprInfo line_state = { *this };
 
-    assert(current_tkn == TKN_KEYWORD_FN || current_tkn == TKN_KEYWORD_EXTERN);
-
-    bool is_extern = false;
-    if (current_tkn == TKN_KEYWORD_EXTERN)
-    {
-      is_extern = true;
-      consume_current_tkn();
-    }
+    assert(current_tkn == TKN_KEYWORD_FN);
 
     consume_current_tkn();
     auto fn_name = lexer.get_parsed_identifier();

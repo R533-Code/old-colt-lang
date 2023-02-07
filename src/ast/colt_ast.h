@@ -218,7 +218,7 @@ namespace colt::lang
     /// This function will return a FnDefExpr even if the parsed expression
     /// is a declaration without body.
     /// @return Resulting expression or ErrorExpr on errors
-    PTR<Expr> parse_fn_decl() noexcept;
+    PTR<Expr> parse_fn_decl(bool is_extern) noexcept;
 
     /// @brief Parses a scope.
     /// If 'one_expr' is true, accepts a single statement scope
