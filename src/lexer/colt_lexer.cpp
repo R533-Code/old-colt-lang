@@ -260,7 +260,7 @@ namespace colt::lang
 					"Integral literals starting with 0{} should be followed by characters in range {}!", symbol, range_str);
 				return TKN_ERROR;
 			}
-			return str_to_u64(base);
+			return str_to_integral<u64, TKN_U64_L>(base);
 		}
 	NORM:
 		//Parse as many digits as possible
@@ -285,7 +285,7 @@ namespace colt::lang
 				//The dot is not followed by a digit, this is not a float,
 				//but rather should be the dot followed by an identifier for a function call
 				current_char = rewind_char();
-				return str_to_u64(10);
+				return str_to_integral();
 			}
 		}
 		
@@ -723,20 +723,7 @@ namespace colt::lang
 			next_char = get_next_char();
 		}
 		return next_char;
-	}
-
-	Token Lexer::str_to_u64(int base) noexcept
-	{
-		u64 value = 0;
-		auto [ptr, err] = std::from_chars(temp_str.begin(), temp_str.end(), value, base);
-		if (ptr == temp_str.end() && err == std::errc{})
-		{
-			parsed_value = value;
-			return TKN_U64_L;
-		}
-		gen_error(get_current_lexeme(), "Invalid integral literal!");
-		return TKN_ERROR;
-	}
+	}	
 
 	Token Lexer::str_to_float() noexcept
 	{
@@ -788,8 +775,19 @@ namespace colt::lang
 
 	Token Lexer::str_to_integral() noexcept
 	{
+		static constexpr std::array table =
+		{
+			&Lexer::str_to_integral<i8, TKN_I8_L>,
+			&Lexer::str_to_integral<u8, TKN_U8_L>,
+			&Lexer::str_to_integral<i16, TKN_I16_L>,
+			&Lexer::str_to_integral<u16, TKN_U16_L>,
+			&Lexer::str_to_integral<i32, TKN_I32_L>,
+			&Lexer::str_to_integral<u32, TKN_U32_L>,
+			&Lexer::str_to_integral<i64, TKN_I64_L>,
+			&Lexer::str_to_integral<u64, TKN_U64_L>,
+		};
 		Token int_type = get_integral_suffix();
-		return str_to_u64(10) == TKN_ERROR ? TKN_ERROR : int_type;
+		return (this->*table[int_type - TKN_I8_L])(10);
 	}
 
 	Optional<char> Lexer::parse_escape_sequence() noexcept

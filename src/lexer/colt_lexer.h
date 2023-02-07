@@ -204,8 +204,9 @@ namespace colt::lang
 
 		/// @brief Converts 'temp_str' to an integer
 		/// @param base The base of the integer being parsed
-		/// @return TKN_U64_L or TKN_ERROR
-		Token str_to_u64(int base) noexcept;
+		/// @return valid or TKN_ERROR
+		template<typename T, Token valid, typename = std::enable_if_t<std::is_integral_v<T>>>
+		Token str_to_integral(int base) noexcept;
 		
 		/// @brief Converts 'temp_str' to a float
 		/// @return TKN_FLOAT_L or TKN_ERROR
@@ -254,6 +255,35 @@ namespace colt::lang
 		/// @param ...args The argument pack to format
 		void gen_warn(StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept;
 	};
+
+	template<typename T, Token valid, typename>
+	inline Token Lexer::str_to_integral(int base) noexcept
+	{
+		T value = 0;
+		auto [ptr, err] = std::from_chars(temp_str.begin(), temp_str.end(), value, base);
+		if (ptr == temp_str.end() && err == std::errc{})
+		{
+			parsed_value = value;
+			return valid;
+		}
+		if constexpr (std::is_same_v<T, i8>)
+			gen_error(get_current_lexeme(), "Invalid 'i8' integer literal!");
+		if constexpr (std::is_same_v<T, u8>)
+			gen_error(get_current_lexeme(), "Invalid 'u8' integer literal!");
+		if constexpr (std::is_same_v<T, i16>)
+			gen_error(get_current_lexeme(), "Invalid 'i16' integer literal!");
+		if constexpr (std::is_same_v<T, u16>)
+			gen_error(get_current_lexeme(), "Invalid 'u16' integer literal!");
+		if constexpr (std::is_same_v<T, i32>)
+			gen_error(get_current_lexeme(), "Invalid 'i32' integer literal!");
+		if constexpr (std::is_same_v<T, u32>)
+			gen_error(get_current_lexeme(), "Invalid 'u32' integer literal!");
+		if constexpr (std::is_same_v<T, i64>)
+			gen_error(get_current_lexeme(), "Invalid 'i64' integer literal!");
+		if constexpr (std::is_same_v<T, u64>)
+			gen_error(get_current_lexeme(), "Invalid 'u64' integer literal!");
+		return TKN_ERROR;
+	}
 
 	template<typename ...Args>
 	inline void Lexer::gen_error(StringView lexeme, fmt::format_string<Args...> fmt, Args&&... args) noexcept
